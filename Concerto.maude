@@ -1,0 +1,250 @@
+
+fmod Declarations is  ----------------------------------------------------------------------------------------declarations  
+
+pr STRING .
+sort Ident .
+subsort String < Ident .
+----------------------------
+------------pour ComponentType
+sorts InitPlace Places Stations . --- identifiers for transitions and places
+sorts Place Station .
+
+---subsort String  < InitPlace Place Station .
+subsort InitPlace < Place .
+sort ComponentType .
+
+sort Transition .
+sort Behavior .
+sort TransitionEnding .
+sort Transitions .
+sort Behaviors .
+sort TransitionEndings .
+sort TransitionL .
+-------------------------------------
+
+sort Configuration .
+sort Program .
+sort Instances .
+sort Instance . ---on garde les deux?
+sort Connections .
+sort Instruction .
+
+sort QueueB .
+sort Marking .
+sort Markings .
+
+
+----------------subset
+sort SubSetStation .
+subsort SubSetStation < Stations .
+
+sort SubSetTransition .
+subsort SubSetTransition < Transitions .
+
+sort SubSetPlace .
+subsort SubSetPlace < Places .
+
+sort SubSetTansitionEnding .
+subsort SubSetTansitionEnding < TransitionEndings .
+
+-------------------------
+
+
+
+subsort QueueB < TransitionL .
+---------------------------------definition explicite de place et station a la supprision reactive subsort subsort String  < InitPlace Place Station .
+op p1 : -> InitPlace .
+op p2 : -> Place .
+op p3 : -> Place .
+
+op s1 : -> Station .
+op s2 : -> Station .
+op s3 : -> Station .
+
+
+
+endfm
+---------------------------------------------------------------------------------------------------------- end Declaration
+
+---------------------------------------------Definition des views 
+
+------------modifi view
+
+view Place from TRIV to Declarations is
+  sort Elt to Place .
+endv
+
+view Station from TRIV to Declarations is
+  sort Elt to Station .
+endv
+
+----------a supprimer lorsque rendre string
+
+view Instance from TRIV to Declarations is
+  sort Elt to Instance .
+endv
+
+view Transition from TRIV to Declarations is
+  sort Elt to Transition .
+endv
+
+view TransitionEnding from TRIV to Declarations is
+  sort Elt to TransitionEnding .
+endv
+
+view Behavior from TRIV to Declarations is
+  sort Elt to Behavior .
+
+endv
+***(
+view Marking from TRIV to Declarations is
+  sort Elt to Marking .
+endv)
+
+
+------------------------------------------- End definition des views 
+
+fmod ModInstancesAndrComponentType is 
+
+pr Declarations .
+
+protecting STRING .
+protecting BOOL .
+protecting INT .
+
+
+pr SET{Transition} .
+subsort Set{Transition} < Transitions . 
+
+pr LIST{Transition} .
+subsort List{Transition} < TransitionL . 
+
+pr SET{TransitionEnding} .
+subsort Set{TransitionEnding} < TransitionEndings . 
+
+---subsort Behavior < Transitions .
+
+pr SET{Behavior} .
+subsort Set{Behavior} < Behaviors . 
+
+-----------new modif
+-----pr SET{String} . 
+--- subsorts Set{String} <  Places Stations . 
+
+pr SET{Place} . 
+pr SET{Station} . 
+
+subsort Set{Place} <  Places  . 
+subsort Set{Station} <  Stations . 
+
+-----end new modif
+--------------------Marking
+---subsort Places < Markings . 
+---subsort Transitions < Markings . 
+---subsort TransitionEndings < Markings .  
+---pr SET{Marking} .
+---subsort Set{Marking} < Markings . 
+
+
+
+
+-------les autres operation  Pi: la place d'une station, Transition t(,) , transirion ending te(,) ,  Behavior et ComponentType sans port
+
+op Pi(_) : Station -> Place .
+
+op t(_,_) : Place SubSetStation -> Transition .
+op te(_,_) : Transition Station -> TransitionEnding .
+op b(_) : SubSetTransition -> Behavior .
+op m(_,_,_) : SubSetPlace SubSetTransition SubSetTansitionEnding -> Marking .
+
+
+op < _,_,_,_,_ > : Places InitPlace Stations Transitions Behaviors -> ComponentType .
+
+-----------------------------------------------operation pour les instances
+
+op Q : -> QueueB .
+op M : -> Marking .
+
+
+op (_,_,_,_) : String ComponentType QueueB Marking -> Instance .
+
+
+---------------------------------------operation pour Configuration
+
+pr SET{String} .
+
+pr SET{Instance} .
+
+subsort Set{Instance} < Instances .
+subsort Set{String} < Connections . ---- a modifier apres
+
+
+
+op add(_,_) : Ident ComponentType -> Instruction .
+op [] : -> Program [ctor] .
+op _._ : Instruction Program -> Program [ctor] .
+op < (_,_),_ > : Instances Connections Program -> Configuration . --- conf simplifie a  Instances et Program
+
+
+endfm 
+
+----------------Initialisation
+
+fmod InitMod is
+
+pr ModInstancesAndrComponentType .
+
+ops c1 c2 : -> ComponentType .
+op conf : -> Configuration .
+eq conf = < (empty, empty) , add("id1",c1) . add("id2",c2) . [] >  .
+
+
+----op < _,_,_,_,_ > : Places InitPlace Stations Transitions Behaviors -> ComponentType .
+
+--- eq c1 =  < (p1, p2, p3) , p1 , (s1, s2, s3), ((p1, s2), (p2, s3)), ( ((p1, s2), (p2, s3)) ) > .
+eq c1 =  < (p1, p2, p3) , p1 , (s1, s2, s3), (t(p1, s2), t(p2, s3)), b(t(p2, s3),t(p1, s2))  > .
+--- eq c2 =  .
+
+
+
+endfm
+
+
+mod OperationalSemantics is
+
+pr InitMod .
+
+
+
+var R : Program .
+var I : Instances . 
+var L : Connections .
+var id : Ident .
+var cc : ComponentType .
+var qb : QueueB .
+var m : Marking .
+var inst : Instance .
+
+
+---Evolution of Components
+
+
+
+--- Instructions of program 
+
+crl [AddComponentInstance] :  < (I, L), add(id, cc) . R > 
+=>   < (insert((id, c1, Q, M ), I), L), R > if (true) .  --- a modifier la condition pour supporter not ((id, cc2, qb , m ) in I) ou seulement id est considere.
+
+
+endm
+
+
+
+
+
+
+
+
+
+
+
