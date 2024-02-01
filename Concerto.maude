@@ -74,6 +74,9 @@ op q2 : -> Place .
 op q3 : -> Place .
 op q4 : -> Place .
 
+op z1 : -> InitPlace .
+op z2 : -> Place .
+
 op s1 : -> Station .
 op s2 : -> Station .
 op s3 : -> Station .
@@ -84,6 +87,10 @@ op r2 : -> Station .
 op r3 : -> Station .
 op r4 : -> Station .
 
+op w1 : -> Station .
+op w2 : -> Station .
+op w3 : -> Station .
+op w4 : -> Station .
 
 op us1 : -> UsePort .
 op us2 : -> UsePort .
@@ -223,6 +230,11 @@ eq Pi(r1) = q1 .
 eq Pi(r2) = q2 .
 eq Pi(r3) = q3 .
 
+eq Pi(w1) = z1 .
+eq Pi(w2) = z1 .
+eq Pi(w3) = z2 .
+eq Pi(w4) = z2 .
+
 op t(_,_) : Place Stations -> Transition .
 op te(_,_) : Transition Station -> TransitionEnding .
 op b(_) : Transitions -> Behavior .
@@ -332,10 +344,10 @@ eq NotEmptyMarking(m(p,t,tes)) = (p =/= empty or t =/= empty or tes =/= empty ) 
 op active(_,_) : Instance Port -> Bool . 
 
 
-var identI : String .
+vars identI identII : String .
 var c : ComponentType .
 var bl : BehaviorL .
----var m : Marking .
+var mm : Marking .
 
 eq active(< identI, < p,q,st,t,b,gu,gp > ,bl,m(pls,trans,tre) >,por) = NotEmptyMarking(IntersectionMarking(elements(G(por, < p,q,st,t,b,gu,gp >),< p,q,st,t,b,gu,gp >),m(pls,trans,tre))) .
 
@@ -382,11 +394,59 @@ eq refusing(< identI, < p,q,st,t,b,gu,gp > ,b(t1) bl,m(pls,trans,tre) >,por) = f
 
 
 op add(_,_) : Ident ComponentType -> Instruction .
+op del(_) : Ident -> Instruction .
 op pushB(_,_) : Ident Behavior -> Instruction .
 op con(_,_,_,_) : Ident UsePort Ident ProPort -> Instruction .
+op dcon(_,_,_,_) : Ident UsePort Ident ProPort -> Instruction .
+op wait(_) : Ident -> Instruction .
 op [] : -> Program [ctor] .
 op _._ : Instruction Program -> Program [ctor] .
 op < (_,_),_ > : Instances Connections Program -> Configuration . --- conf simplifie a  Instances et Program
+
+
+
+----------------------------------------------------operation used in rules ----------------------------------------------
+
+-----------------operations and equations of PushingBehavior
+op IsBehaviorOfComponent(_,_) : Behavior ComponentType -> Bool .
+vars beh beh1  : Behavior .
+
+eq IsBehaviorOfComponent(beh,< p,q,st,t,b,gu,gp >) = beh in b .
+---ceq IsBehaviorOfComponent(beh,< p,q,st,t,beh1,b,gu,gp >) = true if (beh1 == beh)  .
+---ceq IsBehaviorOfComponent(beh,< p,q,st,t,beh1,b,gu,gp >) = IsBehaviorOfComponent(beh,< p,q,st,t,b,gu,gp >) if (beh1 =/= beh)  .
+---eq IsBehaviorOfComponent(beh,< p,q,st,t,empty,gu,gp >) = false .
+
+
+---------------operations and equations of ConnectPorts
+var  LL : Connections .
+vars uus1 uus : UsePort .
+var ppr2 : ProPort .
+vars iid iid1 iid2 : Ident .
+op InConnectionIdentUsePort(_,_,_) :  Ident UsePort Connections -> Bool .
+
+ceq InConnectionIdentUsePort(iid,uus,((iid1,uus1,iid2,ppr2),LL)) = true if (iid1 == iid and uus1 == uus) .
+ceq InConnectionIdentUsePort(iid,uus,((iid1,uus1,iid2,ppr2),LL)) = InConnectionIdentUsePort(iid,uus,LL) if (iid1 =/= iid or uus1 =/= uus) .
+eq  InConnectionIdentUsePort(iid,uus,empty) = false .
+
+------------operations and equations of DeleteCompoenentInstance
+
+op InConnectionIdent(_,_) :  Ident Connections -> Bool .
+
+ceq InConnectionIdent(iid,((iid1,uus1,iid2,ppr2),LL)) = true if (iid1 == iid or iid2 == iid) .
+ceq InConnectionIdent(iid,((iid1,uus1,iid2,ppr2),LL)) = InConnectionIdent(iid,LL) if (iid1 =/= iid and iid2 =/= iid) .
+eq  InConnectionIdent(iid,empty) = false .
+
+----------------operations and equation of AddComponentInstance
+op IsUsedIdentInstances(_,_) : Ident Instances -> Bool .
+var Is : Instances .
+
+ceq IsUsedIdentInstances(identII, < identI,c,bl,mm >, Is) = true if (identII == identI) .
+ceq IsUsedIdentInstances(identII, < identI,c,bl,mm >, Is) = IsUsedIdentInstances(identII, Is) if (identII =/= identI) .
+eq IsUsedIdentInstances(identII, empty) = false .
+
+-------------- operations and equation of EnteringPlace
+
+
 
 
 endfm 
@@ -398,7 +458,7 @@ fmod InitMod is
 
 pr ModInstancesAndrComponentType .
 
-ops c1 c2 c3 : -> ComponentType .
+ops c1 c2 c3 c4 : -> ComponentType .
 ops conf conf0 : -> Configuration .
 eq conf = < (empty, empty) , add("id2",c2) . add("id1",c1) . add("id3",c3)  . pushB("id1",b(t(p1, s2), t(p2, s3))) . [] >  .
 eq conf0 = < (empty, empty) ,  add("id1",c1) . pushB("id1",b(t(p1, s2), t(p2, s3))) . [] >  .
@@ -408,7 +468,7 @@ eq conf0 = < (empty, empty) ,  add("id1",c1) . pushB("id1",b(t(p1, s2), t(p2, s3
 
 eq c1 =  < (p1, p2, p3) , p1 , (s1, s2, s3), (t(p1, s2), t(p2, s3)), b(t(p2, s3),t(p1, s2)) , us1 ! (p2, p3), empty > .
 eq c2 =  < (q1, q2, q3) , q1 , (r1, r2, r3), (t(q1, r2), t(q2, r3)), b(t(q2, r3),t(q1, r2)) , empty, pr1 ? ( p3) > .
-
+eq c3 =  < (q1, q2, q3) , q1 , (r1, r2, r3), (t(q1, r2), t(q2, r3)), b(t(q2, r3)),b(t(q1, r2)) , empty, pr1 ? ( p3) > .
 ---- op ins(_,_,_,_) : String ComponentType QueueB Marking -> Instance .
 op Q : -> BehaviorL .
 op M : -> Marking .
@@ -457,9 +517,26 @@ op ccc : -> ComponentType .
 
 
 op conf1 : -> Configuration .
+ops test test1 test2 : -> Configuration .
 eq InitialPlace (c2) = p1 .
 eq InitialPlace (c3) = p2 .
-eq conf1 = < (empty, empty) , add("id1",c1) . add("id2",c2) . con("id1",us1,"id2",pr1). pushB("id1",b(t(p1, s2), t(p2, s3))) . pushB("id2",b(t(q1, r2), t(q2, r3))) . [] >  .
+eq conf1 = < (empty, empty) , add("id1",c1) . add("id2",c2) . con("id1",us1,"id2",pr1).  pushB("id2",b(t(q1, r2), t(q2, r3))) . wait("id2") . pushB("id1",b(t(p1, s2), t(p2, s3))) . wait("id1").  dcon("id1",us1,"id2",pr1) . [] >  .
+---eq conf1 = < (empty, empty) , add("id1",c1) . add("id2",c2) . con("id1",us1,"id2",pr1).  pushB("id2",b(t(q1, r2), t(q2, r3))) . wait("id2") . pushB("id1",b(t(p1, s2), t(p2, s3))) . [] >  .
+eq test = < (empty, empty) , add("id1",c1) . add("id1",c2) . con("id1",us1,"id2",pr1).  pushB("id2",b(t(q1, r2), t(q2, r3))) . wait("id2")  . wait("id1").  dcon("id1",us1,"id2",pr1) . del("id1") . del("id2") . [] >  .
+---eq conf1 = < (empty, empty) , add("id1",c1) . add("id2",c2) . con("id1",us1,"id2",pr1). pushB("id1",b(t(p1, s2), t(p2, s3))) . pushB("id2",b(t(q1, r2), t(q2, r3))) . [] >  .
+
+eq c3 =  < (z1, z2) , z1 , (w1, w2, w3, w4), t(z1, w3, w4 ) , b(t(z1, w3,w4)) , empty, pr1 ? ( z2) >  .
+
+
+eq test1 = < (empty, empty) , add("idZ",c3) . pushB("idZ",b(t(z1, w3,w4)))  . [] >  .
+
+
+
+
+
+
+
+
 
 ---on choisit une place p de l'ensemble PlMar(m) tel que {(p S)} de b est different de vide
 var q : Place .
@@ -492,11 +569,17 @@ eq  InstanceIdent((< iden,ct,bl,m > ,I) , id ) =  InstanceIdent( I , id ) [owise
 
 op ConsistencyPort(_,_,_) : Instance Instances Connections ->  Bool .
 eq ConsistencyPort(inst,I,(id1,us,id2,pr),L) = ConsistencyPort(inst,I,L) and (active(InstanceIdent(I,id1),us) implies active(inst,pr)  ).
+eq ConsistencyPort(inst,I,empty) = true .
 
 
 
----Evolution of Components
+
+
+------------------------------------------------------------------------------------------Rules----------------------------------------------------------------------
+----------------------------------------------------------------------------------Evolution of Components-------------------------------------------------------------------
 ---- we don't need to check the intersection the marking with their corresonding net
+---------un blocage possible a cause du choix varie de ending station
+
 
 crl [Firingtransitions] : < ( < id1,ct,b(b) qb,m(p, ps,ts,tes) > , I, L),  R > 
 =>   < (  < id1,ct,b(b) qb,m(ps,union(ts, restrict(b,p) ),tes) >, I , L), R > if (restrict(b,p) =/= empty and 
@@ -505,31 +588,46 @@ ConsistencyPort(< id1,ct,b(b) qb,m(ps,union(ts, restrict(b,p) ),tes) >,I,Connect
 
 
 
+-----------test ok 
 crl [EndingTransition] : < ( < id1,ct,qb,m(ps, t(q,s,S), ts,tes) > , I, L),  R > 
-=>  < ( < id1,ct,qb,m(ps, ts, te(t(q,s,S),s), tes  ) > , I, L),  R > if (true) .  
+=>  < ( < id1,ct,qb,m(ps, ts, te(t(q,s,S),s), RemoveTransitionEndingStation(tes,s)  ) > , I, L),  R > 
+if (satisfiedTransitionEndingStation) .  
 
----- a completer manque meme pour une station. aussi si le choix de station n'est pas le bon finishng beh peut reste bloque sur ending transitions
---- pour les transition ending tes...
 
-crl [EnteringPlace] : < ( < id1,ct,qb,m(ps, ts, te(t(q,s,S),s), tes  ) > , I, L),  R > 
+
+crl [EnteringPlace] : < ( < id1,ct,b(b) qb,m(ps, ts, te(t(q,s,S),s), tes  ) > , I, L),  R > 
 =>  < ( < id1,ct,qb,m(Pi(s),ps, ts, tes  ) > , I, L),  R > if (true) .  
 
---- quelque soit place dans ps les transition de b ne contiennent pas des Transitions avec 
+---  test ok
 crl [FinishingBehavior] : < ( < id1,ct,b(b) qb,m(ps, empty, empty) > , I, L),  R > 
 =>  < ( < id1,ct, qb,m(ps, empty, empty) > , I, L),  R >  if (intersection(ps,PlacesTrans(b)) == empty) .  
 
---- Instructions of program 
-
---- a modifier la condition pour supporter not ((id, ct, qb , m ) in I) ou seulement id est considere.
+------------------------------------------------------------------------------------ Instructions of program------------------------------------------------------------------------- 
+---------------test ok .
 crl [AddComponentInstance] :  < ( I, L), add(id, ct) . R > 
-=>   < (insert( < id, ct, nil, m(InitialPlace(ct) ,empty,empty)  > , I), L), R > if (true) .  
+=>   < (insert( < id, ct, nil, m(InitialPlace(ct) ,empty,empty)  > , I), L), R > if (not IsUsedIdentInstances(id,I)) .  
 
-crl [Pushingbehavior] : < ( < id1,ct,qb,m > , I, L), pushB(id, b(b)) . R > 
-=>   < (  < id1,ct,append(qb,b(b)),m >, I , L), R > if (id == id1) .  
+---------------test ok .
+crl [DeleteComponentInstance] : < ( < id1,ct,qb,m > , I, L), del(id) . R > 
+=>   < ( I , L), R > if (id == id1 and (not InConnectionIdent(id,L)) ) . 
 
---- il n'existe pas dans L (id,us,id',pr') a rajouter
+--- not tested need 3 componenent
 crl [ConnectPorts] : < ( I, L), con(id,us,id1,pr) . R > 
-=>   < ( I , (id,us,id1,pr),L), R > if (true) . 
+=>   < ( I , (id,us,id1,pr),L), R > 
+if (id =/= id1 and (InstanceIdent(I,id) in I) and (InstanceIdent(I,id1) in I) and (not InConnectionIdentUsePort(id,us,L)) ) . 
+
+-------------- test ok
+crl [DisconnectPorts] : < ( I, L), dcon(id,us,id1,pr) . R > 
+=>   < ( I , delete((id,us,id1,pr),L)), R > if (not active(InstanceIdent(I,id),us)) . 
+
+----test ok 
+crl [PushingBehavior] : < ( < id1,ct,qb,m > , I, L), pushB(id, b(b)) . R > 
+=>   < (  < id1,ct,append(qb,b(b)),m >, I , L), R > if (id == id1 and IsBehaviorOfComponent(b(b),ct)) .  
+
+-----test waiting ok
+crl [Waiting] : < ( < id1,ct,nil,m > , I, L), wait(id) . R > 
+=>   < ( < id1,ct,nil,m > , I, L), R > if (id1 == id) . 
+
 
 
 endm
