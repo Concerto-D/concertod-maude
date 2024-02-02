@@ -1,6 +1,4 @@
 
-
-
 fmod Declarations is  ----------------------------------------------------------------------------------------declarations  
 
 pr STRING .
@@ -76,6 +74,11 @@ op q2 : -> Place .
 op q3 : -> Place .
 op q4 : -> Place .
 
+op y1 : -> InitPlace .
+op y2 : -> Place .
+op y3 : -> Place .
+op y4 : -> Place .
+
 op z1 : -> InitPlace .
 op z2 : -> Place .
 
@@ -93,7 +96,7 @@ op w1 : -> Station .
 op w2 : -> Station .
 op w3 : -> Station .
 op w4 : -> Station .
-
+op w5 : -> Station .
 op us1 : -> UsePort .
 op us2 : -> UsePort .
 op pr1 : -> ProPort .
@@ -232,10 +235,12 @@ eq Pi(r1) = q1 .
 eq Pi(r2) = q2 .
 eq Pi(r3) = q3 .
 
-eq Pi(w1) = z1 .
-eq Pi(w2) = z1 .
-eq Pi(w3) = z2 .
-eq Pi(w4) = z2 .
+eq Pi(w1) = y1 .
+eq Pi(w2) = y2 .
+eq Pi(w3) = y3 .
+eq Pi(w4) = y3 .
+eq Pi(w5) = y4 .
+
 
 op t(_,_) : Place Stations -> Transition .
 op te(_,_) : Transition Station -> TransitionEnding .
@@ -351,6 +356,10 @@ var c : ComponentType .
 var bl : BehaviorL .
 var mm : Marking .
 
+
+op IdentInstance(_) : Instance -> String .
+eq IdentInstance(< identI,c,bl,mm > ) = identI .
+
 eq active(< identI, < p,q,st,t,b,gu,gp > ,bl,m(pls,trans,tre) >,por) = NotEmptyMarking(IntersectionMarking(elements(G(por, < p,q,st,t,b,gu,gp >),< p,q,st,t,b,gu,gp >),m(pls,trans,tre))) .
 
 ------------- fonctions pour refusing
@@ -406,6 +415,17 @@ op _._ : Instruction Program -> Program [ctor] .
 op < (_,_),_ > : Instances Connections Program -> Configuration . --- conf simplifie a  Instances et Program
 
 
+---- determiner l'instance associe a ident
+op InstanceIdent(_,_) : Instances Ident -> Instance . 
+vars iden id : Ident .
+var contcomp : ComponentType .
+var behL : BehaviorL .
+var mark : Marking .
+var I : Instances .
+ceq  InstanceIdent((< iden,contcomp,behL,mark > ,I) , id ) = < iden,contcomp,behL,mark > if (iden == id) .
+eq  InstanceIdent((< iden,contcomp,behL,mark > ,I) , id ) =  InstanceIdent(I,id) [owise] .
+
+
 
 ----------------------------------------------------operation used in rules ----------------------------------------------
 
@@ -449,6 +469,59 @@ eq IsUsedIdentInstances(identII, empty) = false .
 -------------- operations and equation of EnteringPlace
 
 
+op RemoveTransitionEndingStation(_,_) : TransitionEndings Station -> TransitionEndings .
+op IsSatisfiedTransitionEndingStation(_,_,_) : Station Transitions TransitionEndings -> Bool .
+
+var ss : Station .
+
+ceq IsSatisfiedTransitionEndingStation(s,t(q,st),t,tes) = false 
+if( (s in st) and (not(te(t(q,st),s) in tes)) ) .
+ceq IsSatisfiedTransitionEndingStation(s,t(q,st),t,tes) = IsSatisfiedTransitionEndingStation(s,t,tes) 
+if(not(s in st) or (te(t(q,st),s) in tes) ) .
+eq IsSatisfiedTransitionEndingStation(s,empty,tes) = true .
+
+ceq RemoveTransitionEndingStation(te(t(q,st),s),tes,ss) = te(t(q,st),s),RemoveTransitionEndingStation(tes,ss)
+if (s =/= ss) .
+ceq RemoveTransitionEndingStation(te(t(q,st),s),tes,ss) = RemoveTransitionEndingStation(tes,ss)
+if (s == ss) .
+eq RemoveTransitionEndingStation(empty,ss) = empty .
+
+
+
+op GetUsePort(_) : ComponentType -> GUses .
+eq GetUsePort (< p,q,st,t,b,gu,gp >) = gu .
+
+op ProvidedAllowed(_,_,_,_,_,_) : Place GUses Instance Instance Instances Connections -> Bool . 
+vars i1 i2 : Instance .
+---vars poru up : UsePort . 
+ceq ProvidedAllowed(q,(up ! p),gu,i1,i2,Is,LL) = ProvidedAllowed(q,gu,i1,i2,Is,LL) if (not (q in p)) .
+ceq ProvidedAllowed(q,(up ! p),gu,i1,i2,Is,LL) = Provided(up,IdentInstance(i1),Is,LL) and Allowed(up,i1,i2,Is,LL) 
+and ProvidedAllowed(q,gu,i1,i2,Is,LL) if  (q in p) .
+eq ProvidedAllowed(q,empty,i1,i2,Is,LL) = true .
+
+op Provided(_,_,_,_) : UsePort String  Instances Connections -> Bool . 
+op Allowed(_,_,_,_,_) : UsePort  Instance Instance Instances Connections -> Bool . 
+---var prou : UsePort
+var IdentIns : String .
+ceq Provided(poru,IdentIns,Is,(iid1,up,iid2,pp),LL) = Provided(poru,IdentIns,Is,LL)
+if (poru =/= up or iid1 =/= IdentIns) .
+ceq Provided(poru,IdentIns,Is,(iid1,up,iid2,pp),LL) = active(InstanceIdent(Is,iid2),pp)
+if (poru == up and iid1 == IdentIns) .
+eq Provided(poru,IdentIns,Is,empty) = false .
+
+ceq Allowed(poru,i1,i2,Is,(iid1,up,iid2,pp),LL) = Allowed(poru,i1,i2,Is,LL)
+if (poru =/= up or iid1 =/= IdentInstance(i1)) .
+
+ceq Allowed(poru,i1,i2,Is,(iid1,up,iid2,pp),LL) = (refusing(InstanceIdent(Is,iid2),pp) and (not active(i1,up)) implies not active(i2,up) ) 
+
+and Allowed(poru,i1,i2,Is,LL) if (poru == up and iid1 == IdentInstance(i1)) .
+
+eq Allowed(poru,i1,i2,Is,empty) = true .
+
+
+
+
+
 
 
 endfm 
@@ -462,14 +535,14 @@ pr ModInstancesAndrComponentType .
 
 ops c1 c2 c3 c4 : -> ComponentType .
 ops conf conf0 : -> Configuration .
-eq conf = < (empty, empty) , add("id2",c2) . add("id1",c1) . add("id3",c3)  . pushB("id1",b(t(p1, s2), t(p2, s3))) . [] >  .
+eq conf = < (empty, empty) , add("id2",c2) . add("id1",c1)  . pushB("id1",b(t(p1, s2), t(p2, s3))) . [] >  .
 eq conf0 = < (empty, empty) ,  add("id1",c1) . pushB("id1",b(t(p1, s2), t(p2, s3))) . [] >  .
 
 ----op < _,_,_,_,_,_,_ > : Places InitPlace Stations Transitions Behaviors UsePorts ProPorts -> ComponentType .
 
 
-eq c1 =  < (p1, p2, p3) , p1 , (s1, s2, s3), (t(p1, s2), t(p2, s3)), b(t(p2, s3),t(p1, s2)) , us1 ! (p2, p3), empty > .
-eq c2 =  < (q1, q2, q3) , q1 , (r1, r2, r3), (t(q1, r2), t(q2, r3)), b(t(q2, r3),t(q1, r2)) , empty, pr1 ? ( p3) > .
+eq c1 =  < (p1, p2, p3) , p1 , (s1, s2, s3), (t(p1, s2), t(p2, s3)), b(t(p2, s3),t(p1, s2)) , us1 ! (p2, p3), empty   > .
+eq c2 =  < (q1, q2, q3) , q1 , (r1, r2, r3), (t(q1, r2), t(q2, r3)), b(t(q2, r3),t(q1, r2)) , empty, pr1 ? ( q3) > .
 eq c3 =  < (q1, q2, q3) , q1 , (r1, r2, r3), (t(q1, r2), t(q2, r3)), b(t(q2, r3)),b(t(q1, r2)) , empty, pr1 ? ( p3) > .
 ---- op ins(_,_,_,_) : String ComponentType QueueB Marking -> Instance .
 op Q : -> BehaviorL .
@@ -518,29 +591,29 @@ op mar : -> Marking .
 op ccc : -> ComponentType .
 
 
-op conf1 : -> Configuration .
-ops test test1 test2 : -> Configuration .
+ops conf1 conf2 : -> Configuration .
+ops test test1 test2 test3 : -> Configuration .
 eq InitialPlace (c2) = p1 .
 eq InitialPlace (c3) = p2 .
-eq conf1 = < (empty, empty) , add("id1",c1) . add("id2",c2) . con("id1",us1,"id2",pr1).  pushB("id2",b(t(q1, r2), t(q2, r3))) . wait("id2") . pushB("id1",b(t(p1, s2), t(p2, s3))) . wait("id1").  dcon("id1",us1,"id2",pr1) . [] >  .
+eq conf1 = < (empty, empty) , add("id1",c1) . add("id2",c2) . con("id1",us1,"id2",pr1).  pushB("id2",b(t(q1, r2), t(q2, r3))) . pushB("id1",b(t(p1, s2), t(p2, s3))) . [] >  .
+eq conf2 = < (empty, empty) , add("id2",c2) .  pushB("id2",b(t(q1, r2), t(q2, r3))) . [] >  .
 ---eq conf1 = < (empty, empty) , add("id1",c1) . add("id2",c2) . con("id1",us1,"id2",pr1).  pushB("id2",b(t(q1, r2), t(q2, r3))) . wait("id2") . pushB("id1",b(t(p1, s2), t(p2, s3))) . [] >  .
-eq test = < (empty, empty) , add("id1",c1) . add("id1",c2) . con("id1",us1,"id2",pr1).  pushB("id2",b(t(q1, r2), t(q2, r3))) . wait("id2")  . wait("id1").  dcon("id1",us1,"id2",pr1) . del("id1") . del("id2") . [] >  .
+---eq test = < (empty, empty) , add("id1",c1) . add("id1",c2) . con("id1",us1,"id2",pr1).  pushB("id2",b(t(q1, r2), t(q2, r3))) . wait("id2")  . wait("id1").  dcon("id1",us1,"id2",pr1) . del("id1") . del("id2") . [] >  .
 ---eq conf1 = < (empty, empty) , add("id1",c1) . add("id2",c2) . con("id1",us1,"id2",pr1). pushB("id1",b(t(p1, s2), t(p2, s3))) . pushB("id2",b(t(q1, r2), t(q2, r3))) . [] >  .
 
-eq c3 =  < (z1, z2) , z1 , (w1, w2, w3, w4), t(z1, w3, w4 ) , b(t(z1, w3,w4)) , empty, pr1 ? ( z2) >  .
+---eq c3 =  < (z1, z2) , z1 , (w1, w2, w3, w4), t(z1, w3, w4 ) , b(t(z1, w3,w4)) , empty, pr1 ? ( z2) >  .
 
 
-eq test1 = < (empty, empty) , add("idZ",c3) . pushB("idZ",b(t(z1, w3,w4)))  . [] >  .
+---eq test1 = < (empty, empty) , add("idZ",c3) . pushB("idZ",b(t(z1, w3,w4)))  . [] >  .
+
+-----test EnteringPlace
+
+---eq c3 =  < (y1,y2,y3,y4) , y1 , (w1, w2, w3, w4,w5), (t(y1, w2 ), t(y1, w3, w4 ),t(y2, w3, w4 ),t(y3, w5 )) ,( b(t(y1, w2 ), t(y1, w3, w4 ),t(y2, w3, w4 )) , b(t(y3, w5 )) )  , empty, empty >  .
+eq c3 =  < (y1,y2,y3,y4) , y1 , (w1, w2, w3, w4,w5), (t(y1, w2 ), t(y1, w3 ),t(y2, w3),t(y3, w5 )) ,( b(t(y1, w2 ), t(y1, w3 ),t(y2, w3)) , b(t(y3, w5 )) )  , empty, empty >  .
+eq InitialPlace (c3) = y1 .
+eq test3 = < (empty, empty) , add("id1",c3) . pushB("id1",b(t(y1, w2 ), t(y1, w3 ),t(y2, w3)))  . [] >  .
 
 
-
-
-
-
-
-
-
----on choisit une place p de l'ensemble PlMar(m) tel que {(p S)} de b est different de vide
 var q : Place .
 var t : Transition .
 var S : Stations .
@@ -584,21 +657,24 @@ eq ConsistencyPort(inst,I,empty) = true .
 
 
 crl [Firingtransitions] : < ( < id1,ct,b(b) qb,m(p, ps,ts,tes) > , I, L),  R > 
-=>   < (  < id1,ct,b(b) qb,m(ps,union(ts, restrict(b,p) ),tes) >, I , L), R > if (restrict(b,p) =/= empty and 
-ConsistencyPort(< id1,ct,b(b) qb,m(ps,union(ts, restrict(b,p) ),tes) >,I,ConnectionProIdent(L,id1))) .  
-
+=>   < (  < id1,ct,b(b) qb,m(ps,union(ts, restrict(b,p) ),tes) >, I , L), R > 
+if (restrict(b,p) =/= empty and ConsistencyPort(< id1,ct,b(b) qb,m(ps,union(ts, restrict(b,p) ),tes) >,I,ConnectionProIdent(L,id1))) .  
 
 
 
 -----------test ok 
-crl [EndingTransition] : < ( < id1,ct,qb,m(ps, t(q,s,S), ts,tes) > , I, L),  R > 
-=>  < ( < id1,ct,qb,m(ps, ts, te(t(q,s,S),s), RemoveTransitionEndingStation(tes,s)  ) > , I, L),  R > 
-if (satisfiedTransitionEndingStation) .  
+rl [EndingTransition] : < ( < id1,ct,qb,m(ps, t(q,s,S), ts,tes) > , I, L),  R > 
+=>  < ( < id1,ct,qb,m(ps, ts, te(t(q,s,S),s), tes  ) > , I, L),  R >  .  
 
 
 
 crl [EnteringPlace] : < ( < id1,ct,b(b) qb,m(ps, ts, te(t(q,s,S),s), tes  ) > , I, L),  R > 
-=>  < ( < id1,ct,qb,m(Pi(s),ps, ts, tes  ) > , I, L),  R > if (true) .  
+=>  < ( < id1,ct,b(b) qb,m(Pi(s), ts, RemoveTransitionEndingStation(tes,s) ) > , I, L),  R > 
+if (IsSatisfiedTransitionEndingStation(s,b,te(t(q,s,S),s), tes) and 
+ProvidedAllowed (Pi(s), GetUsePort(ct), < id1,ct,b(b) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >,
+< id1,ct,b(b) qb,m(Pi(s), ts, RemoveTransitionEndingStation(tes,s) ) >,I, L)) .  
+
+
 
 ---  test ok
 crl [FinishingBehavior] : < ( < id1,ct,b(b) qb,m(ps, empty, empty) > , I, L),  R > 
