@@ -1,0 +1,785 @@
+fmod Declarations is  ----------------------------------------------------------------------------------------declarations  
+
+-----------------------new declaration
+pr BOOL .
+sort BoolWithBot .
+sort Bot .
+subsorts Bool  Bot < BoolWithBot .
+
+sort Site .
+
+sorts  IdentC IdentB .
+
+sort Function .
+sorts ElementFunctionL ElementFunctionE .
+sorts ElementFunctionLs ElementFunctionEs .
+
+sorts Instance Instances .
+sorts Connection Connections .
+sorts LocalConfiguration LocalConfigurations  .
+sort Configuration .
+
+subsort LocalConfigurations < Configuration .
+
+sorts  F  Qsend Qrec Ws .
+sort send rec W .
+
+sort typeFunction .
+
+sort ComponentType .
+sorts Instruction  Behavior UsePort ProPort Program Port .
+subsorts UsePort ProPort < Port .
+
+
+sort IdFunction .
+---subsorts IdFunctionL IdFunctionE < IdFunction .
+
+subsort IdFunction  < W . ---id de fonction est un element de W
+subsort IdFunction  < send . ---- the same 
+
+------------pour ComponentType
+sorts InitPlace Places Stations StationPlaces . --- identifiers for Transitionns and places
+sorts Place Station StationPlace .
+
+subsort InitPlace < Place .
+
+
+sort Transitionn .
+sort TransitionnEnding .
+sort Transitionns .
+sort Behaviors .
+sort TransitionnEndings .
+---sort TransitionnsL .
+sort BehaviorL .
+
+sort Marking .
+sort Markings .
+
+
+
+sort ProPorts .
+sort UsePorts .
+sorts GUse GPro .
+sorts GUses GPros . 
+-------------------------------------
+
+----------------subset
+***(
+sort SubSetStation .
+subsort SubSetStation < Stations .
+
+sort SubSetTransitionn .
+subsort SubSetTransitionn < Transitionns .
+
+sort SubSetPlace .
+subsort SubSetPlace < Places .
+
+sort SubSetTansitionEnding .
+subsort SubSetTansitionEnding < TransitionnEndings .
+)
+-------------------------
+
+ops idc1 idc2 idc3 idc4 : -> IdentC .
+
+op p1 : -> InitPlace .
+ops p2 p3 p4 p5 p6 p7 p8 p9 p10: -> Place .
+
+op q1 : -> InitPlace .
+ops q2 q3 q4 q5 q6 q7 q8 q9 q10: -> Place .
+
+ops s1 s2 s3 s4 s5 s6 s7 s8 s9 s10   : -> Station .
+
+ops r1 r2 r3 r4 r5 r6 r7 r8 r9 r10   : -> Station .
+
+ops us1 us2 us3 us4 : -> UsePort .
+
+ops pr1 pr2 pr3 pr4 : -> ProPort .
+
+op(_;_) : Station Place -> StationPlace . 
+op (_!_) : UsePort Places -> GUse .
+op (_?_) : ProPort Places -> GPro .
+
+op (_,_,_,_) : IdentC UsePort IdentC ProPort -> Connection .
+
+ops site1 site2 : -> Site . 
+ops idc1 idc2 : -> IdentC .
+
+op @(_) : IdentC -> Site .
+eq @(idc1) = site1 .
+eq @(idc2) = site2 .
+
+
+
+endfm
+
+
+
+---------------------------------------------------------------------The used view
+
+view ElementFunctionL from TRIV to Declarations is
+  sort Elt to ElementFunctionL .
+endv
+
+view ElementFunctionE from TRIV to Declarations is
+  sort Elt to ElementFunctionE .
+endv
+
+
+view send from TRIV to Declarations is
+  sort Elt to send .
+endv
+
+view rec from TRIV to Declarations is
+  sort Elt to rec .
+endv
+
+view W from TRIV to Declarations is
+  sort Elt to W .
+endv
+
+view Connection from TRIV to Declarations is
+ sort Elt to Connection .
+endv
+ 
+
+view Instance from TRIV to Declarations is
+  sort Elt to Instance .
+endv
+
+view LocalConfiguration from TRIV to Declarations is
+  sort Elt to LocalConfiguration .
+endv
+
+
+view Place from TRIV to Declarations is
+  sort Elt to Place .
+endv
+
+view StationPlace from TRIV to Declarations is
+  sort Elt to StationPlace .
+endv
+
+view Station from TRIV to Declarations is
+  sort Elt to Station .
+endv
+
+
+view Transitionn from TRIV to Declarations is
+  sort Elt to Transitionn .
+endv
+
+view Transitionns from TRIV to Declarations is
+  sort Elt to Transitionns .
+endv
+
+
+view TransitionnEnding from TRIV to Declarations is
+  sort Elt to TransitionnEnding .
+endv
+
+view Behavior from TRIV to Declarations is
+  sort Elt to Behavior .
+endv
+
+view GUse from TRIV to Declarations is
+sort Elt to GUse .
+endv
+
+view GPro from TRIV to Declarations is
+ sort Elt to GPro .
+endv
+
+
+-------------------------------------------------------------------------------------------------End view 
+
+fmod Operations is
+
+pr Declarations .
+
+pr SET{ElementFunctionL} .
+subsort Set{ElementFunctionL} < ElementFunctionLs . 
+
+pr SET{ElementFunctionE} .
+subsort Set{ElementFunctionE} < ElementFunctionEs . 
+
+pr SET{Connection} .
+subsort Set{Connection} < Connections . 
+
+pr SET{Instance} .
+subsort Set{Instance} < Instances . 
+
+pr LIST{send} .
+subsort List{send} < Qsend . 
+
+pr LIST{rec} .
+subsort List{rec} < Qrec . 
+
+pr SET{W} .
+subsort Set{W} < Ws . 
+
+pr SET{LocalConfiguration} .
+subsort Set{LocalConfiguration} < LocalConfigurations . 
+
+
+
+-----------------------id of functions
+-----ou bien id(_,_,_) : type oprtation (op acti,ref ...) identc port
+---ops act ref iscon discon compl : -> typeFunction .  to modifier pour les type different
+
+sorts IdFuncAct IdFunRef IdFunIscon IdFunDis IdFunCom .
+subsorts IdFuncAct IdFunRef IdFunIscon IdFunDis IdFunCom < IdFunction .
+
+op idAct(_,_) : IdentC Port -> IdFuncAct .
+op idRef(_,_) : IdentC Port -> IdFunRef .
+--- a completer .
+
+
+
+
+--------------------------------------
+op el(_) : IdFunction  ->   ElementFunctionL .
+op ee(_;_) : IdFunction BoolWithBot ->   ElementFunctionE .
+
+op bot : -> Bot .
+
+ops idb1 idb2 idb3 idb4 : -> IdentB .
+
+op (_;_) :  IdFunction BoolWithBot  -> rec . ------a voir reduction avec ElementFunctionE .
+
+op Eval(_,_) : Site Function -> BoolWithBot .
+
+op F(_,_) :  ElementFunctionLs ElementFunctionEs -> F .
+
+---------------------------------------operation pour Configuration
+
+op add(_,_) : IdentC ComponentType -> Instruction .
+op del(_) : IdentC -> Instruction .
+op pushB(_,_,_) : IdentC Behavior IdentB -> Instruction .
+op con(_,_,_,_) : IdentC UsePort IdentC ProPort -> Instruction .
+op dcon(_,_,_,_) : IdentC UsePort IdentC ProPort -> Instruction .
+op wait(_,_) : IdentC IdentB -> Instruction .
+op [] : -> Program [ctor] .
+op _._ : Instruction Program -> Program [ctor] .
+
+
+op < (_,_),_,_,_,_,_ > : Instances Connections Program F Qrec Qsend  Ws -> LocalConfiguration . 
+
+
+
+
+---------------------------------------operation pour Configuration
+
+-------------------------------------fonction utilisee pour les regles
+
+op LocalFun(_,_) : IdFunction F -> Bool .
+op ExternFun(_,_) : IdFunction F -> Bool .
+
+vars idf lf ef : IdFunction .
+var Fx : F .
+var lfs : ElementFunctionLs .
+var efs : ElementFunctionEs .
+var bwb : BoolWithBot .
+
+ceq LocalFun(idf, F((el(lf),lfs),efs )) = true if (idf == lf) .
+ceq LocalFun(idf, F((el(lf),lfs),efs )) = LocalFun(idf, F(lfs,efs )) if (idf =/= lf) .
+eq LocalFun(idf, F(empty,efs )) = false .
+
+ceq ExternFun(idf, F(lfs,ee(ef ; bwb),efs )) = true if (idf == ef) .
+ceq ExternFun(idf, F(lfs,ee(ef ; bwb),efs)) = ExternFun(idf, F(lfs,efs)) if (idf =/= ef) .
+eq ExternFun(idf, F(empty,efs )) = false .
+
+
+
+
+---------------------------------------------initialisation
+ops Lconf1 Lconf2 : -> LocalConfiguration . 
+op Gconf : -> LocalConfigurations .
+ops b1 b2 : -> Behavior .
+op us1 : -> UsePort .
+op pr1 : -> ProPort .
+ops c1 c2 : -> ComponentType .
+
+
+eq Lconf1 = < (empty, empty) , add(idc1,c1)  . con(idc1,us1,idc2,pr1).  pushB(idc1,b1,idb1) . [], F(el(idAct(idc1,us1) ) , ee(idAct(idc2,pr1) ; false)), nil, idAct(idc2,pr1) idAct(idc1,us1)  , empty >  .
+
+eq Lconf2 = < (empty, empty) , add(idc2,c2)  . con(idc1,us1,idc2,pr1).  pushB(idc2,b2,idb2) . [], F(el(idAct(idc2,pr1) ) , ee(idAct(idc1,us1) ; false)), nil, nil , idAct(idc1,us1) >  .
+
+eq Gconf = Lconf1, Lconf2 .
+
+endfm
+     
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+fmod ModInstancesAndrComponentType is 
+
+pr Operations .
+
+protecting STRING .
+protecting BOOL .
+protecting INT .
+
+
+pr SET{Transitionn} .
+subsort Set{Transitionn} < Transitionns . 
+
+pr LIST{Behavior} .
+subsort List{Behavior} < BehaviorL . 
+
+pr SET{TransitionnEnding} .
+subsort Set{TransitionnEnding} < TransitionnEndings . 
+
+---subsort Behavior < Transitionns .
+
+pr SET{Behavior} .
+subsort Set{Behavior} < Behaviors . 
+
+pr SET{GUse} .
+subsort Set{GUse} < GUses .
+
+pr SET{GPro} .
+subsort Set{GPro} < GPros .
+
+-----------new modif
+-----pr SET{String} . 
+--- subsorts Set{String} <  Places Stations . 
+
+pr SET{Place} . 
+pr SET{Station} . 
+pr SET{StationPlace} . 
+
+subsort Set{Place} <  Places  . 
+subsort Set{Station} <  Stations  . 
+subsort Set{StationPlace} <  StationPlaces . 
+
+-----end new modif
+--------------------Marking
+---subsort Places < Markings . 
+---subsort Transitionns < Markings . 
+---subsort TransitionnEndings < Markings .  
+---pr SET{Marking} .
+---subsort Set{Marking} < Markings . 
+
+
+---pr SET{String} .
+
+pr SET{Instance} .
+
+subsort Set{Instance} < Instances .
+
+pr SET{Connection} .
+subsort Set{Connection} < Connections . 
+
+
+---subsort Transitionns <  Behavior .  
+
+-------les autres operation  Pi: la place d'une station, Transitionn t(,) , transirion ending te(,) ,  Behavior et ComponentType sans port
+
+op Pi(_,_) : Station StationPlaces -> Place .
+vars s ss2 ss1 : Station .
+var SPs : StationPlaces .
+var q : Place .
+
+ceq Pi(ss1, ((ss2 ; q),SPs)) = q if(ss1 == ss2) .
+ceq Pi(ss1, ((ss2 ; q),SPs)) = Pi(ss1,SPs) if(ss1 =/= ss2) .
+
+
+
+
+op t(_,_) : Place Stations -> Transitionn .
+op te(_,_) : Transitionn Station -> TransitionnEnding .
+op b(_) : Transitionns -> Behavior .
+----------
+var trans : Transitionns .
+op TransBeh(_) : Behavior -> Transitionns .
+eq TransBeh(b(trans)) = trans .
+----------- pour la regle ending behavior on a besoin d'une fonction pour trouver les places des Transitionns
+var pla : Place .
+vars S S1 : Stations .
+
+op PlacesTrans(_) : Transitionns -> Places .
+eq PlacesTrans(empty) = empty .
+eq PlacesTrans(t(pla,S),trans) = pla, PlacesTrans(trans) .
+
+-----------------------
+---op m(_,_,_) : SubSetPlace SubSetTransitionn SubSetTansitionEnding -> Marking .   when we use subset the reduction term is impossble
+op m(_,_,_) : Places Transitionns TransitionnEndings -> Marking .
+-------------------
+var pls : Places .
+var tre : TransitionnEndings .
+op PlMar : Marking -> Places .
+op TrMar : Marking -> Transitionns .
+op TrEnMar : Marking -> TransitionnEndings .
+
+eq PlMar(m(pls,trans,tre)) = pls .
+eq TrMar(m(pls,trans,tre)) = trans .
+eq TrEnMar(m(pls,trans,tre)) = tre .
+---------------------------
+op < _,_,_,_,_,_,_ > : Places InitPlace StationPlaces Transitionns Behaviors GUses GPros -> ComponentType .
+
+op InitialPlace(_) : ComponentType -> Place .
+
+
+vars p pG : Places .
+var st : StationPlaces .
+vars t t1  : Transitionns . 
+vars tes tes1 : TransitionnEndings .
+var b : Behaviors .
+var gu : GUses .
+var gp : GPros .
+
+eq InitialPlace (< p,q,st,t,b,gu,gp >) = q .
+
+op GetStationPlaces(_) : ComponentType -> StationPlaces .
+
+eq GetStationPlaces (< p,q,st,t,b,gu,gp >) = st .
+-----------------------------------------------operation pour les instances
+
+---op Q : -> List{Transitionns} .
+op M : -> Marking .
+
+
+op <_,_,_,_> : IdentC ComponentType BehaviorL Marking -> Instance .
+
+--------------------------------------------operations active  et refusing 
+
+
+
+----------------------fonctions suplemnetaire
+var por : Port . 
+vars poru up : UsePort .
+vars porp pp : ProPort .
+---op (_!_) : UsePort Places -> GUse .
+---op (_?_) : ProPort Places -> GPro .
+
+op G(_,_) : Port ComponentType -> Places .
+op PlaceUse(_,_) : Port GUses -> Places .
+op PlacePro(_,_) : Port GPros -> Places .
+eq G(poru,< p,q,st,t,b,gu,gp > ) = PlaceUse(poru,gu)  .
+eq G(porp,< p,q,st,t,b,gu,gp > ) = PlacePro(porp,gp)  .
+
+ceq PlaceUse(poru,(up ! p),gu) = p if (poru == up) . 
+ceq PlaceUse(poru,(up ! p),gu) = PlaceUse(poru,gu) if (poru =/= up) . 
+eq PlaceUse(poru,empty) = empty . 
+
+ceq PlacePro(porp,(pp ? p),gp) = p if (porp == pp) . 
+ceq PlacePro(porp,(pp ? p),gp) = PlacePro(porp,gp) if (porp =/= pp) . 
+eq PlacePro(porp,empty) = empty . 
+
+-----fonction elements
+op elements(_,_) : Places ComponentType -> Marking .
+op TranElt(_,_,_) : Places Transitionns Stations -> Transitionns .        
+op TranEndElts(_) : Transitionns -> TransitionnEndings .
+op TranEndElt(_,_) : Transitionn Stations -> TransitionnEndings .
+op EndingStationsGroup(_,_) : Stations  Stations -> Bool .
+
+ceq EndingStationsGroup((s,S),S1) = EndingStationsGroup(S,S1) if (s in S1) .
+ceq EndingStationsGroup((s,S),S1) = false if (not (s in S1)) .
+eq EndingStationsGroup(empty,S1) = true .
+
+eq TranEndElt(t(q,S), s,S1)= union(te(t(q,S),s), TranEndElt(t(q,S), S1) ) .
+eq TranEndElt(t(q,S),empty) = empty .
+
+eq TranEndElts(t(q,S),t) = union(TranEndElt(t(q,S),S), TranEndElts(t) ) .
+eq TranEndElts(empty) = empty .
+------------selection only station that end in the eleent of ExitGroupPlac
+op StationsGplaces(_,_) : Places StationPlaces -> Stations .
+
+ceq StationsGplaces(p,(s ; q),st) = s, StationsGplaces(p,st) if(q in p) .
+ceq StationsGplaces(p,(s ; q),st) =  StationsGplaces(p,st) if(not(q in p)) .
+eq StationsGplaces(p,empty) = empty .
+------------------------------------------------------------------
+eq elements(pG,< p,q,st,t,b,gu,gp >) = m( pG, TranElt(pG,t,StationsGplaces(pG,st)), TranEndElts(TranElt(pG,t,StationsGplaces(pG,st))) ) .
+ceq TranElt(pG,t(q,S),t,S1) = t(q,S),TranElt(pG,t,S1) if (q in pG and (EndingStationsGroup(S,S1))) .
+ceq TranElt(pG,t(q,S),t,S1) = TranElt(pG,t,S1) if (not (q in pG and (EndingStationsGroup(S,S1)))) .
+eq TranElt(pG,empty,S1) = empty .
+
+op  IntersectionMarking(_,_) : Marking Marking -> Marking .
+eq  IntersectionMarking( m(p,t,tes),m(pG,t1,tes1)) = m(intersection(p,pG),intersection(t,t1),intersection(tes,tes1)) .
+
+op NotEmptyMarking(_) : Marking -> Bool .
+eq NotEmptyMarking(m(p,t,tes)) = (p =/= empty or t =/= empty or tes =/= empty ) .
+----------------------------------
+
+op active(_,_) : Instance Port -> Bool . 
+
+
+vars identI identII : IdentC .
+var c : ComponentType .
+var bl : BehaviorL .
+var mm : Marking .
+
+
+op IdentInstance(_) : Instance -> IdentC .
+eq IdentInstance(< identI,c,bl,mm > ) = identI .
+
+eq active(< identI, < p,q,st,t,b,gu,gp > ,bl,m(pls,trans,tre) >,por) = NotEmptyMarking(IntersectionMarking(elements(G(por, < p,q,st,t,b,gu,gp >),< p,q,st,t,b,gu,gp >),m(pls,trans,tre))) .
+
+------------- fonctions pour refusing
+
+op AllExitGroup(_,_,_,_) : Places Transitionns Places StationPlaces -> Bool .
+op ExitGroupPlace(_,_,_,_) : Place Transitionns Places StationPlaces -> Bool .
+op ExistSourceTranPlace(_,_) : Place Transitionns -> Bool .
+op AllTranQuitGroupPlace(_,_,_,_) : Place Transitionns Places StationPlaces -> Bool .
+op EndingStationsNotGroup(_,_,_) : Stations Places StationPlaces -> Bool .
+eq AllExitGroup((q,p),t,pG,st)  = ExitGroupPlace(q,t,pG,st) and AllExitGroup(p,t,pG,st) .
+eq AllExitGroup(empty,t,pG,st) = true .
+eq ExitGroupPlace(q,t,pG,st) = ExistSourceTranPlace(q,t) and AllTranQuitGroupPlace(q,t,pG,st) . 
+
+ceq  ExistSourceTranPlace(q,t(p,S),t1) = true if (p == q ) .
+ceq  ExistSourceTranPlace(q,t(p,S),t1) = ExistSourceTranPlace(q,t1) if (p =/= q ) .
+eq   ExistSourceTranPlace(q,empty) = false .
+
+ceq AllTranQuitGroupPlace(q,t(p,S),t1,pG,st) = AllTranQuitGroupPlace(q,t1,pG,st) if (p =/= q) .
+eq AllTranQuitGroupPlace(q,empty,pG,st) = true .
+ceq AllTranQuitGroupPlace(q,t(p,S),t1,pG,st) = AllTranQuitGroupPlace(q,t(p,S),t1,pG,st) if (p == q and  EndingStationsNotGroup(S,pG,st)) .
+ceq AllTranQuitGroupPlace(q,t(p,S),t1,pG,st) = false if (p == q and  not EndingStationsNotGroup(S,pG,st)) .
+
+ceq EndingStationsNotGroup(s,S,pG,st) = EndingStationsNotGroup(S,pG,st) if (not (Pi(s,st) in pG)) .
+ceq EndingStationsNotGroup(s,S,pG,st) = false if ((Pi(s,st) in pG)) .
+eq EndingStationsNotGroup(empty,pG,st) = true .
+
+
+op refusing(_,_) : Instance Port -> Bool .
+
+ceq refusing(< identI, < p,q,st,t,b,gu,gp > ,b(t1) bl,m(pls,trans,tre) >,por) = true if
+(
+TrMar(IntersectionMarking(elements(G(por, < p,q,st,t,b,gu,gp >),< p,q,st,t,b,gu,gp >),m(pls,trans,tre))) == empty and 
+TrEnMar(IntersectionMarking(elements(G(por, < p,q,st,t,b,gu,gp >),< p,q,st,t,b,gu,gp >),m(pls,trans,tre))) == empty and 
+AllExitGroup(PlMar(IntersectionMarking(elements(G(por, < p,q,st,t,b,gu,gp >),< p,q,st,t,b,gu,gp >),m(pls,trans,tre))),t1,G(por,< p,q,st,t,b,gu,gp >),st)
+
+)  .
+
+eq refusing(< identI, < p,q,st,t,b,gu,gp > ,b(t1) bl,m(pls,trans,tre) >,por) = false [owise] .
+
+
+
+
+---- determiner l'instance associe a ident
+op InstanceIdent(_,_) : Instances IdentC -> Instance . 
+vars iden id : IdentC .
+var contcomp : ComponentType .
+var behL : BehaviorL .
+var mark : Marking .
+var I : Instances .
+ceq  InstanceIdent((< iden,contcomp,behL,mark > ,I) , id ) = < iden,contcomp,behL,mark > if (iden == id) .
+eq  InstanceIdent((< iden,contcomp,behL,mark > ,I) , id ) =  InstanceIdent(I,id) [owise] .
+
+
+
+----------------------------------------------------operation used in rules ----------------------------------------------
+
+-----------------operations and equations of PushingBehavior
+op IsBehaviorOfComponent(_,_) : Behavior ComponentType -> Bool .
+vars beh beh1  : Behavior .
+
+eq IsBehaviorOfComponent(beh,< p,q,st,t,b,gu,gp >) = beh in b .
+---ceq IsBehaviorOfComponent(beh,< p,q,st,t,beh1,b,gu,gp >) = true if (beh1 == beh)  .
+---ceq IsBehaviorOfComponent(beh,< p,q,st,t,beh1,b,gu,gp >) = IsBehaviorOfComponent(beh,< p,q,st,t,b,gu,gp >) if (beh1 =/= beh)  .
+---eq IsBehaviorOfComponent(beh,< p,q,st,t,empty,gu,gp >) = false .
+
+
+---------------operations and equations of ConnectPorts
+var  LL : Connections .
+vars uus1 uus : UsePort .
+var ppr2 : ProPort .
+vars iid iid1 iid2 : IdentC .
+op InConnectionIdentUsePort(_,_,_) :  IdentC UsePort Connections -> Bool .
+
+ceq InConnectionIdentUsePort(iid,uus,((iid1,uus1,iid2,ppr2),LL)) = true if (iid1 == iid and uus1 == uus) .
+ceq InConnectionIdentUsePort(iid,uus,((iid1,uus1,iid2,ppr2),LL)) = InConnectionIdentUsePort(iid,uus,LL) if (iid1 =/= iid or uus1 =/= uus) .
+eq  InConnectionIdentUsePort(iid,uus,empty) = false .
+
+------------operations and equations of DeleteCompoenentInstance
+
+op InConnectionIdent(_,_) :  IdentC Connections -> Bool .
+
+ceq InConnectionIdent(iid,((iid1,uus1,iid2,ppr2),LL)) = true if (iid1 == iid or iid2 == iid) .
+ceq InConnectionIdent(iid,((iid1,uus1,iid2,ppr2),LL)) = InConnectionIdent(iid,LL) if (iid1 =/= iid and iid2 =/= iid) .
+eq  InConnectionIdent(iid,empty) = false .
+
+----------------operations and equation of AddComponentInstance
+op IsUsedIdentInstances(_,_) : IdentC Instances -> Bool .
+var Is : Instances .
+
+ceq IsUsedIdentInstances(identII, < identI,c,bl,mm >, Is) = true if (identII == identI) .
+ceq IsUsedIdentInstances(identII, < identI,c,bl,mm >, Is) = IsUsedIdentInstances(identII, Is) if (identII =/= identI) .
+eq IsUsedIdentInstances(identII, empty) = false .
+
+-------------- operations and equation of EnteringPlace
+
+
+op RemoveTransitionnEndingStation(_,_) : TransitionnEndings Station -> TransitionnEndings .
+op IsSatisfiedTransitionnEndingStation(_,_,_) : Station Transitionns TransitionnEndings -> Bool .
+
+var ss : Station .
+ceq IsSatisfiedTransitionnEndingStation(s,t(q,S),t,tes) = false 
+if( (s in S) and (not(te(t(q,S),s) in tes)) ) .
+ceq IsSatisfiedTransitionnEndingStation(s,t(q,S),t,tes) = IsSatisfiedTransitionnEndingStation(s,t,tes) 
+if(not(s in S) or (te(t(q,S),s) in tes) ) .
+eq IsSatisfiedTransitionnEndingStation(s,empty,tes) = true .
+
+ceq RemoveTransitionnEndingStation(te(t(q,S),s),tes,ss) = te(t(q,S),s),RemoveTransitionnEndingStation(tes,ss)
+if (s =/= ss) .
+ceq RemoveTransitionnEndingStation(te(t(q,S),s),tes,ss) = RemoveTransitionnEndingStation(tes,ss)
+if (s == ss) .
+eq RemoveTransitionnEndingStation(empty,ss) = empty .
+
+
+
+op GetUsePort(_) : ComponentType -> GUses .
+eq GetUsePort (< p,q,st,t,b,gu,gp >) = gu .
+
+op ProvidedAllowed(_,_,_,_,_,_) : Place GUses Instance Instance Instances Connections -> Bool . 
+vars i1 i2 : Instance .
+---vars poru up : UsePort . 
+ceq ProvidedAllowed(q,(up ! p),gu,i1,i2,Is,LL) = ProvidedAllowed(q,gu,i1,i2,Is,LL) if (not (q in p)) .
+ceq ProvidedAllowed(q,(up ! p),gu,i1,i2,Is,LL) = Provided(up,IdentInstance(i1),Is,LL) and Allowed(up,i1,i2,Is,LL) 
+and ProvidedAllowed(q,gu,i1,i2,Is,LL) if  (q in p) .
+eq ProvidedAllowed(q,empty,i1,i2,Is,LL) = true .
+
+op Provided(_,_,_,_) : UsePort IdentC  Instances Connections -> Bool . 
+op Allowed(_,_,_,_,_) : UsePort  Instance Instance Instances Connections -> Bool . 
+---var prou : UsePort
+var IdentIns : IdentC .
+ceq Provided(poru,IdentIns,Is,(iid1,up,iid2,pp),LL) = Provided(poru,IdentIns,Is,LL)
+if (poru =/= up or iid1 =/= IdentIns) .
+ceq Provided(poru,IdentIns,Is,(iid1,up,iid2,pp),LL) = active(InstanceIdent(Is,iid2),pp)
+if (poru == up and iid1 == IdentIns) .
+eq Provided(poru,IdentIns,Is,empty) = false .
+
+ceq Allowed(poru,i1,i2,Is,(iid1,up,iid2,pp),LL) = Allowed(poru,i1,i2,Is,LL)
+if (poru =/= up or iid1 =/= IdentInstance(i1)) .
+
+ceq Allowed(poru,i1,i2,Is,(iid1,up,iid2,pp),LL) = (refusing(InstanceIdent(Is,iid2),pp) and (not active(i1,up)) implies not active(i2,up) ) 
+
+and Allowed(poru,i1,i2,Is,LL) if (poru == up and iid1 == IdentInstance(i1)) .
+
+eq Allowed(poru,i1,i2,Is,empty) = true .
+
+------------------------------------------------------------- functions used in operational semantics Messages 
+-------------------------------------------------------------------------LocalEval(idf,Ix,Lx,Rx)
+---op idAct(_,_) : IdentC Port -> IdFuncAct .
+---op idRef(_,_) : IdentC Port -> IdFunRef .
+
+
+op LocalEval(_,_,_,_) : IdFunction Instances Connections Program -> BoolWithBot .
+
+var idcx idcy : IdentC .
+var ctx : ComponentType .
+var behlx : BehaviorL .
+var Mx : Marking .
+var porx : Port .
+var Isx : Instances .
+var Ls : Connections .
+var pg : Program .
+
+---eq LocalEval (idRef(idcx,por), Is,Ls,pg) = false . 
+--------------------------------------------------------------------evalution des fonctions locales
+---op <_,_,_,_> : IdentC ComponentType BehaviorL Marking -> Instance .
+op ExistIdentInstances(_,_) : IdentC Instances -> Bool .
+
+ceq ExistIdentInstances(idcy, < idcx,ctx,behlx,Mx >,Isx) = true if(idcy == idcx) .
+ceq ExistIdentInstances(idcy, < idcx,ctx,behlx,Mx >,Isx) = ExistIdentInstances(idcy,Isx) if(idcy =/= idcx) .
+eq ExistIdentInstances(idcy,empty) = false .
+
+ceq LocalEval (idAct(idcx,porx), Isx,Ls,pg) = bot if (not ExistIdentInstances(idcx,Isx)) . 
+ceq LocalEval (idAct(idcx,porx), Isx,Ls,pg) = active(InstanceIdent(Isx,idcx),porx) if (not ExistIdentInstances(idcx,Isx)) . 
+
+
+
+----on suppose que F existe est correcte pour la conf on peut le construire par op ConstruireF(_) : Program -> F .
+
+---------------------------functionn SubValExtern
+----op F(_,_) :  ElementFunctionLs ElementFunctionEs -> F .
+op SubValExtern(_,_,_) : ElementFunctionEs IdFunction BoolWithBot -> ElementFunctionEs .
+var efes : ElementFunctionEs .
+var efe :  ElementFunctionE .
+vars valfNew valfOld : BoolWithBot .
+vars idf1 idf2 : IdFunction .
+ceq SubValExtern((ee(idf1 ; valfOld),efes),idf2,valfNew) = ee(idf1 ; valfNew),efes if(idf1 == idf2) .
+ceq SubValExtern((ee(idf1 ; valfOld),efes),idf2,valfNew) = ee(idf1 ; valfOld),SubValExtern(efes,idf2,valfNew) if(idf1 =/= idf2) .
+eq SubValExtern(empty,idf2,valfNew) = empty . 
+
+
+
+
+
+endfm 
+
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+mod OperationalSemantics is
+
+pr ModInstancesAndrComponentType .
+
+--- op < (_,_),_,_,_,_,_ > : Instances Connections Program F Qrec Qsend  Ws -> LocalConfiguration . 
+
+var lcx lcy : LocalConfiguration .
+var gconfig : LocalConfigurations .
+
+vars Rx Ry : Program .
+vars Ix Iy : Instances . 
+vars Lx Ly : Connections .
+vars Fx Fy : F .
+vars QSx QSy : Qsend .
+vars QRx QRy : Qrec .
+vars Wx Wy : Ws .
+var  idf : IdFunction .
+var valf : BoolWithBot .
+
+vars ct ctt : ComponentType .
+var inst : Instance .
+var use : UsePort .
+var pro : ProPort .
+
+var efls : ElementFunctionLs .
+var efes : ElementFunctionEs .
+
+
+ops i ii : -> Instance .
+
+
+op ccc : -> ComponentType .
+
+---- determiner l'instance associe a ident
+---op InstanceIdent(_,_) : Instances Ident -> Instance . 
+----var iden : Ident .
+---var bl : BehaviorL .
+-------------------------------------------------------------------------------------------------fonctions utilise dans les regles
+
+
+------------------------------------------------------------------------------------------Rules----------------------------------------------------------------------
+
+crl [SendRequest] : 
+< (Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > , < (Iy,Ly),Ry,Fy,QRy,QSy,Wy >, gconfig  =>
+< (Ix,Lx),Rx,Fx,QRx,QSx, (Wx, idf) > , < (Iy,Ly),Ry,Fy,append(QRy, (idf ; bot) ),QSy,Wy >, gconfig 
+if ( ExternFun(idf,Fx) and LocalFun(idf,Fy) ) .
+
+-------------a completer fx' dans 2eme ligne
+crl [SendEvalFun] : 
+< (Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > , < (Iy,Ly),Ry,Fy,QRy,QSy,Wy >, gconfig  =>
+< (Ix,Lx),Rx,Fx,QRx,QSx, Wx > , < (Iy,Ly),Ry,Fy,append(QRy, (idf ; LocalEval(idf,Ix,Lx,Rx)) ),QSy,Wy >, gconfig 
+if ( LocalFun(idf,Fx) and (idf in Wy) ) .
+
+crl [ReceivesRequest] : 
+< (Ix,Lx),Rx,Fx, (idf ; valf ) QRx,  QSx, Wx >, gconfig   =>
+< (Ix,Lx),Rx,Fx,QRx,append(QSx, idf  ), Wx > , gconfig
+if ( LocalFun(idf,Fx) ) .
+
+crl [ReceivesEvalFun] : 
+< (Ix,Lx),Rx,F(efls,efes), (idf ; valf ) QRx,  QSx, Wx >,  gconfig  =>
+< (Ix,Lx),Rx,F(efls,SubValExtern(efes,idf,valf)),QRx,QSx, delete(idf,Wx) >,  gconfig 
+if ( ExternFun(idf,F(efls,efes)) ) .
+
+
+
+
+
+endm
+
+
+
+
