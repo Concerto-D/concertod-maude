@@ -645,6 +645,8 @@ var t : Transitionn .
 var S : Stations .
 var s : Station .
 var Ts : Transitionns .
+
+
 op restrict(_,_) : Transitionns Place -> Transitionns .
 eq restrict(empty,p) = empty .
 ceq restrict((t(q,S),Ts),p) = restrict(Ts,p) if (q =/= p) .
@@ -693,6 +695,7 @@ if (restrict(b,p) =/= empty and ConsistencyPort(< idd1,ct,b(b) qb,m(ps,union(ts,
 rl [EndingTransitionn] : < ( < idd1,ct,qb,m(ps, t(q,s,S), ts,tes) > , I, L),  R > 
 =>  < ( < idd1,ct,qb,m(ps, ts, te(t(q,s,S),s), tes  ) > , I, L),  R >  .  
 
+---------a revoir le marquage de place apres entree place ps normalement ps union nouveau marquage a voir
 crl [EnteringPlace] : < ( < idd1,ct,b(b) qb,m(ps, ts, te(t(q,s,S),s), tes  ) > , I, L),  R > 
 =>  < ( < idd1,ct,b(b) qb,m(Pi(s,GetStationPlaces(ct)), ts, RemoveTransitionnEndingStation(tes,s) ) > , I, L),  R > 
 if (IsSatisfiedTransitionnEndingStation(s,b,te(t(q,s,S),s), tes) and 

@@ -8,7 +8,7 @@ subsorts Bool  Bot < BoolWithBot .
 
 sort Site .
 
-sorts  IdentC IdentB .
+sorts  IdentC IdentB IdentCs .
 
 sort Function .
 sorts ElementFunctionL ElementFunctionE .
@@ -192,6 +192,10 @@ view GPro from TRIV to Declarations is
  sort Elt to GPro .
 endv
 
+view IdentC from TRIV to Declarations is
+ sort Elt to IdentC .
+endv
+
 
 
 -------------------------------------------------------------------------------------------------End view 
@@ -220,6 +224,9 @@ subsort List{rec} < Qrec .
 
 pr SET{W} .
 subsort Set{W} < Ws . 
+
+pr SET{IdentC} .
+subsort Set{IdentC} < IdentCs . 
 
 pr SET{LocalConfiguration} .
 subsort Set{LocalConfiguration} < LocalConfigurations . 
@@ -444,6 +451,8 @@ op <_,_,_,_> : IdentC ComponentType BehaviorLs Marking -> Instance .
 var por : Port . 
 vars poru up : UsePort .
 vars porp pp : ProPort .
+var use : UsePort .
+var pro : ProPort .
 ---op (_!_) : UsePort Places -> GUse .
 ---op (_?_) : ProPort Places -> GPro .
 
@@ -497,7 +506,7 @@ eq NotEmptyMarking(m(p,t,tes)) = (p =/= empty or t =/= empty or tes =/= empty ) 
 ----------------------------------
 
 op active(_,_) : Instance Port -> Bool . 
-
+op activeMarking(_,_,_) : Instance Port Marking -> Bool . 
 
 vars identI identII : IdentC .
 var c : ComponentType .
@@ -509,7 +518,7 @@ op IdentInstance(_) : Instance -> IdentC .
 eq IdentInstance(< identI,c,bl,mm > ) = identI .
 
 eq active(< identI, < p,q,st,t,b,gu,gp > ,bl,m(pls,trans,tre) >,por) = NotEmptyMarking(IntersectionMarking(elements(G(por, < p,q,st,t,b,gu,gp >),< p,q,st,t,b,gu,gp >),m(pls,trans,tre))) .
-
+eq activeMarking(< identI, < p,q,st,t,b,gu,gp > ,bl,m(pls,trans,tre) >,por,mm) = NotEmptyMarking(IntersectionMarking(elements(G(por, < p,q,st,t,b,gu,gp >),< p,q,st,t,b,gu,gp >),mm)) .
 ------------- fonctions pour refusing
 
 op AllExitGroup(_,_,_,_) : Places Transitionns Places StationPlaces -> Bool .
@@ -625,18 +634,27 @@ eq RemoveTransitionnEndingStation(empty,ss) = empty .
 op GetUsePort(_) : ComponentType -> GUses .
 eq GetUsePort (< p,q,st,t,b,gu,gp >) = gu .
 
-op ProvidedAllowed(_,_,_,_,_,_) : Place GUses Instance Instance Instances Connections -> Bool . 
+op ConnectedProvidedAllowed(_,_,_,_,_,_,_) : Place GUses Instance Instance Instances Connections F -> Bool . 
 vars i1 i2 : Instance .
 ---vars poru up : UsePort . 
-ceq ProvidedAllowed(q,(up ! p),gu,i1,i2,Is,LL) = ProvidedAllowed(q,gu,i1,i2,Is,LL) if (not (q in p)) .
-ceq ProvidedAllowed(q,(up ! p),gu,i1,i2,Is,LL) = Provided(up,IdentInstance(i1),Is,LL) and Allowed(up,i1,i2,Is,LL) 
-and ProvidedAllowed(q,gu,i1,i2,Is,LL) if  (q in p) .
-eq ProvidedAllowed(q,empty,i1,i2,Is,LL) = true .
+eq ConnectedProvidedAllowed(q,empty,i1,i2,Is,LL,F(lfs,efs)) = true .
+ceq ConnectedProvidedAllowed(q,(up ! p),gu,i1,i2,Is,LL,F(lfs,efs)) = Connected(up,IdentInstance(i1),LL,F(lfs,efs)) and Provided(up,IdentInstance(i1),Is,LL) and Allowed(up,i1,i2,Is,LL) 
+and ConnectedProvidedAllowed(q,gu,i1,i2,Is,LL,F(lfs,efs)) if  ((q in p) and active(i1,up) == false and active(i2,up) == true  ).     ----------active puisque c local traitement directe
+eq ConnectedProvidedAllowed(q,(up ! p),gu,i1,i2,Is,LL,F(lfs,efs)) = ConnectedProvidedAllowed(q,gu,i1,i2,Is,LL,F(lfs,efs)) [owise] .
 
+op Connected(_,_,_,_) : UsePort IdentC Connections F -> Bool . 
 op Provided(_,_,_,_) : UsePort IdentC  Instances Connections -> Bool . 
 op Allowed(_,_,_,_,_) : UsePort  Instance Instance Instances Connections -> Bool . 
 ---var prou : UsePort
 var IdentIns : IdentC .
+
+
+
+eq Connected(poru,IdentIns,empty,F(lfs,efs)) = false .
+ceq Connected(poru,IdentIns,(iid1,up,iid2,pp),LL,F(lfs,efs)) = true 
+if(poru == up and iid1 == IdentIns and Eval(idIsCon(iid2,(iid1,up,iid2,pp)),F(lfs,efs),empty,(iid1,up,iid2,pp),LL,[] ) )  == true .
+eq Connected(poru,IdentIns,(iid1,up,iid2,pp),LL,F(lfs,efs)) = Connected(poru,IdentIns,LL,F(lfs,efs)) [owise] .
+
 ceq Provided(poru,IdentIns,Is,(iid1,up,iid2,pp),LL) = Provided(poru,IdentIns,Is,LL)
 if (poru =/= up or iid1 =/= IdentIns) .
 ceq Provided(poru,IdentIns,Is,(iid1,up,iid2,pp),LL) = active(InstanceIdent(Is,iid2),pp)
@@ -729,7 +747,7 @@ ceq NotPushBProg(idcx,idbehx,inst . Prog1) = NotPushBProg(idcx,idbehx,Prog1) if 
 ceq NotPushBProg(idcx,idbehx,inst . Prog1) = false if (InstructionIspushB(inst,idcx,idbehx)) .
 eq NotPushBProg(idcx,idbehx, []) = true .
 
-------------traitement des fonction une par une
+------------traitement des fonction une par une------------------changement IdentC par IdentI pour dire id d'une instance
 ---op idAct(_,_) : IdentC Port -> IdFuncAct .
 ---op idRef(_,_) : IdentC Port -> IdFunRef .
 ---op idIsCon(_,_) : IdentC Connection -> IdFunIscon .
@@ -749,7 +767,7 @@ eq LocalEval (idDiscon(idcx,l), Isx,Ls,pg) = disconnect(l,pg) .
 eq LocalEval (idComp(idcx,idbehx), < idcx,contcomp,behL,mark >,Isx,Ls,pg) =  (not ExistIdentBehListBeh(idbehx,behL) ) and NotPushBProg(idcx,idbehx,pg) .
 ceq LocalEval (idComp(idcx,idbehx), Isx,Ls,pg) = true if ((not ExistIdentInstances(idcx,Isx) ) and NotPushBProg(idcx,idbehx,pg)) .
 eq LocalEval (idComp(idcx,idbehx), Isx,Ls,pg) = false [owise] .
-
+---eq LocalEval (idComp(idcx,idbehx), Isx,Ls,pg) = true . 
 -------------------------extern evaluation
 op ExternEval(_,_) : IdFunction ElementFunctionEs -> BoolWithBot .
 var bwb : BoolWithBot .
@@ -768,41 +786,134 @@ eq Eval(idf1,ff, Isx,Ls,pg ) = bot [owise] .   ---------------------------------
 -----------------------------------------------------------------des fonctions pour collecter les information externes
 
 -----------function pour pouvoir executer disconnect
+----,red CollectFunctionsDiscon( (idc1,us1,idc2,pr1),(ee(idAct(idc1,us1) ; bot), ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot),empty,nil) .
 
-
-op CollectFunctionsDiscon(_,_,_,_,_,_) : IdentC IdentC Connection ElementFunctionEs Ws Qsend -> Qsend .
-op IsFunctionActive(_,_) : IdFunction IdentC -> Bool .
+op CollectFunctionsDiscon(_,_,_,_) : Connection ElementFunctionEs Ws Qsend -> Qsend .
+---op IsFunctionActive(_,_) : IdFunction IdentC -> Bool .
 var ws : Ws .
 var qsen : Qsend .
 
-ceq IsFunctionActive(idAct(idcx,up),idcy) = true if (idcx == idcy) .
-eq IsFunctionActive(idf1,idcx) = false [owise] .
+---ceq IsFunctionActive(idAct(idcx,up),idcy) = true if (idcx == idcy) .
+---eq IsFunctionActive(idf1,idcx) = false [owise] .
 
 
-eq CollectFunctionsDiscon(idcx,idcy,l,empty,ws,qsen) = nil .
-ceq CollectFunctionsDiscon(idcx,idcy,l,ee(idf1 ; bwb),efs,ws,qsen) = append(idf1,CollectFunctionsDiscon(idcx,idcy,l,efs,ws,qsen)) 
+eq CollectFunctionsDiscon((idcx,use,idcy,pro),empty,ws,qsen) = nil .
+
+ceq CollectFunctionsDiscon((idcx,use,idcy,pro),ee(idf1 ; bwb),efs,ws,qsen) = append(idf1,CollectFunctionsDiscon((idcx,use,idcy,pro),efs,ws,qsen)) 
 if
 ( 
- (not (idf1 in ws)) and (not (occurs(idf1,qsen))) and 
-  ( IsFunctionActive(idf1,idcx)   and (bwb == true or bwb == bot) ) 
-    or
-    (idf1 ==  idDiscon(idcx,l)  and (bwb == false or bwb == bot))
-    ---or
-   -------(idf1 == idDiscon(idcy,l) and (bwb == false or bwb == bot) ) 
+ (not (idf1 in ws)) and 
+ (not (occurs(idf1,qsen))) 
+ and 
+ ( 
+     ( idf1 == idAct(idcx,use)   and (bwb == true or bwb == bot)  ) 
+   or
+    ( (idf1 == idDiscon(idcy,(idcx,use,idcy,pro)) or idf1 ==  idDiscon(idcx,(idcx,use,idcy,pro)) ) and (bwb == false or bwb == bot) )
+ ) 
 ) .
-eq CollectFunctionsDiscon(idcx,idcy,l,ee(idf1 ; bwb),efs,ws,qsen) = CollectFunctionsDiscon(idcx,idcy,l,efs,ws,qsen) [owise] . 
+eq CollectFunctionsDiscon((idcx,use,idcy,pro),ee(idf1 ; bwb),efs,ws,qsen) = CollectFunctionsDiscon((idcx,use,idcy,pro),efs,ws,qsen) [owise] . 
+
+-----------------------------------------------fonction pour la fonction wait
+---CollectFunctionWait(idd1,idbeh,efes,Wx,QSx);
+
+op CollectFunctionWait(_,_,_,_,_) : IdentC IdentB ElementFunctionEs Ws Qsend -> Qsend .
+
+eq CollectFunctionWait(idcx,idbeh,empty,ws,qsen) = nil .
+ceq CollectFunctionWait(idcx,idbeh,ee(idf1 ; bwb),efs,ws,qsen) = idf1 
+if 
+(
+  (not (idf1 in ws)) and 
+ (not (occurs(idf1,qsen))) 
+ and
+  (idf1 == idComp(idcx,idbeh)   and (bwb == false or bwb == bot))
+) .
+eq CollectFunctionWait(idcx,idbeh,ee(idf1 ; bwb),efs,ws,qsen) = CollectFunctionWait(idcx,idbeh,efs,ws,qsen) [owise] . 
 
 
-endfm 
+--------------------------CollectFunctionFiring
+op CollectFunctionFiring(_,_,_,_,_,_) : Marking Instances Connections ElementFunctionEs Ws Qsend -> Qsend .
+
+eq CollectFunctionFiring(mm,I,empty,efs,ws,qsen) = nil .
+ceq CollectFunctionFiring(mm,I,(idd1,use,idd2,pro),L,ee(idAct(idd1,use) ; bwb),efs,ws,qsen) = append(idAct(idd1,use),CollectFunctionFiring(mm,I,L,efs,ws,qsen))
+if
+(
+(not (idAct(idd1,use) in ws)) and 
+ (not (occurs(idAct(idd1,use),qsen))) and
+ (bwb == true or bwb == bot) and
+ ( (LocalEval(idAct(idd2,pro),I,empty,[] ) == true) and (activeMarking(InstanceIdent(I,idd2),pro,mm) == false ))   --- local eval puisque c local on l'applique directement
+) .
+
+eq CollectFunctionFiring(mm,I,(idd1,use,idd2,pro),L,efs,ws,qsen) = CollectFunctionFiring(mm,I,L,efs,ws,qsen) [owise] .
+
+--------------------------------fonction supplementaire lors d'envoie de message on doit assurer la consistence des port
+
+
+op AllIdentInstances(_) : Instances -> IdentCs .   ---- return the set of ident of instances
+eq AllIdentInstances(< iden,ct,bl,mm > ,I) = iden, AllIdentInstances(I)    .
+eq AllIdentInstances(empty) = empty .
+
+op UpDateExternalFunctionsSend(_,_,_,_) : ElementFunctionEs Instances Connections IdentCs -> ElementFunctionEs .
+var identIs : IdentCs .
+eq  UpDateExternalFunctionsSend(empty,Isx,Ls,identIs) = empty .
+ceq UpDateExternalFunctionsSend(ee(idRef(idd2,pro) ; bwb),efs,Isx,(idd1,use,idd2,pro),Ls,identIs) = ee(idRef(idd2,pro) ; bot), UpDateExternalFunctionsSend(efs,Isx,(idd1,use,idd2,pro),Ls,identIs)
+if((idd2 in identIs) and active(InstanceIdent(Isx,idd1),use) == false  ) .
+eq  UpDateExternalFunctionsSend(ee(idf1 ; bwb),efs,Isx,Ls,identIs) = ee(idf1 ; bwb), UpDateExternalFunctionsSend(efs,Isx,Ls,identIs) [owise] .
+
+
+
+
+
+
+
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+----------------------functions for evolution componenets
+vars px py  : Place .
+
+var Ts : Transitionns .
+vars idd1 idd2 : IdentC .
+var L : Connections .
+var ct : ComponentType .
+op restrict(_,_) : Transitionns Place -> Transitionns .
+eq restrict(empty,px) = empty .
+ceq restrict((t(px,S),Ts),py) = restrict(Ts,py) if (px =/= py) .
+ceq restrict((t(px,S),Ts),py) = t(px,S), restrict(Ts,py) if (px == py) .
+
+--- l'ensemble de connexion L' relatives a un ident de type provider
+
+op ConnectionProIdent(_,_) : Connections IdentC -> Connections .
+
+ceq ConnectionProIdent(((idd1,use,idd2,pro),L),id) = (idd1,use,idd2,pro), ConnectionProIdent(L,id) if(idd2 == id) .
+ceq ConnectionProIdent(((idd1,use,idd2,pro),L),id) = ConnectionProIdent(L,id) if(idd2 =/= id) .
+eq ConnectionProIdent(empty,id) = empty .
+
+
+---- determiner l'instance associe a ident
+op InstanceIdent(_,_) : Instances IdentC -> Instance . 
+
+ceq  InstanceIdent((< iden,ct,bl,mm > ,I) , id ) = < iden,ct,bl,mm > if (iden == id) .
+eq  InstanceIdent((< iden,ct,bl,mm > ,I) , id ) =  InstanceIdent( I , id ) [owise] .
+
+----------New fonction  ConsistencyPort(m(ps,union(ts, restrict(b,p) ),tes) ,Ix,Fx,ConnectionProIdent(Lx, idd1 ))) .  for distributed Concerto
+---op activeMarking(_,_,_) : Instance Port Marking -> Bool .
+---Eval
+----Eval(idAct(idd2,pro),ff, Isx,empty,[] )
+
+op ConsistencyPort(_,_,_,_) : Marking Instances F Connections ->  Bool .
+
+
+eq ConsistencyPort(mm,I,ff,(idd1,use,idd2,pro),L) = ConsistencyPort(mm,I,ff,L) and 
+(
+  ( (Eval(idAct(idd2,pro),ff, I,empty,[] ) == true) and (activeMarking(InstanceIdent(I,idd2),pro,mm) == false )) implies  (Eval(idAct(idd1,use),ff, I,empty,[] ) == false) ).
+
+eq ConsistencyPort(mm,I,ff,empty) = true .
 
 
 
-
+endfm 
 ----------------Initialisation
 
 fmod InitMod is
@@ -817,12 +928,15 @@ eq c11 =  < (p1, p2, p3) , p1 , (s1 ; p1, s2 ; p2, s3 ; p3), (t(p1, s2), t(p2, s
 eq c22 =  < (q1, q2, q3) , q1 , (r1 ; q1, r2 ; q2, r3 ; q3), (t(q1, r2), t(q2, r3) ), (b(t(q2, r3),t(q1, r2))) , empty, pr1 ? (q2,q3) > .
 
 
-eq confx = < (empty, empty) , add(idc1,c11)  . con(idc1,us1,idc2,pr1) .  pushB(idc1,b(t(p1, s2), t(p2, s3)),idb1) . dcon(idc1,us1,idc2,pr1) . [], F(el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
+eq confx = < (empty, empty) , add(idc1,c11)  . con(idc1,us1,idc2,pr1) .  pushB(idc1,b(t(p1, s2), t(p2, s3)),idb1) . wait(idc2,idb2) . [], F(el(idComp(idc1,idb1)),el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idComp(idc2,idb2) ; bot ) , ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
 
-eq confy = < (empty, empty) , add(idc2,c22)  . con(idc1,us1,idc2,pr1) .  pushB(idc2,b(t(q1, r2), t(q2, r3)),idb2) . dcon(idc1,us1,idc2,pr1) . [], F(el(idAct(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1))  , ee(idAct(idc1,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
+eq confy = < (empty, empty) , add(idc2,c22)  . con(idc1,us1,idc2,pr1) .  pushB(idc2,b(t(q1, r2), t(q2, r3)),idb2) .  wait(idc1,idb1) . [], F(el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1))  , ee(idComp(idc1,idb1) ; bot ) , ee(idAct(idc1,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
 
 eq gconf1 = confx, confy .
 
+----eq confx = < (empty, empty) , add(idc1,c11)  . con(idc1,us1,idc2,pr1) .  pushB(idc1,b(t(p1, s2), t(p2, s3)),idb1) . dcon(idc1,us1,idc2,pr1) . [], F(el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
+
+----eq confy = < (empty, empty) , add(idc2,c22)  . con(idc1,us1,idc2,pr1) .  pushB(idc2,b(t(q1, r2), t(q2, r3)),idb2) . dcon(idc1,us1,idc2,pr1) . [], F(el(idAct(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1))  , ee(idAct(idc1,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
 
 ---eq confx = < (empty, empty) , add(idc1,c11)  . con(idc1,us1,idc2,pr1) .  pushB(idc1,b(t(p1, s2), t(p2, s3)),idb1) . [], F(el(idAct(idc1,us1) ) , ee(idAct(idc2,pr1) ; bot)), nil, nil  , empty >  .
 
@@ -873,13 +987,20 @@ var efes : ElementFunctionEs .
 ops i ii : -> Instance .
 op ccc : -> ComponentType .
 
-vars id idd1 : IdentC .
+vars id idd1 idd2 : IdentC .
 vars qb : BehaviorLs .
 var behx : Behavior .
 var mrk : Marking .
 var  idbeh : IdentB .
 var b : Transitionns .
 
+vars p q : Place .
+var ps : Places .
+var ts : Transitionns .
+var tr : Transitionn .
+vars tes tes1 : TransitionnEndings .
+var S : Stations .
+var s : Station .
 ---- determiner l'instance associe a ident
 ---op InstanceIdent(_,_) : Instances Ident -> Instance . 
 ----var iden : Ident .
@@ -891,7 +1012,7 @@ var b : Transitionns .
 
 --------------a supprimer gconfig
 
-***(
+
 crl [SendRequest] : 
 < (Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > , < (Iy,Ly),Ry,Fy,QRy,QSy,Wy >, gconfig  =>
 < (Ix,Lx),Rx,Fx,QRx,QSx, (Wx, idf) > , < (Iy,Ly),Ry,Fy,append(QRy, (idf ; bot) ),QSy,Wy >, gconfig 
@@ -899,9 +1020,9 @@ if ( ExternFun(idf,Fx) and LocalFun(idf,Fy) ) .
 
 -------------a completer fx' dans 2eme ligne
 crl [SendEvalFun] : 
-< (Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > , < (Iy,Ly),Ry,Fy,QRy,QSy,Wy >, gconfig  =>
-< (Ix,Lx),Rx,Fx,QRx,QSx, Wx > , < (Iy,Ly),Ry,Fy,append(QRy, (idf ; LocalEval(idf,Ix,Lx,Rx)) ),QSy,Wy >, gconfig 
-if ( LocalFun(idf,Fx) and (idf in Wy) ) .
+< (Ix,Lx),Rx,F(efls,efes), QRx, idf QSx, Wx > , < (Iy,Ly),Ry,Fy,QRy,QSy,Wy >, gconfig  =>
+< (Ix,Lx),Rx,F(efls,UpDateExternalFunctionsSend(efes,Ix,Lx,AllIdentInstances(Iy))),QRx,QSx, Wx > , < (Iy,Ly),Ry,Fy,append(QRy, (idf ; LocalEval(idf,Ix,Lx,Rx)) ),QSy,Wy >, gconfig 
+if ( LocalFun(idf,F(efls,efes)) and (idf in Wy) ) .
 
 crl [ReceivesRequest] : 
 < (Ix,Lx),Rx,Fx, (idf ; valf ) QRx,  QSx, Wx >, gconfig   =>
@@ -911,23 +1032,64 @@ if ( LocalFun(idf,Fx) ) .
 crl [ReceivesEvalFun] : 
 < (Ix,Lx),Rx,F(efls,efes), (idf ; valf ) QRx,  QSx, Wx >,  gconfig  =>
 < (Ix,Lx),Rx,F(efls,SubValExtern(efes,idf,valf)),QRx,QSx, delete(idf,Wx) >,  gconfig 
-if ( ExternFun(idf,F(efls,efes)) ) . 
-)
+if ( ExternFun(idf,F(efls,efes)) ) .  
 ---------------------------------------------end of communication rules---------------------------------------------
--------------------------------------------------Rules  for collecting the evaluation of external functions------------
+-------------------------------------------------Rules of evolution components
+
+crl [FiringTransitionns] :  < (< idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > , gconfig  =>
+< (  < idd1,ct,(idbeh ; b(b)) qb,m(ps,union(ts, restrict(b,p) ),tes) >, Ix , Lx),Rx,Fx, QRx, idf QSx, Wx > , gconfig 
+if (restrict(b,p) =/= empty and ConsistencyPort(m(ps,union(ts, restrict(b,p) ),tes) ,Ix,Fx,ConnectionProIdent(Lx, idd1 ))) .  
+
+rl [EndingTransitionn] : < (< idd1,ct, qb,m(ps, t(q,s,S), ts,tes) > , Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > , gconfig =>
+< (< idd1,ct, qb,m(ps, ts, te(t(q,s,S),s), tes  ) > , Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > , gconfig .
+
+
+
+crl [EnteringPlace] : < (< idd1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > , gconfig  =>
+ < (< idd1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) > , Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > , gconfig  
+
+if (IsSatisfiedTransitionnEndingStation(s,b,te(t(q,s,S),s), tes) and 
+ConnectedProvidedAllowed (Pi(s,GetStationPlaces(ct)), GetUsePort(ct), < idd1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >,
+< idd1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) >,Ix, Lx,Fx)) .  
+
+
+
+***(
+crl [EnteringPlace] : < ( < idd1,ct,b(b) qb,m(ps, ts, te(t(q,s,S),s), tes  ) > , I, L),  R > 
+=>  < ( < idd1,ct,b(b) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) > , I, L),  R > 
+if (IsSatisfiedTransitionnEndingStation(s,b,te(t(q,s,S),s), tes) and 
+ConnectedProvidedAllowed (Pi(s,GetStationPlaces(ct)), GetUsePort(ct), < idd1,ct,b(b) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >,
+< idd1,ct,b(b) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) >,I, L)) .  
+
+)
+
+crl [FinishingBehavior] : < (< idd1,ct,(idbeh ; b(b)) qb,m(ps,empty,empty) > , Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > , gconfig  =>
+< (< idd1,ct, qb,m(ps,empty,empty) > , Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > , gconfig if (intersection(ps,PlacesTrans(b)) == empty) .
+
 
 
 ------------------------------------------------------End collecting rules-------------------------------
------------------------------------------------------Rules of evolution components
+-----------------------------------------------------Rules  for collecting the evaluation of external functions------------
+
+
+
+crl [ExternalFunctionsFiringTransitionns] : < (< idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,Lx),Rx,F(efls,efes), QRx,  QSx, Wx > , gconfig  =>
+< (  < idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix , Lx),Rx,F(efls,efes), QRx, append(QSx,CollectFunctionFiring(m(ps,union(ts, restrict(b,p) ),tes),< idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,ConnectionProIdent(Lx, idd1 ),efes,Wx,QSx)), Wx > , gconfig 
+
+if (restrict(b,p) =/= empty and CollectFunctionFiring(m(ps,union(ts, restrict(b,p) ),tes),< idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,ConnectionProIdent(Lx, idd1 ),efes,Wx,QSx) =/= nil) . 
 
 
 crl [ExternalFunctionsForDisconnectPorts] : 
-< (Ix,Lx), dcon(id,use,idd1,pro) . Rx,F(efls,efes), QRx, QSx, Wx > , gconfig    =>  
-< (Ix,Lx), dcon(id,use,idd1,pro) . Rx,F(efls,efes), QRx, append(QSx,CollectFunctionsDiscon(id,idd1,(id,use,idd1,pro),efes,Wx,QSx)), Wx > , gconfig   
-if (((id,use,idd1,pro) in Lx) and (CollectFunctionsDiscon(id,idd1,(id,use,idd1,pro),efes,Wx,QSx) =/= nil) ) .
+< (Ix,Lx), dcon(idd1,use,idd2,pro) . Rx,F(efls,efes), QRx, QSx, Wx > , gconfig    =>  
+< (Ix,Lx), dcon(idd1,use,idd2,pro) . Rx,F(efls,efes), QRx, append(QSx,CollectFunctionsDiscon((idd1,use,idd2,pro),efes,Wx,QSx)), Wx > , gconfig   
+if (((idd1,use,idd2,pro) in Lx)  and (CollectFunctionsDiscon((idd1,use,idd2,pro),efes,Wx,QSx) =/= nil) ) .
 
+crl [ExternalFunctionsForWait] :
+< (Ix,Lx), wait(idd1,idbeh) . Rx,F(efls,efes), QRx, QSx, Wx > , gconfig    =>  
+< (Ix,Lx), wait(idd1,idbeh) . Rx,F(efls,efes), QRx, append(QSx,CollectFunctionWait(idd1,idbeh,efes,Wx,QSx)), Wx > , gconfig   
+if (CollectFunctionWait(idd1,idbeh,efes,Wx,QSx) =/= nil ) .
 
---------------------------------------------------------End of evolution components--------------
+--------------------------------------------------------End of evolution components---------------------------------------------------------------
 ------------------------------------------------------- Instructions of program------------------------------------------------------------------------- 
 
 crl [AddComponentInstance] :   < (Ix,Lx), add(id, ct) . Rx,Fx, QRx, QSx, Wx > , gconfig    =>
@@ -945,13 +1107,13 @@ if (id =/= idd1 and ((InstanceIdent(Ix,id) in Ix) or (InstanceIdent(Ix,idd1) in 
 crl [DisconnectPorts] : < (Ix,Lx), dcon(id,use,idd1,pro) . Rx,Fx, QRx, QSx, Wx > , gconfig    =>  
 < (Ix,delete((id,use,idd1,pro),Lx)), Rx,Fx, QRx, QSx, Wx > , gconfig  
 if
-(  
-
+(  ((id,use,idd1,pro) in Lx)
+  and
 Eval(idDiscon(id,(id,use,idd1,pro)),Fx,Ix,Lx,dcon(id,use,idd1,pro) . Rx) == true
 and
 Eval(idDiscon(idd1,(id,use,idd1,pro)),Fx,Ix,Lx,dcon(id,use,idd1,pro) . Rx) == true
----and
----Eval(idAct(id,use),Fx,Ix,Lx,dcon(id,use,idd1,pro) . Rx) == false
+and
+Eval(idAct(id,use),Fx,Ix,Lx,dcon(id,use,idd1,pro) . Rx) == false
 
  ) .
 
@@ -963,9 +1125,7 @@ if (id == idd1 and IsBehaviorOfComponent(behx,ct)) .
 
 crl [Waiting] : < ( < idd1,ct,qb,mrk > ,Ix,Lx), wait(id,idbeh) . Rx,Fx, QRx, QSx, Wx > , gconfig
 =>   < ( < idd1,ct,qb,mrk > ,Ix,Lx), Rx,Fx, QRx, QSx, Wx > , gconfig
-
-if (idd1 == id and Eval(idComp(id,idbeh),Fx,Ix,Lx, Rx) == true ) . 
-
+if (Eval(idComp(id,idbeh),Fx,Ix,Lx, Rx) == true ) . 
 
 
 -----------------------------------------------rule for Global Configuration
