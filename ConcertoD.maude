@@ -453,14 +453,18 @@ eq active(< identI, < p,q,st,t,b,gu,gp > ,bl,m(pls,trans,tre) >,por) = NotEmptyM
 eq activeMarking(< identI, < p,q,st,t,b,gu,gp > ,bl,m(pls,trans,tre) >,por,mm) = NotEmptyMarking(IntersectionMarking(elements(G(por, < p,q,st,t,b,gu,gp >),< p,q,st,t,b,gu,gp >),mm)) .
 ------------- fonctions pour refusing
 
-op AllExitGroup(_,_,_,_) : Places Transitionns Places StationPlaces -> Bool .
-op ExitGroupPlace(_,_,_,_) : Place Transitionns Places StationPlaces -> Bool .
+op AllExitGroup(_,_,_,_) : Places BehaviorLs Places StationPlaces -> Bool .
+op ExitGroupPlace(_,_,_,_) : Place BehaviorLs Places StationPlaces -> Bool .
 op ExistSourceTranPlace(_,_) : Place Transitionns -> Bool .
 op AllTranQuitGroupPlace(_,_,_,_) : Place Transitionns Places StationPlaces -> Bool .
 op EndingStationsNotGroup(_,_,_) : Stations Places StationPlaces -> Bool .
-eq AllExitGroup((q,p),t,pG,st)  = ExitGroupPlace(q,t,pG,st) and AllExitGroup(p,t,pG,st) .
-eq AllExitGroup(empty,t,pG,st) = true .
-eq ExitGroupPlace(q,t,pG,st) = ExistSourceTranPlace(q,t) and AllTranQuitGroupPlace(q,t,pG,st) . 
+
+
+eq AllExitGroup((q,p),bl,pG,st)  = ExitGroupPlace(q,bl,pG,st) and AllExitGroup(p,bl,pG,st) .
+eq AllExitGroup(empty,bl,pG,st) = true .
+
+eq ExitGroupPlace(q,nil,pG,st) = false . 
+eq ExitGroupPlace(q,(idbeh ; b(t1)) bl,pG,st) = ExistSourceTranPlace(q,t1) and AllTranQuitGroupPlace(q,t1,pG,st) . 
 
 ceq  ExistSourceTranPlace(q,t(p,S),t1) = true if (p == q ) .
 ceq  ExistSourceTranPlace(q,t(p,S),t1) = ExistSourceTranPlace(q,t1) if (p =/= q ) .
@@ -468,7 +472,8 @@ eq   ExistSourceTranPlace(q,empty) = false .
 
 ceq AllTranQuitGroupPlace(q,t(p,S),t1,pG,st) = AllTranQuitGroupPlace(q,t1,pG,st) if (p =/= q) .
 eq AllTranQuitGroupPlace(q,empty,pG,st) = true .
-ceq AllTranQuitGroupPlace(q,t(p,S),t1,pG,st) = AllTranQuitGroupPlace(q,t(p,S),t1,pG,st) if (p == q and  EndingStationsNotGroup(S,pG,st)) .
+
+ceq AllTranQuitGroupPlace(q,t(p,S),t1,pG,st) = AllTranQuitGroupPlace(q,t1,pG,st) if (p == q and  EndingStationsNotGroup(S,pG,st)) .   ---erreur corrige ici a copier dans Version centralise
 ceq AllTranQuitGroupPlace(q,t(p,S),t1,pG,st) = false if (p == q and  not EndingStationsNotGroup(S,pG,st)) .
 
 ceq EndingStationsNotGroup(s,S,pG,st) = EndingStationsNotGroup(S,pG,st) if (not (Pi(s,st) in pG)) .
@@ -478,13 +483,30 @@ eq EndingStationsNotGroup(empty,pG,st) = true .
 
 op refusing(_,_) : Instance Port -> Bool .
 
-ceq refusing(< identI, < p,q,st,t,b,gu,gp > , (idbeh ; b(t1)) bl,m(pls,trans,tre) >,por) = true if
+ceq refusing(< identI, < p,q,st,t,b,gu,gp > , bl,m(pls,trans,tre) >,por) = true if  --- a changer aussi dans la version centralise la correction (idbeh ; b(t1)) par bl et dans toutes les fonctions liées
 (
 TrMar(IntersectionMarking(elements(G(por, < p,q,st,t,b,gu,gp >),< p,q,st,t,b,gu,gp >),m(pls,trans,tre))) == empty and 
 TrEnMar(IntersectionMarking(elements(G(por, < p,q,st,t,b,gu,gp >),< p,q,st,t,b,gu,gp >),m(pls,trans,tre))) == empty and 
-AllExitGroup(PlMar(IntersectionMarking(elements(G(por, < p,q,st,t,b,gu,gp >),< p,q,st,t,b,gu,gp >),m(pls,trans,tre))),t1,G(por,< p,q,st,t,b,gu,gp >),st)
+AllExitGroup(PlMar(IntersectionMarking(elements(G(por, < p,q,st,t,b,gu,gp >),< p,q,st,t,b,gu,gp >),m(pls,trans,tre))),bl,G(por,< p,q,st,t,b,gu,gp >),st)
 
 )  .
+
+-----------------a supprimer
+***(
+
+ <(< idc2,< q1, q2, q3,q1,
+    r1 ; q1, r2 ; q2, r3 ; q3,t(q1,r2), t(q2,r3),b(t(q1,r2), t(q2,r3)),empty,pr1 ? q2 >,nil,m(q1,empty,empty) >,idc1,
+    us1,idc2,pr1),[],F(el(idAct(idc2,pr1)), el(idRef(idc2,pr1)), el(idIsCon(idc2,idc1,us1,idc2,pr1)), el(idDiscon(idc2,
+    idc1,us1,idc2,pr1)), el(idComp(idc2,idb2)),ee(idAct(idc1,us1) ; bot), ee(idIsCon(idc1,idc1,us1,idc2,pr1) ; bot),
+    ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot), ee(idComp(idc1,idb1) ; bot)),nil,nil,empty >
+
+red PlMar(IntersectionMarking(elements(G(pr1, < q1, q2, q3,q1,r1 ; q1, r2 ; q2, r3 ; q3,t(q1,r2), t(q2,r3),b(t(q1,r2), t(q2,r3)),empty,pr1 ? q2 >),< q1, q2, q3,q1,r1 ; q1, r2 ; q2, r3 ; q3,t(q1,r2), t(q2,r3),b(t(q1,r2), t(q2,r3)),empty,pr1 ? q2 > ),m(q1,empty,empty))) .
+red AllExitGroup(empty,(t(q1,r2), t(q2,r3)),G(pr1, < q1, q2, q3,q1,r1 ; q1, r2 ; q2, r3 ; q3,t(q1,r2), t(q2,r3),b(t(q1,r2), t(q2,r3)),empty,pr1 ? q2 > ),( r1 ; q1, r2 ; q2, r3 ; q3)) .
+red refusing(< idc2,< (q1, q2, q3),q1,r1 ; q1, r2 ; q2, r3 ; q3,t(q1,r2), t(q2,r3),b(t(q1,r2), t(q2,r3)),empty,pr1 ? q2 >,nil,m(q1,empty,empty) >,pr1) .
+)
+
+
+
 
 eq refusing(< identI, < p,q,st,t,b,gu,gp > , bl,m(pls,trans,tre) >,por) = false [owise] .
 
@@ -756,10 +778,10 @@ ceq NotPushBProg(idcx,idbehx,inst . Prog1) = false if (InstructionIspushB(inst,i
 eq NotPushBProg(idcx,idbehx, []) = true .
 
 
-ceq LocalEval (idAct(idcx,porx), Isx,Ls,pg) = bot if (not ExistIdentInstances(idcx,Isx)) . 
+ceq LocalEval (idAct(idcx,porx), Isx,Ls,pg) = false if (not ExistIdentInstances(idcx,Isx)) .   ---if the instance does not exist, then the active function = false
 ceq LocalEval (idAct(idcx,porx), Isx,Ls,pg) = active(InstanceIdent(Isx,idcx),porx) if (ExistIdentInstances(idcx,Isx)) . 
 
-ceq LocalEval (idRef(idcx,porx), Isx,Ls,pg) = bot if (not ExistIdentInstances(idcx,Isx)) . 
+ceq LocalEval (idRef(idcx,porx), Isx,Ls,pg) = true if (not ExistIdentInstances(idcx,Isx)) . ---if the instance does not exist, then the refusing function = true 
 ceq LocalEval (idRef(idcx,porx), Isx,Ls,pg) = refusing(InstanceIdent(Isx,idcx),porx) if (ExistIdentInstances(idcx,Isx)) . 
 
 eq LocalEval (idIsCon(idcx,l), Isx,Ls,pg) = l in Ls . 
@@ -1016,20 +1038,40 @@ ops c11 c22 : -> ComponentType .
 ops confx confy : -> LocalConfiguration .
 op gconf1 : -> LocalConfigurations .
 
-eq c11 =  < (p1, p2, p3) , p1 , (s1 ; p1, s2 ; p2, s3 ; p3), (t(p1, s2), t(p2, s3) ), (b(t(p2, s3),t(p1, s2))) , us1 ! (p2, p3), empty   > .
-eq c22 =  < (q1, q2, q3) , q1 , (r1 ; q1, r2 ; q2, r3 ; q3), (t(q1, r2), t(q2, r3) ), (b(t(q2, r3)),b(t(q1, r2))) , empty, pr1 ? (q2) > .
+eq c11 =  < (p1, p2, p3) , p1 , (s1 ; p1, s2 ; p2, s3 ; p3), (t(p1, s2), t(p2, s3) ), (b(t(p2, s3),t(p1, s2))) , us1 ! (p2), empty   > .
+eq c22 =  < (q1, q2, q3) , q1 , (r1 ; q1, r2 ; q2, r3 ; q3), (t(q1, r2), t(q2, r3) ), (b(t(q2, r3),t(q1, r2))) , empty, pr1 ? (q2) > .
+
+eq confx = < (empty, empty) , add(idc1,c11)  . con(idc1,us1,idc2,pr1) .  pushB(idc1,b(t(p2, s3),t(p1, s2)),idb1) .  del(idc1) . [], F(el(idIsCon(idc1,(idc1,us1,idc2,pr1))),el(idComp(idc1,idb1)),el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
+
+eq confy = < (empty, empty) , add(idc2,c22) . con(idc1,us1,idc2,pr1)  . [], F(el(idIsCon(idc2,(idc1,us1,idc2,pr1))),el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idRef(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1))  ,ee(idIsCon(idc1,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc1,idb1) ; bot ) , ee(idAct(idc1,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
+
+---eq confx = < (empty, empty) , add(idc1,c11)  . con(idc1,us1,idc2,pr1) .  pushB(idc1,b(t(p2, s3),t(p1, s2)),idb1) .  dcon(idc1,us1,idc2,pr1) . del(idc1) . [], F(el(idIsCon(idc1,(idc1,us1,idc2,pr1))),el(idComp(idc1,idb1)),el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
+
+---eq confy = < (empty, empty) , add(idc2,c22)  . [], F(el(idIsCon(idc2,(idc1,us1,idc2,pr1))),el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idRef(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1))  ,ee(idIsCon(idc1,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc1,idb1) ; bot ) , ee(idAct(idc1,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
 
 
-eq confx = < (empty, empty) , add(idc1,c11)  . con(idc1,us1,idc2,pr1)  .  pushB(idc1,b(t(p1, s2), t(p2, s3)),idb1)  . dcon(idc1,us1,idc2,pr1) . [], F(el(idIsCon(idc1,(idc1,us1,idc2,pr1))),el(idComp(idc1,idb1)),el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
+---eq confx = < (empty, empty) , add(idc1,c11)  . con(idc1,us1,idc2,pr1) .  pushB(idc1,b(t(p2, s3),t(p1, s2)),idb1) .  dcon(idc1,us1,idc2,pr1) . del(idc1) . [], F(el(idIsCon(idc1,(idc1,us1,idc2,pr1))),el(idComp(idc1,idb1)),el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
 
-eq confy = < (empty, empty) , add(idc2,c22)  . con(idc1,us1,idc2,pr1) .  pushB(idc2,b(t(q1, r2)),idb2) . wait(idc1,idb1) .  pushB(idc2,b(t(q2, r3)),idb3) . dcon(idc1,us1,idc2,pr1) . [], F(el(idIsCon(idc2,(idc1,us1,idc2,pr1))),el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idRef(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1))  ,ee(idIsCon(idc1,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc1,idb1) ; bot ) , ee(idAct(idc1,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
+---eq confy = < (empty, empty) , add(idc2,c22)  . con(idc1,us1,idc2,pr1) .   pushB(idc2,b(t(q2, r3),t(q1, r2)),idb2)  .  dcon(idc1,us1,idc2,pr1) .  del(idc2) . [], F(el(idIsCon(idc2,(idc1,us1,idc2,pr1))),el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idRef(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1))  ,ee(idIsCon(idc1,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc1,idb1) ; bot ) , ee(idAct(idc1,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
 
 
----eq confx = < (empty, empty) , add(idc1,c11)  . con(idc1,us1,idc2,pr1) .  pushB(idc1,b(t(p1, s2), t(p2, s3)),idb1) . wait(idc2,idb2) . [], F(el(idIsCon(idc1,(idc1,us1,idc2,pr1))),el(idComp(idc1,idb1)),el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
-
----eq confy = < (empty, empty) , add(idc2,c22)  . con(idc1,us1,idc2,pr1) .  pushB(idc2,b(t(q1, r2), t(q2, r3)),idb2) .  wait(idc1,idb1) . [], F(el(idIsCon(idc2,(idc1,us1,idc2,pr1))),el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idRef(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1))  ,ee(idIsCon(idc1,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc1,idb1) ; bot ) , ee(idAct(idc1,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
 
 eq gconf1 = confx, confy .
+
+
+----et tester aussi avec
+---eq confy = < (empty, empty) , add(idc2,c22)  . con(idc1,us1,idc2,pr1)  .  dcon(idc1,us1,idc2,pr1) .  del(idc2) . [], F(el(idIsCon(idc2,(idc1,us1,idc2,pr1))),el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idRef(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1))  ,ee(idIsCon(idc1,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc1,idb1) ; bot ) , ee(idAct(idc1,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
+
+
+
+----eq confx = < (empty, empty) , add(idc1,c11)  . con(idc1,us1,idc2,pr1)  .  pushB(idc1,b(t(p1, s2), t(p2, s3)),idb1)  . dcon(idc1,us1,idc2,pr1) . [], F(el(idIsCon(idc1,(idc1,us1,idc2,pr1))),el(idComp(idc1,idb1)),el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
+
+----eq confy = < (empty, empty) , add(idc2,c22)  . con(idc1,us1,idc2,pr1) .  pushB(idc2,b(t(q1, r2)),idb2) . wait(idc1,idb1) .  pushB(idc2,b(t(q2, r3)),idb3) . dcon(idc1,us1,idc2,pr1) . [], F(el(idIsCon(idc2,(idc1,us1,idc2,pr1))),el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idRef(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1))  ,ee(idIsCon(idc1,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc1,idb1) ; bot ) , ee(idAct(idc1,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
+
+---eq confx = < (empty, empty) , add(idc1,c11)  . con(idc1,us1,idc2,pr1) .  pushB(idc1,b(t(p1, s2)),idb1) . wait(idc2,idb2)  .  pushB(idc1,b(t(p2, s3)),idb3) . dcon(idc1,us1,idc2,pr1) . del(idc1) . [], F(el(idIsCon(idc1,(idc1,us1,idc2,pr1))),el(idComp(idc1,idb1)),el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
+
+---eq confy = < (empty, empty) , add(idc2,c22)  . con(idc1,us1,idc2,pr1) .  pushB(idc2,b(t(q1, r2)),idb2) .  wait(idc1,idb1) . pushB(idc2,b(t(q2, r3)),idb4) . dcon(idc1,us1,idc2,pr1) . del(idc2) . [], F(el(idIsCon(idc2,(idc1,us1,idc2,pr1))),el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idRef(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1))  ,ee(idIsCon(idc1,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc1,idb1) ; bot ) , ee(idAct(idc1,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
+
 
 ----eq confx = < (empty, empty) , add(idc1,c11)  . con(idc1,us1,idc2,pr1) .  pushB(idc1,b(t(p1, s2), t(p2, s3)),idb1) . dcon(idc1,us1,idc2,pr1) . [], F(el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
 
