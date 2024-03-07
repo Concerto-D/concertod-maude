@@ -882,7 +882,7 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
 
   inc CONCERTO-D-CONFIGURATION .
 
-  var p : Place .
+  var pla : Place .
   var ps : Places .
   var gu :  GUses .
   vars i i' : Instance .
@@ -894,59 +894,52 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
   vars IdentIns id1 id2 : IdentC .
   var ws : Ws .
   var qsend : Qsend .
-  var idf1 : IdFunction .
+
 
   op CollectFunctionsEnteringPlace(_,_,_,_,_,_,_,_,_) : Place GUses Instance Instance Instances Connections F Ws Qsend -> Qsend .
   --- we follow the same reasoning used to collect external functions for firing
-  eq CollectFunctionsEnteringPlace(p,empty,i,i',Is,L,f,ws,qsend) = nil .
-  ceq CollectFunctionsEnteringPlace(p,(up ! ps),gu,i,i',Is,L,f,ws,qsend) = 
+  eq CollectFunctionsEnteringPlace(pla,empty,i,i',Is,L,f,ws,qsend) = nil .
+  ceq CollectFunctionsEnteringPlace(pla,(up ! ps),gu,i,i',Is,L,f,ws,qsend) = 
   append(CollectConnected(up,IdentInstance(i),L,f,ws,qsend),append(CollectProvided(up,IdentInstance(i),i,Is,L,f,ws,qsend), 
-  append(CollectAllowed(up,IdentInstance(i),i,Is,L,f,ws,qsend), CollectFunctionsEnteringPlace(p,gu,i,i',Is,L,f,ws,qsend)))) 
-  if  ((p in ps) and active(i,up) == false and active(i',up) == true  ).   
-  eq CollectFunctionsEnteringPlace(p,(up ! ps),gu,i,i',Is,L,f,ws,qsend) = CollectFunctionsEnteringPlace(p,gu,i,i',Is,L,f,ws,qsend) [owise] .
+  append(CollectAllowed(up,IdentInstance(i),i,Is,L,f,ws,qsend), CollectFunctionsEnteringPlace(pla,gu,i,i',Is,L,f,ws,qsend)))) 
+  if  ((pla in ps) and active(i,up) == false and active(i',up) == true  ).   
+  eq CollectFunctionsEnteringPlace(pla,(up ! ps),gu,i,i',Is,L,f,ws,qsend) = CollectFunctionsEnteringPlace(pla,gu,i,i',Is,L,f,ws,qsend) [owise] .
 
   op CollectConnected(_,_,_,_,_,_) : UsePort IdentC Connections F Ws Qsend -> Qsend . 
-  op CollectProvided(_,_,_,_,_,_,_) : UsePort IdentC  Instances Connections F Ws Qsend -> Qsend . 
-  op CollectAllowed(_,_,_,_,_,_,_) : UsePort  IdentC Instances Connections F Ws Qsend -> Qsend . 
-
-  eq CollectConnected(poru,IdentIns,empty,f,ws,qsend) = nil .
-  ceq CollectConnected(poru,IdentIns,(id1,up,id2,pp),L,f,ws,qsend) = idIsCon(id2,(id1,up,id2,pp))
+  eq CollectConnected(up,id1,empty,f,ws,qsend) = nil .
+  ceq CollectConnected(up,id1,(id1,up,id2,pp),L,f,ws,qsend) = idIsCon(id2,(id1,up,id2,pp))
   if(
     (not (idIsCon(id2,(id1,up,id2,pp)) in ws)) and 
-  (not (occurs(idIsCon(id2,(id1,up,id2,pp)),qsend)))  and
+    (not (occurs(idIsCon(id2,(id1,up,id2,pp)),qsend)))  and
     ExternFun(idIsCon(id2,(id1,up,id2,pp)),f) and
-  (poru == up and id1 == IdentIns) and 
-  ( Eval(idIsCon(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == false  or Eval(idIsCon(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == bot )
+    ( Eval(idIsCon(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == false  or Eval(idIsCon(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == bot )
     
-  ) .
+    ) .
   eq CollectConnected(poru,IdentIns,(id1,up,id2,pp),L,f,ws,qsend) = CollectConnected(poru,IdentIns,L,f,ws,qsend) [owise] .
 
-
-  eq CollectProvided(poru,IdentIns,Is,empty,f,ws,qsend) = nil .
-  ceq CollectProvided(poru,IdentIns,Is,(id1,up,id2,pp),L,f,ws,qsend) = idAct(id2,pp)
+  op CollectProvided(_,_,_,_,_,_,_) : UsePort IdentC  Instances Connections F Ws Qsend -> Qsend . 
+  eq CollectProvided(up,id1,Is,empty,f,ws,qsend) = nil .
+  ceq CollectProvided(up,id1,Is,(id1,up,id2,pp),L,f,ws,qsend) = idAct(id2,pp)
   if (
       (not idAct(id2,pp) in ws) and 
-  (not (occurs(idAct(id2,pp),qsend)))  and
-    ExternFun(idAct(id2,pp),f) and
-  (poru == up and id1 == IdentIns) and 
-  ( Eval(idAct(id2,pp),f,empty,empty,[] )   == false  or Eval(idAct(id2,pp),f,empty,empty,[] )   == bot )   
+      (not (occurs(idAct(id2,pp),qsend)))  and
+      ExternFun(idAct(id2,pp),f) and
+      ( Eval(idAct(id2,pp),f,empty,empty,[] )   == false  or Eval(idAct(id2,pp),f,empty,empty,[] )   == bot )   
     ) .
   eq CollectProvided(poru,IdentIns,Is,(id1,up,id2,pp),L,f,ws,qsend) = CollectProvided(poru,IdentIns,Is,L,f,ws,qsend) [owise] .
 
-  eq CollectAllowed(poru,IdentIns,Is,empty,f,ws,qsend) = nil .
-  ceq CollectAllowed(poru,IdentIns,Is,(id1,up,id2,pp),L,f,ws,qsend) = idRef(id2,pp)
+  op CollectAllowed(_,_,_,_,_,_,_) : UsePort  IdentC Instances Connections F Ws Qsend -> Qsend . 
+  eq CollectAllowed(up,id1,Is,empty,f,ws,qsend) = nil .
+  ceq CollectAllowed(up,id1,Is,(id1,up,id2,pp),L,f,ws,qsend) = idRef(id2,pp)
   if (
       (not idRef(id2,pp) in ws) and 
-  (not (occurs(idRef(id2,pp),qsend)))  and
-    ExternFun(idRef(id2,pp),f) and
-  (poru == up and id1 == IdentIns) and 
-  ( Eval(idRef(id2,pp),f,empty,empty,[] )   == true  or Eval(idRef(id2,pp),f,empty,empty,[])   == bot )   
+      (not (occurs(idRef(id2,pp),qsend)))  and
+      ExternFun(idRef(id2,pp),f) and
+      ( Eval(idRef(id2,pp),f,empty,empty,[] )   == true  or Eval(idRef(id2,pp),f,empty,empty,[])   == bot )   
     ) .
-
   eq CollectAllowed(poru,IdentIns,Is,(id1,up,id2,pp),L,f,ws,qsend) = CollectAllowed(poru,IdentIns,Is,L,f,ws,qsend) [owise] .
 
 endfm
-
 
 
 
@@ -972,8 +965,7 @@ ceq CollectFunctionWait(id1,idbeh,ee(idf1 ; bwb),efs,ws,qsend) = idf1
 if 
 (
   (not (idf1 in ws)) and 
- (not (occurs(idf1,qsend))) 
- and
+  (not (occurs(idf1,qsend))) and
   (idf1 == idComp(id1,idbeh)   and (bwb == false or bwb == bot))
 ) .
 eq CollectFunctionWait(id1,idbeh,ee(idf1 ; bwb),efs,ws,qsend) = CollectFunctionWait(id1,idbeh,efs,ws,qsend) [owise] . 
@@ -982,39 +974,33 @@ endfm
 
 fmod COLLECT-EXTERNAL-FUNCTIONS-DISCONNECT is
 
-inc CONCERTO-D-CONFIGURATION .
+  inc CONCERTO-D-CONFIGURATION .
 
+  var bwb : BoolWithBot .
+  var up : UsePort .
+  var pp : ProPort .
+  vars  id1 id2 : IdentC .
+  var efs : ElementFunctionEs .
+  var ws : Ws .
+  var qsend : Qsend .
+  var idf1 : IdFunction .
 
-op CollectFunctionsDiscon(_,_,_,_) : Connection ElementFunctionEs Ws Qsend -> Qsend .
+  op CollectFunctionsDiscon(_,_,_,_) : Connection ElementFunctionEs Ws Qsend -> Qsend .
 
-var bwb : BoolWithBot .
-
-var up : UsePort .
-var pp : ProPort .
-vars  id1 id2 : IdentC .
-var efs : ElementFunctionEs .
-var ws : Ws .
-var qsend : Qsend .
-var idf1 : IdFunction .
-
-
-
-eq CollectFunctionsDiscon((id1,up,id2,pp),empty,ws,qsend) = nil .
-
-ceq CollectFunctionsDiscon((id1,up,id2,pp),ee(idf1 ; bwb),efs,ws,qsend) = append(idf1,CollectFunctionsDiscon((id1,up,id2,pp),efs,ws,qsend)) 
-if
-( 
- (not (idf1 in ws)) and 
- (not (occurs(idf1,qsend))) 
- and 
- ( 
-     ( idf1 == idAct(id1,up)   and (bwb == true or bwb == bot)  ) 
-   or
-    ( (idf1 == idDiscon(id1,(id1,up,id2,pp)) or idf1 ==  idDiscon(id2,(id1,up,id2,pp)) ) and (bwb == false or bwb == bot) )
- ) 
-) .
-eq CollectFunctionsDiscon((id1,up,id2,pp),ee(idf1 ; bwb),efs,ws,qsend) = CollectFunctionsDiscon((id1,up,id2,pp),efs,ws,qsend) [owise] . 
-
+  eq CollectFunctionsDiscon((id1,up,id2,pp),empty,ws,qsend) = nil .
+  ceq CollectFunctionsDiscon((id1,up,id2,pp),ee(idf1 ; bwb),efs,ws,qsend) = append(idf1,CollectFunctionsDiscon((id1,up,id2,pp),efs,ws,qsend)) 
+  if
+  ( 
+  (not (idf1 in ws)) and 
+  (not (occurs(idf1,qsend))) 
+  and 
+  ( 
+      ( idf1 == idAct(id1,up)   and (bwb == true or bwb == bot)  ) 
+    or
+      ( (idf1 == idDiscon(id1,(id1,up,id2,pp)) or idf1 ==  idDiscon(id2,(id1,up,id2,pp)) ) and (bwb == false or bwb == bot) )
+  ) 
+  ) .
+  eq CollectFunctionsDiscon((id1,up,id2,pp),ee(idf1 ; bwb),efs,ws,qsend) = CollectFunctionsDiscon((id1,up,id2,pp),efs,ws,qsend) [owise] . 
 
 endfm
 
@@ -1024,209 +1010,209 @@ fmod COMMUNICATION-FUNCTIONS is
 
 inc CONCERTO-D-CONFIGURATION .
 
+  var idents : IdentCs . 
+  var efs : ElementFunctionEs .
+  var bwb : BoolWithBot .
+  var L : Connections .
+  var up : UsePort .
+  var pp : ProPort .
+  var idf1 : IdFunction .
+  vars id1 id2 : IdentC .
 
-var idents : IdentCs . 
-var efs : ElementFunctionEs .
-var bwb : BoolWithBot .
-var L : Connections .
-var up : UsePort .
-var pp : ProPort .
-var idf1 : IdFunction .
-vars id1 id2 : IdentC .
-
-op UpDateExternalFunctionsSend(_,_) : ElementFunctionEs IdentCs -> ElementFunctionEs .  -----------IdentCs contain one or 0 element
-eq  UpDateExternalFunctionsSend(efs,empty) = efs .
-eq  UpDateExternalFunctionsSend(empty,idents) = empty .
-ceq UpDateExternalFunctionsSend(ee(idRef(id1,pp) ; bwb),efs,idents) = ee(idRef(id1,pp) ; bot), efs if (id1 in idents ) .
-eq  UpDateExternalFunctionsSend(ee(idf1 ; bwb),efs,idents) = ee(idf1 ; bwb), UpDateExternalFunctionsSend(efs,idents) [owise] .
+  op UpDateExternalFunctionsSend(_,_) : ElementFunctionEs IdentCs -> ElementFunctionEs . 
+  -----------IdentCs contain one or 0 element
+  eq  UpDateExternalFunctionsSend(efs,empty) = efs .
+  eq  UpDateExternalFunctionsSend(empty,idents) = empty .
+  ceq UpDateExternalFunctionsSend(ee(idRef(id1,pp) ; bwb),efs,idents) = ee(idRef(id1,pp) ; bot), efs if (id1 in idents ) .
+  eq  UpDateExternalFunctionsSend(ee(idf1 ; bwb),efs,idents) = ee(idf1 ; bwb), UpDateExternalFunctionsSend(efs,idents) [owise] .
 
 
-op IdentConnectionWithActive(_,_,_) : Connections IdFunction BoolWithBot -> IdentCs .
-eq IdentConnectionWithActive((id1,up,id2,pp),L,idAct(id1,up),false) = id2 . 
-eq IdentConnectionWithActive(empty,idf1,bwb) = empty . 
-eq IdentConnectionWithActive((id1,up,id2,pp),L,idf1,bwb) = IdentConnectionWithActive(L,idf1,bwb) [owise] . 
+  op IdentConnectionWithActive(_,_,_) : Connections IdFunction BoolWithBot -> IdentCs .
+  eq IdentConnectionWithActive((id1,up,id2,pp),L,idAct(id1,up),false) = id2 . 
+  eq IdentConnectionWithActive(empty,idf1,bwb) = empty . 
+  eq IdentConnectionWithActive((id1,up,id2,pp),L,idf1,bwb) = IdentConnectionWithActive(L,idf1,bwb) [owise] . 
 
 endfm
 
 
 mod OPERATIONAL-SEMANTICS is
 
-inc CONCERTO-D-CONFIGURATION .
+  inc CONCERTO-D-CONFIGURATION .
 
-inc CONSISTENCY-PORTS-FIRING-TRANSITION .
-inc CONSISTENCY-PORTS-ENTERING-PLACE .
-inc COLLECT-EXTERNAL-FUNCTIONS-FIRING .
-inc COLLECT-EXTERNAL-FUNCTIONS-WAIT .
-inc COLLECT-EXTERNAL-FUNCTIONS-DISCONNECT .
-inc COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE .
-inc COMMUNICATION-FUNCTIONS .
+  inc CONSISTENCY-PORTS-FIRING-TRANSITION .
+  inc CONSISTENCY-PORTS-ENTERING-PLACE .
+  inc COLLECT-EXTERNAL-FUNCTIONS-FIRING .
+  inc COLLECT-EXTERNAL-FUNCTIONS-WAIT .
+  inc COLLECT-EXTERNAL-FUNCTIONS-DISCONNECT .
+  inc COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE .
+  inc COMMUNICATION-FUNCTIONS .
 
-var lcx lcy : LocalConfiguration .
-var gconfig : LocalConfigurations .
+  var lcx lcy : LocalConfiguration .
+  var gconfig : LocalConfigurations .
 
-vars Rx Ry : Program .
-vars Ix Iy : Instances . 
-vars Lx Ly : Connections .
-vars Fx Fy : F .
-vars QSx QSy : Qsend .
-vars QRx QRy : Qrec .
-vars Wx Wy : Ws .
-var  idf : IdFunction .
-var valf : BoolWithBot .
+  vars Rx Ry : Program .
+  vars Ix Iy : Instances . 
+  vars Lx Ly : Connections .
+  vars Fx Fy : F .
+  vars QSx QSy : Qsend .
+  vars QRx QRy : Qrec .
+  vars Wx Wy : Ws .
+  var  idf : IdFunction .
+  var valf : BoolWithBot .
 
-vars ct ctt : ComponentType .
-var inst : Instance .
-var use : UsePort .
-var pro : ProPort .
+  vars ct ctt : ComponentType .
+  var inst : Instance .
+  var use : UsePort .
+  var pro : ProPort .
 
-var efls : ElementFunctionLs .
-var efes : ElementFunctionEs .
-
-
-ops i ii : -> Instance .
-op ccc : -> ComponentType .
-
-vars id idd1 idd2 : IdentC .
-vars qb : QBehavoirId .
-var behx : Behavior .
-var mrk : Marking .
-var  idbeh : IdentB .
-var b : Transitionns .
-
-vars p q : Place .
-var ps : Places .
-var ts : Transitionns .
-var tr : Transitionn .
-vars tes tes1 : TransitionnEndings .
-var S : Stations .
-var s : Station .
+  var efls : ElementFunctionLs .
+  var efes : ElementFunctionEs .
 
 
---------------------------------------------Rules for communication----------------------------------------------------------------------
+  ops i ii : -> Instance .
+  op ccc : -> ComponentType .
 
+  vars id idd1 idd2 : IdentC .
+  vars qb : QBehavoirId .
+  var behx : Behavior .
+  var mrk : Marking .
+  var  idbeh : IdentB .
+  var b : Transitionns .
 
+  vars p q : Place .
+  var ps : Places .
+  var ts : Transitionns .
+  var tr : Transitionn .
+  vars tes tes1 : TransitionnEndings .
+  var S : Stations .
+  var s : Station .
 
-crl [SendRequest] : 
-< (Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > , < (Iy,Ly),Ry,Fy,QRy,QSy,Wy >, gconfig  =>
-< (Ix,Lx),Rx,Fx,QRx,QSx, (Wx, idf) > , < (Iy,Ly),Ry,Fy,append(QRy, (idf ; bot) ),QSy,Wy >, gconfig 
-if ( ExternFun(idf,Fx) and LocalFun(idf,Fy) ) .
-
-
-crl [SendEvalFun] : 
-< (Ix,Lx),Rx,F(efls,efes), QRx, idf QSx, Wx > , < (Iy,Ly),Ry,Fy,QRy,QSy,Wy >, gconfig  =>
-< (Ix,Lx),Rx,F(efls,UpDateExternalFunctionsSend(efes,IdentConnectionWithActive(Lx,idf,LocalEval(idf,Ix,Lx,Rx)))),QRx,QSx, Wx > , < (Iy,Ly),Ry,Fy,append(QRy, (idf ; LocalEval(idf,Ix,Lx,Rx)) ),QSy,Wy >, gconfig 
-if ( LocalFun(idf,F(efls,efes)) and (idf in Wy) ) .
-
-crl [ReceivesRequest] : 
-< (Ix,Lx),Rx,Fx, (idf ; valf ) QRx,  QSx, Wx >, gconfig   =>
-< (Ix,Lx),Rx,Fx,QRx,append(QSx, idf  ), Wx > , gconfig
-if ( LocalFun(idf,Fx) ) .
-
-crl [ReceivesEvalFun] : 
-< (Ix,Lx),Rx,F(efls,efes), (idf ; valf ) QRx,  QSx, Wx >,  gconfig  =>
-< (Ix,Lx),Rx,F(efls,SubValExtern(efes,idf,valf)),QRx,QSx, delete(idf,Wx) >,  gconfig 
-if ( ExternFun(idf,F(efls,efes)) ) .  
+  ------------------------------------------------fonctions utilise dans les regles
+  --------------------------------------------Rules for communication----------------------------------------------------------------------
 
 
 
--------------------------------------------------Rules of evolution components--------------------
-
-crl [FiringTransitionns] :  < (< idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > , gconfig  =>
-< (  < idd1,ct,(idbeh ; b(b)) qb,m(ps,union(ts, RestrictTransToPlace(b,p) ),tes) >, Ix , Lx),Rx,Fx, QRx, QSx, Wx > , gconfig 
-if (RestrictTransToPlace(b,p) =/= empty and 
-NotActUseWhenLeavingPro(m(ps,union(ts, RestrictTransToPlace(b,p) ),tes) ,< idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > ,Ix,Fx,ConnectionProIdent(idd1, Lx))) .  
-
-rl [EndingTransitionn] : < (< idd1,ct, qb,m(ps, t(q,s,S), ts,tes) > , Ix,Lx),Rx,Fx, QRx, QSx, Wx > , gconfig =>
-< (< idd1,ct, qb,m(ps, ts, te(t(q,s,S),s), tes  ) > , Ix,Lx),Rx,Fx, QRx, QSx, Wx > , gconfig .
+  crl [SendRequest] : 
+  < (Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > , < (Iy,Ly),Ry,Fy,QRy,QSy,Wy >, gconfig  =>
+  < (Ix,Lx),Rx,Fx,QRx,QSx, (Wx, idf) > , < (Iy,Ly),Ry,Fy,append(QRy, (idf ; bot) ),QSy,Wy >, gconfig 
+  if ( ExternFun(idf,Fx) and LocalFun(idf,Fy) ) .
 
 
+  crl [SendEvalFun] : 
+  < (Ix,Lx),Rx,F(efls,efes), QRx, idf QSx, Wx > , < (Iy,Ly),Ry,Fy,QRy,QSy,Wy >, gconfig  =>
+  < (Ix,Lx),Rx,F(efls,UpDateExternalFunctionsSend(efes,IdentConnectionWithActive(Lx,idf,LocalEval(idf,Ix,Lx,Rx)))),QRx,QSx, Wx > , < (Iy,Ly),Ry,Fy,append(QRy, (idf ; LocalEval(idf,Ix,Lx,Rx)) ),QSy,Wy >, gconfig 
+  if ( LocalFun(idf,F(efls,efes)) and (idf in Wy) ) .
 
-crl [EnteringPlace] : < (< idd1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,Lx),Rx,Fx, QRx, QSx, Wx > , gconfig  =>
- < (< idd1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > , gconfig  
+  crl [ReceivesRequest] : 
+  < (Ix,Lx),Rx,Fx, (idf ; valf ) QRx,  QSx, Wx >, gconfig   =>
+  < (Ix,Lx),Rx,Fx,QRx,append(QSx, idf  ), Wx > , gconfig
+  if ( LocalFun(idf,Fx) ) .
 
-if 
-(IsSatisfiedTransitionnEndingStation(s,b,te(t(q,s,S),s), tes) 
-and 
-
-ConnectedProvidedAllowed (Pi(s,GetStationPlaces(ct)), GetUsePort(ct), < idd1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >,
-< idd1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) >,Ix, Lx,Fx)) 
-.  
-
-crl [FinishingBehavior] : < (< idd1,ct,(idbeh ; b(b)) qb,m(ps,empty,empty) > , Ix,Lx),Rx,Fx, QRx, QSx, Wx > , gconfig  =>
-< (< idd1,ct, qb,m(ps,empty,empty) > , Ix,Lx),Rx,Fx, QRx, QSx, Wx > , gconfig if (intersection(ps,PlacesTrans(b)) == empty) .
-
-
+  crl [ReceivesEvalFun] : 
+  < (Ix,Lx),Rx,F(efls,efes), (idf ; valf ) QRx,  QSx, Wx >,  gconfig  =>
+  < (Ix,Lx),Rx,F(efls,SubValExtern(efes,idf,valf)),QRx,QSx, delete(idf,Wx) >,  gconfig 
+  if ( ExternFun(idf,F(efls,efes)) ) .  
 
 
--------------------------------------------Rules  for collecting the evaluation of external functions------------
+  --------------------------------------------end of communication rules---------------------------------------------RestrictTransToPlace
+  -------------------------------------------------Rules of evolution components
 
+  crl [FiringTransitionns] :  < (< idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > , gconfig  =>
+  < (  < idd1,ct,(idbeh ; b(b)) qb,m(ps,union(ts, RestrictTransToPlace(b,p) ),tes) >, Ix , Lx),Rx,Fx, QRx, QSx, Wx > , gconfig 
+  if (RestrictTransToPlace(b,p) =/= empty and 
+  NotActUseWhenLeavingPro(m(ps,union(ts, RestrictTransToPlace(b,p) ),tes) ,< idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > ,Ix,Fx,ConnectionProIdent(idd1, Lx))) .  
 
-
-crl [ExternalFunctionsFiringTransitionns] : < (< idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > , gconfig  =>
-< (  < idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix , Lx),Rx,Fx, QRx, append(QSx,CollectFunctionFiring(m(ps,union(ts, RestrictTransToPlace(b,p) ),tes),< idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,ConnectionProIdent(idd1,Lx),Fx,Wx,QSx)), Wx > , gconfig 
-if (RestrictTransToPlace(b,p) =/= empty and CollectFunctionFiring(m(ps,union(ts, RestrictTransToPlace(b,p) ),tes),< idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,ConnectionProIdent(idd1,Lx ),Fx,Wx,QSx) =/= nil) . 
+  rl [EndingTransitionn] : < (< idd1,ct, qb,m(ps, t(q,s,S), ts,tes) > , Ix,Lx),Rx,Fx, QRx, QSx, Wx > , gconfig =>
+  < (< idd1,ct, qb,m(ps, ts, te(t(q,s,S),s), tes  ) > , Ix,Lx),Rx,Fx, QRx, QSx, Wx > , gconfig .
 
 
 
-crl [ExternalFunctionsEnteringPlace] : < (< idd1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,Lx),Rx,Fx, QRx, QSx, Wx > , gconfig =>
- < (< idd1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,Lx),Rx,Fx, QRx, append(QSx,CollectFunctionsEnteringPlace(Pi(s,GetStationPlaces(ct)), GetUsePort(ct), < idd1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >,
-< idd1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) >,Ix, Lx,Fx,Wx,QSx)), Wx > , gconfig
+  crl [EnteringPlace] : < (< idd1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,Lx),Rx,Fx, QRx, QSx, Wx > , gconfig  =>
+  < (< idd1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > , gconfig  
 
-if 
-(
-  IsSatisfiedTransitionnEndingStation(s,b,te(t(q,s,S),s), tes) 
+  if 
+  (IsSatisfiedTransitionnEndingStation(s,b,te(t(q,s,S),s), tes) 
+  and 
+
+  ConnectedProvidedAllowed (Pi(s,GetStationPlaces(ct)), GetUsePort(ct), < idd1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >,
+  < idd1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) >,Ix, Lx,Fx)) 
+  .  
+
+  crl [FinishingBehavior] : < (< idd1,ct,(idbeh ; b(b)) qb,m(ps,empty,empty) > , Ix,Lx),Rx,Fx, QRx, QSx, Wx > , gconfig  =>
+  < (< idd1,ct, qb,m(ps,empty,empty) > , Ix,Lx),Rx,Fx, QRx, QSx, Wx > , gconfig if (intersection(ps,PlacesTrans(b)) == empty) .
+
+
+
+
+  -----------------------------------------------------Rules  for collecting the evaluation of external functions------------
+
+
+
+  crl [ExternalFunctionsFiringTransitionns] : < (< idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > , gconfig  =>
+  < (  < idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix , Lx),Rx,Fx, QRx, append(QSx,CollectFunctionFiring(m(ps,union(ts, RestrictTransToPlace(b,p) ),tes),< idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,ConnectionProIdent(idd1,Lx),Fx,Wx,QSx)), Wx > , gconfig 
+  if (RestrictTransToPlace(b,p) =/= empty and CollectFunctionFiring(m(ps,union(ts, RestrictTransToPlace(b,p) ),tes),< idd1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,ConnectionProIdent(idd1,Lx ),Fx,Wx,QSx) =/= nil) . 
+
+
+
+  crl [ExternalFunctionsEnteringPlace] : < (< idd1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,Lx),Rx,Fx, QRx, QSx, Wx > , gconfig =>
+  < (< idd1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,Lx),Rx,Fx, QRx, append(QSx,CollectFunctionsEnteringPlace(Pi(s,GetStationPlaces(ct)), GetUsePort(ct), < idd1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >,
+  < idd1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) >,Ix, Lx,Fx,Wx,QSx)), Wx > , gconfig
+
+  if 
+  (
+    IsSatisfiedTransitionnEndingStation(s,b,te(t(q,s,S),s), tes) 
+    and
+    (CollectFunctionsEnteringPlace(Pi(s,GetStationPlaces(ct)), GetUsePort(ct), < idd1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >,
+  < idd1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) >,Ix, Lx,Fx,Wx,QSx) =/= nil )
+  ) .
+
+
+  crl [ExternalFunctionsForDisconnectPorts] : 
+  < (Ix,Lx), dcon(idd1,use,idd2,pro) . Rx,F(efls,efes), QRx, QSx, Wx > , gconfig    =>  
+  < (Ix,Lx), dcon(idd1,use,idd2,pro) . Rx,F(efls,efes), QRx, append(QSx,CollectFunctionsDiscon((idd1,use,idd2,pro),efes,Wx,QSx)), Wx > , gconfig   
+  if (((idd1,use,idd2,pro) in Lx)  and (CollectFunctionsDiscon((idd1,use,idd2,pro),efes,Wx,QSx) =/= nil) ) .
+
+  crl [ExternalFunctionsForWait] :
+  < (Ix,Lx), wait(idd1,idbeh) . Rx,F(efls,efes), QRx, QSx, Wx > , gconfig    =>  
+  < (Ix,Lx), wait(idd1,idbeh) . Rx,F(efls,efes), QRx, append(QSx,CollectFunctionWait(idd1,idbeh,efes,Wx,QSx)), Wx > , gconfig   
+  if (CollectFunctionWait(idd1,idbeh,efes,Wx,QSx) =/= nil ) .
+
+  --------------------------------------------------------End of evolution components---------------------------------------------------------------
+  ------------------------------------------------------- Instructions of program------------------------------------------------------------------------- 
+
+  crl [AddComponentInstance] :   < (Ix,Lx), add(id, ct) . Rx,Fx, QRx, QSx, Wx > , gconfig    =>
+  < (insert( < id, ct, nil, m(InitialPlace(ct) ,empty,empty)  > , Ix),Lx),  Rx,Fx, QRx, QSx, Wx > ,gconfig if not IsUsedIdentInstances(id,Ix)   .  
+
+
+  crl [DeleteComponentInstance] : < (< idd1,ct,qb,mrk > ,Ix,Lx), del(id) . Rx,Fx, QRx, QSx, Wx > , gconfig    =>   
+  < (Ix,Lx), Rx,Fx, QRx, QSx, Wx > , gconfig  if (id == idd1 and (not InConnectionIdent(id,Lx)) ) . 
+
+  crl [ConnectPorts] : < (Ix,Lx), con(id,use,idd1,pro) . Rx,Fx, QRx, QSx, Wx > , gconfig    =>   
+  < (Ix,(id,use,idd1,pro),Lx), Rx,Fx, QRx, QSx, Wx > , gconfig  
+  if (id =/= idd1 and ((InstanceIdent(Ix,id) in Ix) or (InstanceIdent(Ix,idd1) in Ix)) and (not InConnectionIdentUsePort(id,use,Lx)) ) . ---peut etre reduit la condition comme dans les règles
+
+
+  crl [DisconnectPorts] : < (Ix,Lx), dcon(id,use,idd1,pro) . Rx,Fx, QRx, QSx, Wx > , gconfig    =>  
+  < (Ix,delete((id,use,idd1,pro),Lx)), Rx,Fx, QRx, QSx, Wx > , gconfig  
+  if
+  (  ((id,use,idd1,pro) in Lx)
+    and
+  Eval(idDiscon(id,(id,use,idd1,pro)),Fx,Ix,Lx,dcon(id,use,idd1,pro) . Rx) == true
   and
-  (CollectFunctionsEnteringPlace(Pi(s,GetStationPlaces(ct)), GetUsePort(ct), < idd1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >,
-< idd1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) >,Ix, Lx,Fx,Wx,QSx) =/= nil )
-) .
-
-
-crl [ExternalFunctionsForDisconnectPorts] : 
-< (Ix,Lx), dcon(idd1,use,idd2,pro) . Rx,F(efls,efes), QRx, QSx, Wx > , gconfig    =>  
-< (Ix,Lx), dcon(idd1,use,idd2,pro) . Rx,F(efls,efes), QRx, append(QSx,CollectFunctionsDiscon((idd1,use,idd2,pro),efes,Wx,QSx)), Wx > , gconfig   
-if (((idd1,use,idd2,pro) in Lx)  and (CollectFunctionsDiscon((idd1,use,idd2,pro),efes,Wx,QSx) =/= nil) ) .
-
-crl [ExternalFunctionsForWait] :
-< (Ix,Lx), wait(idd1,idbeh) . Rx,F(efls,efes), QRx, QSx, Wx > , gconfig    =>  
-< (Ix,Lx), wait(idd1,idbeh) . Rx,F(efls,efes), QRx, append(QSx,CollectFunctionWait(idd1,idbeh,efes,Wx,QSx)), Wx > , gconfig   
-if (CollectFunctionWait(idd1,idbeh,efes,Wx,QSx) =/= nil ) .
-
-------------------------------------------------------- Instructions of program------------------------------------------------------------------------- 
-
-crl [AddComponentInstance] :   < (Ix,Lx), add(id, ct) . Rx,Fx, QRx, QSx, Wx > , gconfig    =>
- < (insert( < id, ct, nil, m(InitialPlace(ct) ,empty,empty)  > , Ix),Lx),  Rx,Fx, QRx, QSx, Wx > ,gconfig if not IsUsedIdentInstances(id,Ix)   .  
-
-
-crl [DeleteComponentInstance] : < (< idd1,ct,qb,mrk > ,Ix,Lx), del(id) . Rx,Fx, QRx, QSx, Wx > , gconfig    =>   
-< (Ix,Lx), Rx,Fx, QRx, QSx, Wx > , gconfig  if (id == idd1 and (not InConnectionIdent(id,Lx)) ) . 
-
-crl [ConnectPorts] : < (Ix,Lx), con(id,use,idd1,pro) . Rx,Fx, QRx, QSx, Wx > , gconfig    =>   
-< (Ix,(id,use,idd1,pro),Lx), Rx,Fx, QRx, QSx, Wx > , gconfig  
-if (id =/= idd1 and ((InstanceIdent(Ix,id) in Ix) or (InstanceIdent(Ix,idd1) in Ix)) and (not InConnectionIdentUsePort(id,use,Lx)) ) . 
-
-
-crl [DisconnectPorts] : < (Ix,Lx), dcon(id,use,idd1,pro) . Rx,Fx, QRx, QSx, Wx > , gconfig    =>  
-< (Ix,delete((id,use,idd1,pro),Lx)), Rx,Fx, QRx, QSx, Wx > , gconfig  
-if
-(  ((id,use,idd1,pro) in Lx)
+  Eval(idDiscon(idd1,(id,use,idd1,pro)),Fx,Ix,Lx,dcon(id,use,idd1,pro) . Rx) == true
   and
-Eval(idDiscon(id,(id,use,idd1,pro)),Fx,Ix,Lx,dcon(id,use,idd1,pro) . Rx) == true
-and
-Eval(idDiscon(idd1,(id,use,idd1,pro)),Fx,Ix,Lx,dcon(id,use,idd1,pro) . Rx) == true
-and
-Eval(idAct(id,use),Fx,Ix,Lx,dcon(id,use,idd1,pro) . Rx) == false
+  Eval(idAct(id,use),Fx,Ix,Lx,dcon(id,use,idd1,pro) . Rx) == false
 
-) .
+  ) .
 
+  crl [PushingBehavior] : < (< idd1,ct,qb,mrk >,Ix,Lx), pushB(id, behx, idbeh) . Rx,Fx, QRx, QSx, Wx > , gconfig
+  =>   < (< idd1,ct,append(qb,(idbeh ; behx)),mrk >,Ix,Lx),  Rx,Fx, QRx, QSx, Wx > , gconfig 
+  if (id == idd1 and IsBehaviorOfComponent(behx,ct)) .
+    
 
-crl [PushingBehavior] : < (< idd1,ct,qb,mrk >,Ix,Lx), pushB(id, behx, idbeh) . Rx,Fx, QRx, QSx, Wx > , gconfig
-=>   < (< idd1,ct,append(qb,(idbeh ; behx)),mrk >,Ix,Lx),  Rx,Fx, QRx, QSx, Wx > , gconfig 
-if (id == idd1 and IsBehaviorOfComponent(behx,ct)) .
-  
-
-crl [Waiting] : < ( < idd1,ct,qb,mrk > ,Ix,Lx), wait(id,idbeh) . Rx,Fx, QRx, QSx, Wx > , gconfig
-=>   < ( < idd1,ct,qb,mrk > ,Ix,Lx), Rx,Fx, QRx, QSx, Wx > , gconfig
-if (Eval(idComp(id,idbeh),Fx,Ix,Lx, Rx) == true ) . 
+  crl [Waiting] : < ( < idd1,ct,qb,mrk > ,Ix,Lx), wait(id,idbeh) . Rx,Fx, QRx, QSx, Wx > , gconfig
+  =>   < ( < idd1,ct,qb,mrk > ,Ix,Lx), Rx,Fx, QRx, QSx, Wx > , gconfig
+  if (Eval(idComp(id,idbeh),Fx,Ix,Lx, Rx) == true ) . 
 
 
 endm
