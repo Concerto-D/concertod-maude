@@ -1,41 +1,44 @@
 
-
 ***(
 
-    Ce fichier contient le programme Maude pour Concerto-D
+  This file contains the Maude program for Concerto-D
     content: 
-    several functional modules for defining data types and operations on these types 
-    a system module to describe the writing rules corresponding to the concertoD operational semantics.
+    A - several functional modules to describe mainly data types and operations on these types
+    B - a system module to describe operational rules.
 
-    afin d'utiliser la structure List et ensemble pour le type defini
+    A - Functional modules (FM) :
     
-   comme exemple: 
-   
-   si on veut construire un ensemble pour le sort place
-   
-   view Place from TRIV to DECLARATION-SORTS is
-   sort Elt to Place .
-   endv
+    () FM-1- a functional module called DECLARATION-SORTS that defines only a few sorts. 
+        Defining these sorts first enables us to create views on them, which allows us to use the views to 
+        create predefined Maude structures for our sorts. 
+        Example: we need to create a set on our sort Place, so we start with the following steps:
+            * declare Place in the first module.
+            * build a view `Place` which is mapping from the module `TRIV` to the module `DECLARATION-SORTS`.
+              The `TRIV` module is a trivial module which has a single sort Elt. the view will be:
+
+                      view Place from TRIV to DECLARATION-SORTS is
+                        sort Elt to Place .
+                      endv
+              
+            * we can then import pr SET{Place} .  
+            which allows you to parameterize the predefined module SET{X :: TRIV} by Place and thus define a set structure on Place
     
-   et par la suite :
+      Module DECLARATION-SORTS is followed by a view declarations to use 
 
-   pr SET{Place} . 
-   subsort Set{Place} <  Places  . 
-
-The selected code is written in Maude, a high-performance reflective language and system supporting both equational and rewriting logic specification and programming for a wide range of applications. Maude has been used in many fields including specification and prototyping, theorem proving, program synthesis and verification, and complex adaptive systems.
-
-This particular code snippet is defining a `view` in Maude. A `view` in Maude is a mapping between two modules. It is used to relate the sorts, subsorts, and operators of one module to those of another module. 
-
-In this case, the view is named `Place` and it is mapping from the module `TRIV` to the module `DECLARATION-SORTS`. The `TRIV` module is a trivial module that is often used as a placeholder in Maude. The `DECLARATION-SORTS` module is likely a module defined elsewhere in the code that contains sorts, subsorts, and operators that are being used in the context of this view.
-
-The line `sort Elt to Place .` within the view definition is specifying that the `Elt` sort in the `TRIV` module is being mapped to the `Place` sort in the `DECLARATION-SORTS` module. This means that wherever `Elt` is used in the context of the `TRIV` module, it can be thought of as `Place` in the context of the `DECLARATION-SORTS` module.
-
-The `endv` at the end of the snippet is simply marking the end of the view definition.
+    () From FM-2 to FM-14  gives the definition of our used sorts ant its equations, starting from basic sorts such as place, station, port ...etc. 
+       to the Configuration module for our configuration sort
+    
+    () From FM-15 to FM22 Some principal functions used in the operating rules are modeled separately. 
+       These functions are mainly related to :
+       * modules for port consistency during the execution of rules releted to firing transition or entering place
+       * modules to select the external functions required in the rules
+       * modules for defining communication operations
+    
+    () FM23 contains the operational rules of Concert-D         
 )
 
-*** 
-
-----------views for defining parameterized sets and lists of sorts.
+-------------------------------------------------- fonctional module FM1 -------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
 fmod DECLARATION-SORTS is 
 
 sorts Place StationPlace Station IdentC ElementFunctionL ElementFunctionE send rec W Connection Instance LocalConfiguration .
@@ -44,11 +47,12 @@ sorts Transitionn TransitionnEnding Behavior BehaviorId GUse GPro .
 
 endfm
 
---- Define a view named 'Place'
+--------------------------------------------------------view definitions -----------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------
 view Place from TRIV to DECLARATION-SORTS is
-  --- Map the 'Elt' sort in the 'TRIV' module to the 'Place' sort in the 'DECLARATION-SORTS' module
+
   sort Elt to Place .
---- End of the view definition
+
 endv
 
 view StationPlace from TRIV to DECLARATION-SORTS is
@@ -122,7 +126,8 @@ view GPro from TRIV to DECLARATION-SORTS is
  sort Elt to GPro .
 endv
 
-
+-------------------------------------------------------------- fonctional modules from FM-2 to FM-14 --------------------------
+--------------------------------------------------------------------Concerto-D Data types--------------------------------------
 
 fmod PLACE is
   inc DECLARATION-SORTS . ---to include the defined sort "Place"
@@ -246,7 +251,7 @@ fmod CONNECTION is
 
   --- some operations related to the connections used later
 
-  op InConnectionIdentUsePort(_,_,_) :  IdentC UsePort Connections -> Bool . --- cherche si un IdentC d'un UsePort sont dans les Connections 
+  op InConnectionIdentUsePort(_,_,_) :  IdentC UsePort Connections -> Bool . --- checks whether an IdentC of a UsePort is in Connections
 
   eq  InConnectionIdentUsePort(id,poru,empty) = false . 
   eq InConnectionIdentUsePort(id1,up,((id1,up,id2,pp),L)) = true  .  
@@ -320,46 +325,47 @@ fmod TRANSITION-TRANSITION-ENDING is
   eq RestrictTransToPlace((t(pla1,S1),trans),pla1) = t(pla1,S1), RestrictTransToPlace(trans,pla1)  .
   eq RestrictTransToPlace((t(pla2,S1),trans),pla1) = RestrictTransToPlace(trans,pla1) [owise] .
  
-  op RemoveTransitionnEndingStation(_,_) : TransitionnEndings Station -> TransitionnEndings . --- suprimer les trnasitions ending d'une station à partir d'un ensemble de transition ending
+  op RemoveTransitionnEndingStation(_,_) : TransitionnEndings Station -> TransitionnEndings . 
+  --- delete transition endings of a station 
   
   eq RemoveTransitionnEndingStation(empty,st1) = empty .
   eq RemoveTransitionnEndingStation(te(t(pla1,S1),st1),tes,st1) = RemoveTransitionnEndingStation(tes,st1) .
   eq RemoveTransitionnEndingStation(te(t(pla1,S1),st1),tes,st2) = te(t(pla1,S1),st1),RemoveTransitionnEndingStation(tes,st2) [owise] .
   
   op TranElt(_,_,_) : Places Transitionns Stations -> Transitionns .   
-  ---recupere les transitions qui commence a partir d'une place d'un ensemble et qui ont comme distination une place associé a un ensemble de stations
+ ---retrieve transitions starting from a place of a set of places and ending in stations included in a set of stations.
   
   eq TranElt(ps,empty,S1) = empty .
   ceq TranElt(ps,t(pla1,S2),trans,S1) = t(pla1,S2),TranElt(ps,trans,S1) if (pla1 in ps and (S2 subset S1)) .
   eq TranElt(ps,t(pla1,S2),trans,S1) = TranElt(ps,trans,S1) [owise] .
  
-  op TranEndElt(_,_) : Transitionn Stations -> TransitionnEndings .  ---Construire les transitions ending d'une transition selon un ensemble de Stations
+  op TranEndElt(_,_) : Transitionn Stations -> TransitionnEndings .  
+  ---Construct the transition endings of a transition according to a set of Stations
 
   eq TranEndElt(t(pla1,S2), st1,S1)= union(te(t(pla1,S2),st1), TranEndElt(t(pla1,S2), S1) ) .
   eq TranEndElt(t(pla1,S2),empty) = empty . 
 
-  op TranEndElts(_) : Transitionns -> TransitionnEndings .  ---Construire les transitions ending d'un ensemble de transitions
+  op TranEndElts(_) : Transitionns -> TransitionnEndings .  
+  ---Construct the transition endings of a set of transitions
   
   eq TranEndElts(t(pla1,S1),trans) = union(TranEndElt(t(pla1,S1),S1), TranEndElts(trans) ) .
   eq TranEndElts(empty) = empty .
 
-   --------used in entering place pour le choix d'une station
-   --- une station choisi comme station pour ending 
-   ---alors pour toute les transition du comportment actuel doivent satifaire la condition
-   ---toute transition si st1 est dans l'ensemble de S elle doit etre marque(sa transition ending)
+
   op IsSatisfiedTransitionnEndingStation(_,_,_) : Station Transitionns TransitionnEndings -> Bool .
-  
+  ----is used in the entering place rule
+  ---- the parameters used are : a chosen station, the current transitions of a behavior and the trnasition endings of the instance concerned
+  --- the principale is : if a station is chosen as a station of the ending of a transition 
+  ---then for all transitions of the current behavior for which the chosen station is one of its stations
+  ----the transition endings of these transitions according to this station must be included in the trnasition endings of the instances.
   eq IsSatisfiedTransitionnEndingStation(st1,empty,tes) = true .
-  ceq IsSatisfiedTransitionnEndingStation(st1,t(pla1,S1),trans,tes) = false 
-  if( (st1 in S1) and (not(te(t(pla1,S1),st1) in tes)) ) .
   ceq IsSatisfiedTransitionnEndingStation(st1,t(pla1,S1),trans,tes) = IsSatisfiedTransitionnEndingStation(st1,trans,tes) 
   if(not(st1 in S1) or (te(t(pla1,S1),st1) in tes) ) .
- 
- ---------------a proposé la version simplifie une place possede une seule station
+  ceq IsSatisfiedTransitionnEndingStation(st1,t(pla1,S1),trans,tes) = false 
+  if( (st1 in S1) and (not(te(t(pla1,S1),st1) in tes)) ) .
+  ---- if we consider that each place has only one station, we can propose a simplified version
 
 endfm 
-
-
 
 fmod MARKING is
   inc TRANSITION-TRANSITION-ENDING .
@@ -371,16 +377,16 @@ fmod MARKING is
   
   op m(_,_,_) : Places Transitionns TransitionnEndings -> Marking .  --- Define a new operator to create a Marking
   
-  op PlMar : Marking -> Places .  --- donne les places de marquage (autrement dans le modele Concerto les place qui sont marqués )
+  op PlMar : Marking -> Places . ---- gives the places of a marking
   eq PlMar(m(ps1,trans1,tre1)) = ps1 .
 
-  op TrMar : Marking -> Transitionns . --- donne les transitions de marquage
+  op TrMar : Marking -> Transitionns . --- gives the transitions of a marking
   eq TrMar(m(ps1,trans1,tre1)) = trans1 .
 
-  op TrEnMar : Marking -> TransitionnEndings . --- donne les transitionEndings de marquage 
+  op TrEnMar : Marking -> TransitionnEndings . --- gives the transition endings of a marking
   eq TrEnMar(m(ps1,trans1,tre1)) = tre1 .
 
-  op  IntersectionMarking(_,_) : Marking Marking -> Marking . --- intersection de deux marquages
+  op  IntersectionMarking(_,_) : Marking Marking -> Marking . --- intersection of two markings
   eq  IntersectionMarking(m(ps1,trans1,tre1),m(ps2,trans2,tre2)) = 
   m(intersection(ps1,ps2),intersection(trans1,trans2),intersection(tre1,tre2)) .
 
@@ -398,7 +404,7 @@ fmod BEHAVIOR is
   sorts Behaviors QBehavoirId .  ---define new sorts 
 
   pr SET{Behavior} .
-  subsort Set{Behavior} < Behaviors .  --- Behaviors is set of Behavior--------------------verifiver si il sera utilise
+  subsort Set{Behavior} < Behaviors .  --- Behaviors is set of Behavior
     
   pr LIST{BehaviorId} .
   subsort List{BehaviorId} < QBehavoirId . --- QBehaviorId est une liste pour les element de sort BehaviorId 
@@ -481,11 +487,13 @@ fmod COMPENENT-TYPE is
   eq G(up,< ps,q,sps,ts,bs,gu,gp >) = PlaceUse(up,gu)  .
   eq G(pp,< ps,q,sps,ts,bs,gu,gp > ) = PlacePro(pp,gp)  .
 
-  op IsBehaviorOfComponent(_,_) : Behavior ComponentType -> Bool . --- to check whether a behavior is used in ComponentType, in particular in its behaviors
+  op IsBehaviorOfComponent(_,_) : Behavior ComponentType -> Bool . 
+  --- to check whether a behavior is used in ComponentType, in particular in its behaviors
 
   eq IsBehaviorOfComponent(beh,< ps,q,sps,ts,bs,gu,gp >) = beh in bs .
   
-  op elements(_,_) : Places ComponentType -> Marking .   --- gives the elements of Marking (places, transitions, transitionendings) of group of places depending a ComponentType
+  op elements(_,_) : Places ComponentType -> Marking .   
+  --- gives the elements of Marking (places, transitions, transitionendings) of group of places depending a ComponentType
 
   eq elements(pG,< ps,q,sps,ts,bs,gu,gp >) = m( pG, TranElt(pG,ts,StationsGplaces(pG,sps)), TranEndElts(TranElt(pG,ts,StationsGplaces(pG,sps))) ) .
 
@@ -515,23 +523,27 @@ fmod PROGRAM is
   op _._ : Instruction Program -> Program [ctor] . ---operator is a constructor
 
  --- some operations related to Program used later
-  op NotDcon(_,_) :  Connection Program -> Bool .  ---check for a given connection, there is no dcon instrcution in a given program
+  op NotDcon(_,_) :  Connection Program -> Bool .  
+  ---check for a given connection, there is no dcon instrcution in a given program
  
   eq NotDcon(l,[]) = true .
   eq NotDcon(l,inst . Prog) = (inst =/= dcon(l) and NotDcon(l,Prog)) .
 
-  op disconnect(_,_) : Connection Program -> Bool .  --- used to check that the dcon instruction is the current instruction or has already been executed
+  op disconnect(_,_) : Connection Program -> Bool .  
+  --- used to check that the dcon instruction is the current instruction or has already been executed
   ---then it is the same as checking that the remaining program does not contain dcon after the current instruction
   --- this reasoning is correct if we assume that Concerto programs are well constructed.
   eq disconnect(l,[]) = true .
   eq disconnect(l,inst . Prog) = NotDcon(l,Prog) .
   
-  op InstructionIspushB(_,_,_) : Instruction IdentC IdentB -> Bool .  --- checks whether the current instruction is a push instruction for a given IdentC and IdentB
+  op InstructionIspushB(_,_,_) : Instruction IdentC IdentB -> Bool .  
+  --- checks whether the current instruction is a push instruction for a given IdentC and IdentB
 
   eq InstructionIspushB(pushB(idcx,beh,idbehx), idcx,idbehx ) = true .
   eq InstructionIspushB(inst, idcx,idbehx ) = false [owise] .
 
-  op NotPushBProg(_,_,_) : IdentC IdentB Program -> Bool .  ---checks that in a given program there is no push behavior instruction for IdentC and IdentB
+  op NotPushBProg(_,_,_) : IdentC IdentB Program -> Bool .  
+  ---checks that in a given program there is no push behavior instruction for IdentC and IdentB
   
   eq NotPushBProg(idcx,idbehx, []) = true .
   ceq NotPushBProg(idcx,idbehx,inst . Prog) = NotPushBProg(idcx,idbehx,Prog) if (not InstructionIspushB(inst,idcx,idbehx)) .
@@ -694,16 +706,19 @@ fmod CONCERTO-D-CONFIGURATION is
   eq ExternFun(idf1, F(lfs,ee(idf1 ; bwb),efs )) = true  .
   eq ExternFun(idf1, F(lfs,ee(idf2 ; bwb),efs )) = ExternFun(idf1, F(lfs,efs)) [owise] .
 
-  op ExternEval(_,_) : IdFunction ElementFunctionEs -> BoolWithBot .  ---obtain the evalaution of an external function from a set of external functions
+  op ExternEval(_,_) : IdFunction ElementFunctionEs -> BoolWithBot .  
+  ---obtain the evalaution of an external function from a set of external functions
   eq ExternEval(idf1, ee(idf1 ; bwb), efs ) = bwb  .
   eq ExternEval(idf1, ee(idf2 ; bwb), efs ) = ExternEval(idf1, efs ) [owise] .
 
-  op SubValExtern(_,_,_) : ElementFunctionEs IdFunction BoolWithBot -> ElementFunctionEs .  --- substitutes the evaluation of an external function from a set of external functions
+  op SubValExtern(_,_,_) : ElementFunctionEs IdFunction BoolWithBot -> ElementFunctionEs .  
+  --- substitutes the evaluation of an external function from a set of external functions
   eq SubValExtern(empty,idf1,Newbwb) = empty . 
   eq SubValExtern((ee(idf1 ; bwb),efs),idf1,Newbwb) = ee(idf1 ; Newbwb), efs  .
   eq SubValExtern((ee(idf1 ; bwb),efs),idf2,Newbwb) = ee(idf1 ; bwb), SubValExtern(efs,idf2,Newbwb) [owise] .
  
-  op LocalEval(_,_,_,_) : IdFunction Instances Connections Program -> BoolWithBot .  ---- gives the evaluation of a local function according to certain parameters of a given configuration
+  op LocalEval(_,_,_,_) : IdFunction Instances Connections Program -> BoolWithBot .  
+  ---- gives the evaluation of a local function according to certain parameters of a given configuration
 
   ceq LocalEval (idAct(idcx,por), Is,Ls,pg) = false if (not IsUsedIdentInstances(idcx,Is)) .   ---if the instance does not yet exist, then the active function = false
   eq LocalEval (idAct(idcx,por), Is,Ls,pg) = active(InstanceIdent(Is,idcx),por) [owise] . 
@@ -729,7 +744,7 @@ fmod CONCERTO-D-CONFIGURATION is
 endfm
 
 --------------------------------------some principal functions used in the operating rules ------------------------------------------------
-----------------------------------------------------------------modeled separately  ------------------------------------------------
+---------------------------------------------------------modeled separately  ------------------------------------------------
 
 fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
 
@@ -744,12 +759,12 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
   var ff : F .
 
   op NotActUseWhenLeavingPro(_,_,_,_) : Marking Instances F Connections ->  Bool .
-  --- is used to ensure consistency when firing transitions
-  ---it takes as parameters when used in the firing transition rule: 
-  ----the new marking after firing, the instances of the concerned configuration,
-  ---F for the evaluation of functions and a subset of its Connections where the instance concerned by firing is a provide.
-  --- so for each connection it checks that the firing of a provider does not affect the corresponding user
-  ---i.e., if the provider for each connection after a firing goes from active to inactive, this implies that the user must be inactive.
+  ---   is used to ensure consistency when firing transitions
+  ---   it takes as parameters when used in the firing transition rule: 
+  ----  the new marking after firing, the instances of the concerned local configuration,
+  ---   F for the evaluation of functions and a subset of Connections relted to the local configuration where the instance concerned by firing is a provider.
+  ---   so for each connection it checks that the firing of the concerned instance (provider) does not affect the corresponding user
+  ---   i.e., if the provider for each connection after a firing goes from active to inactive, this implies that the user must be inactive.
 
   eq NotActUseWhenLeavingPro(newMark,I,ff,(id1,up,id2,pp),L) = NotActUseWhenLeavingPro(newMark,I,ff,L) and 
   (
@@ -776,49 +791,52 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   vars i i' : Instance .
   var Is : Instances .
   var L : Connections .
-  var ff : F .
+  var f : F .
   vars poru up : UsePort .
   var pp : ProPort .
   vars IdentIns id1 id2 : IdentC .
 
-
-  --- nous avons trois condition a satifaire en plus de la condition sur le
-
+--- pour la regle entreing place, en plus de la condition IsSatisfiedTransitionnEndingStation modélisé precedement 
+---sur le ending liée a une station donné, nous avons besoin de la satifaction de ConnectedProvidedAllowed
+--- cette fonction prend comme parametre la place concerné par la station choisie pour la regle,
+---les uses ports de l'instance, l'instance avant le tir de la regle, l'instance apres le tire de la regle (entrer place)
+--- les connections de l'instance et l'ensemble de fonction à communiquer.
+--- donc pour chaque use port qui conduit au changment de status du use port inactive vers active sanchant que la place dans le port
+--- la connection doit etre etablie par les deux partie user et porvider
+--- le provide port doit etre active 
+---le  provide port doit etre non refusé
 
   op ConnectedProvidedAllowed(_,_,_,_,_,_,_) : Place GUses Instance Instance Instances Connections F -> Bool . 
 
-  eq ConnectedProvidedAllowed(p,empty,i,i',Is,L,f) = true .
+  eq ConnectedProvidedAllowed(pla,empty,i,i',Is,L,f) = true .
 
-  ceq ConnectedProvidedAllowed(p,(up ! ps),gu,i,i',Is,L,f) = 
+  ceq ConnectedProvidedAllowed(pla,(up ! ps),gu,i,i',Is,L,f) = 
   Connected(up,IdentInstance(i),L,f)  and 
   Provided(up,IdentInstance(i),i,Is,L,f)   and 
   Allowed(up,IdentInstance(i),i,Is,L,f)   and 
-  ConnectedProvidedAllowed(p,gu,i,i',Is,L,f) 
-  if  ((p in ps) and active(i,up) == false and active(i',up) == true  ).     ----------active puisque c local traitement directe
+  ConnectedProvidedAllowed(pla,gu,i,i',Is,L,f) 
+  if  ((pla in ps) and active(i,up) == false and active(i',up) == true  ).     ----------active puisque c local traitement directe
 
-  eq ConnectedProvidedAllowed(p,(up ! ps),gu,i,i',Is,L,f) = ConnectedProvidedAllowed(p,gu,i,i',Is,L,f) [owise] .
+  eq ConnectedProvidedAllowed(pla,(up ! ps),gu,i,i',Is,L,f) = ConnectedProvidedAllowed(pla,gu,i,i',Is,L,f) [owise] .
 
   op Connected(_,_,_,_) : UsePort IdentC Connections F -> Bool . 
 
-  eq Connected(poru,IdentIns,empty,f) = false .
-  ceq Connected(poru,IdentIns,(id1,up,id2,pp),L,f) = true 
-  if(poru == up and id1 == IdentIns and Eval(idIsCon(id2,(id1,up,id2,pp)),f,empty,(id1,up,id2,pp),L,[] )   == true ) .
+  eq Connected(up,id1,empty,f) = false .
+  ceq Connected(up,id1,(id1,up,id2,pp),L,f) = true 
+  if(Eval(idIsCon(id2,(id1,up,id2,pp)),f,empty,(id1,up,id2,pp),L,[] )   == true ) .
   eq Connected(poru,IdentIns,(id1,up,id2,pp),L,f) = Connected(poru,IdentIns,L,f) [owise] .
 
   op Provided(_,_,_,_,_) : UsePort IdentC  Instances Connections F -> Bool .
 
-  eq Provided(poru,IdentIns,Is,empty,f) = false .
-  ceq Provided(poru,IdentIns,Is,(id1,up,id2,pp),L,f) = (Eval(idAct(id2,pp),f,Is,(id1,up,id2,pp),L,[] ) == true) 
-  if (poru == up and id1 == IdentIns) .
+  eq Provided(up,id1,Is,empty,f) = false .
+  eq Provided(up,id1,Is,(id1,up,id2,pp),L,f) = (Eval(idAct(id2,pp),f,Is,empty,[] ) == true) .
   eq Provided(poru,IdentIns,Is,(id1,up,id2,pp),L,f) = Provided(poru,IdentIns,Is,L,f) [owise] .
 
   op Allowed(_,_,_,_,_) : UsePort  IdentC Instances Connections F -> Bool . 
 
-  eq Allowed(poru,IdentIns,Is,empty,f) = false .
-  ceq Allowed(poru,IdentIns,Is,(id1,up,id2,pp),L,f) = (Eval(idRef(id2,pp),f,Is,(id1,up,id2,pp),L,[] ) == false) 
-  if (poru == up and id1 == IdentIns) .
+  eq Allowed(up,id1,Is,empty,f) = false .
+  eq Allowed(up,id1,Is,(id1,up,id2,pp),L,f) = (Eval(idRef(id2,pp),f,Is,empty,[] ) == false) . 
   eq Allowed(poru,IdentIns,Is,(id1,up,id2,pp),L,f) = Allowed(poru,IdentIns,Is,L,f) [owise] .
-
 
 endfm
 
@@ -1155,9 +1173,7 @@ crl [FinishingBehavior] : < (< idd1,ct,(idbeh ; b(b)) qb,m(ps,empty,empty) > , I
 
 
 
----red ConnectedProvidedAllowed (p2,us1 ! p2, < idc1,< p1, p2,p1,s1 ; p1, s2 ; p2,t(p1,s2),b(t(p1,s2)),us1 ! p2,empty >,idb1 ; b(t(p1,s2)),m(empty,empty,te(t(p1,s2),s2)) >,< idc1,< p1, p2,p1,s1 ; p1, s2 ; p2,t(p1,s2),b(t(p1,s2)),us1 ! p2,empty >,nil,m(p2, empty,empty) >,empty, (idc1,us1,idc2,pr1),F(el(idAct(idc1,us1)), el(idIsCon(idc1,idc1,us1,idc2,pr1)), el(idDiscon(idc1,idc1,us1,idc2,pr1)), el(idComp(idc1,idb1)),ee(idAct(idc2,pr1) ; bot), ee(idRef(idc2,pr1) ; bot), ee(idIsCon(idc2,idc1,us1,idc2,pr1) ; bot), ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot), ee(idComp(idc2,idb2) ; bot))) .
-
-------------------------------------------------------End collecting rules-------------------------------
+-------------------------------------------------------End collecting rules-------------------------------
 -----------------------------------------------------Rules  for collecting the evaluation of external functions------------
 
 
@@ -1230,12 +1246,11 @@ crl [Waiting] : < ( < idd1,ct,qb,mrk > ,Ix,Lx), wait(id,idbeh) . Rx,Fx, QRx, QSx
 if (Eval(idComp(id,idbeh),Fx,Ix,Lx, Rx) == true ) . 
 
 
------------------------------------------------rule for Global Configuration
----crl [GlobalConfiguration] : gconfig, lcx => gconfig, lcy if lcx => lcy /\  gconfig =/= empty .
-
-
 endm
 
+
+---------------------------------------------------------------------modules for model-checking--------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
 mod Concerto-PREDS is 
  protecting OPERATIONAL-SEMANTICS . 
  including SATISFACTION .
@@ -1285,6 +1300,44 @@ mod Concerto-CHECK is
  including MODEL-CHECKER . 
  including LTL-SIMPLIFIER . 
 
+
+
+ops cc11 cc22  c1 c2 : -> ComponentType .
+ops confxx confyy confzz  confx confy confz : -> LocalConfiguration .
+ops test  test1 : -> LocalConfigurations .
+
+eq c1 =  < (p1, p2, p3) , p1 , (s1 ; p1, s2 ; p2, s3 ; p3), (t(p1, s2), t(p2, s3) ), (b(t(p2, s3),t(p1, s2))) , us1 ! (p3), empty   > .
+eq c2 =  < (q1, q2, q3) , q1 , (r1 ; q1, r2 ; q2, r3 ; q3), (t(q1, r2), t(q2, r3) ), (b(t(q2, r3),t(q1, r2))) , empty, pr1 ? (q3) > .
+
+
+eq cc11 =  < (p1, p2, p3) , p1 , (s1 ; p1, s2 ; p2, s3 ; p3), (t(p1, s2), t(p2, s3) ), (b(t(p2, s3),t(p1, s2))) , us1 ! (p2), empty   > .
+eq cc22 =  < (q1, q2, q3) , q1 , (r1 ; q1, r2 ; q2, r3 ; q3), (t(q1, r2), t(q2, r3) ), (b(t(q2, r3),t(q1, r2))) , empty, pr1 ? (q2) > .
+
+
+eq confx = < (empty, empty) , add(idc1,c1)  . con(idc1,us1,idc2,pr1) .  pushB(idc1,b(t(p2, s3),t(p1, s2)),idb1) . [], F(el(idIsCon(idc1,(idc1,us1,idc2,pr1))),el(idComp(idc1,idb1)),el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
+eq confz = < (empty, empty) , add(idc3,c1)  . con(idc3,us1,idc2,pr1) .  pushB(idc3,b(t(p2, s3),t(p1, s2)),idb3) . [], F(el(idIsCon(idc3,(idc3,us1,idc2,pr1))),el(idComp(idc3,idb3)),el(idAct(idc3,us1)),el(idDiscon(idc3,idc3,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc3,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc3,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
+
+eq confy = < (empty, empty) , add(idc2,c2)  . con(idc1,us1,idc2,pr1) . con(idc3,us1,idc2,pr1) .   pushB(idc2,b(t(q2, r3),t(q1, r2)),idb2) . [], F(el(idIsCon(idc2,(idc1,us1,idc2,pr1))),el(idIsCon(idc2,(idc3,us1,idc2,pr1))),el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idRef(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1)),el(idDiscon(idc2,idc3,us1,idc2,pr1))  ,ee(idIsCon(idc1,(idc1,us1,idc2,pr1)) ; bot),ee(idIsCon(idc3,(idc3,us1,idc2,pr1)) ; bot), ee(idComp(idc1,idb1) ; bot ) ,ee(idComp(idc3,idb3) ; bot ), ee(idAct(idc1,us1) ; bot), ee(idAct(idc3,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot),ee(idDiscon(idc3,idc3,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
+
+
+
+eq confxx = < (empty, empty) , add(idc1,cc11)  . con(idc1,us1,idc2,pr1) .  pushB(idc1,b(t(p2, s3),t(p1, s2)),idb1) . [], F(el(idIsCon(idc1,(idc1,us1,idc2,pr1))),el(idComp(idc1,idb1)),el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
+eq confzz = < (empty, empty) , add(idc3,cc11)  . con(idc3,us1,idc2,pr1) .  pushB(idc3,b(t(p2, s3),t(p1, s2)),idb3) . [], F(el(idIsCon(idc3,(idc3,us1,idc2,pr1))),el(idComp(idc3,idb3)),el(idAct(idc3,us1)),el(idDiscon(idc3,idc3,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc3,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc3,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
+
+eq confyy = < (empty, empty) , add(idc2,cc22)  . con(idc1,us1,idc2,pr1) .   pushB(idc2,b(t(q2, r3),t(q1, r2)),idb2) . [], F(el(idIsCon(idc2,(idc1,us1,idc2,pr1))),el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idRef(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1))  ,ee(idIsCon(idc1,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc1,idb1) ; bot ) , ee(idAct(idc1,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
+
+----eq confw = < (empty, empty) , add(idc1,c33)  .  pushB(idc1,b(t(p2, s3),t(p1, s2)),idb1)  . [], F(el(idComp(idc1,idb1)) , empty), nil, nil  , empty >  .
+
+---eq c33 =  < (p1, p2, p3) , p1 , (s1 ; p1, s2 ; p2, s3 ; p3), (t(p1, s2), t(p2, s3) ), (b(t(p2, s3),t(p1, s2))) , empty, empty   > .
+ 
+eq test = confx, confy, confz .
+
+eq test1 =  confxx, confyy .
+
+
+
+
+***(
 ops c1 c2 cc11 cc22 : -> ComponentType .
 ops confx confy confxx confyy confzz  : -> LocalConfiguration .
 ops  test  test1 : -> LocalConfigurations .
@@ -1314,9 +1367,9 @@ eq confyy = < (empty, empty) , add(idc2,cc22)  . con(idc1,us1,idc2,pr1) .   push
 eq test = confxx, confyy, confzz .
 
 eq test1 =  confx, confy .
-
+)
 endm
-
+  ------------------------------------------------------------------------attenstion modification sur le port de lexemple
 
 ---red modelCheck(test, [] ( (d1 \/ d3)  -> d2 )) .  verifié
 
@@ -1327,4 +1380,3 @@ endm
 
 ---red modelCheck(Fig1, <> AccessibleStateP3  ) .
 ---red modelCheck(Fig2, <> AccessibleStateP3  ) .
-
