@@ -1,0 +1,30 @@
+
+
+fmod COMMUNICATION-FUNCTIONS is
+
+inc CONCERTO-D-CONFIGURATION .
+
+
+var idents : IdentCs . 
+var efs : ElementFunctionEs .
+var bwb : BoolWithBot .
+var L : Connections .
+var up : UsePort .
+var pp : ProPort .
+var idf1 : IdFunction .
+vars id1 id2 : IdentC .
+
+op UpDateExternalFunctionsSend(_,_) : ElementFunctionEs IdentCs -> ElementFunctionEs .  -----------IdentCs contain one or 0 element
+eq  UpDateExternalFunctionsSend(efs,empty) = efs .
+eq  UpDateExternalFunctionsSend(empty,idents) = empty .
+ceq UpDateExternalFunctionsSend(ee(idRef(id1,pp) ; bwb),efs,idents) = ee(idRef(id1,pp) ; bot), efs if (id1 in idents ) .
+eq  UpDateExternalFunctionsSend(ee(idf1 ; bwb),efs,idents) = ee(idf1 ; bwb), UpDateExternalFunctionsSend(efs,idents) [owise] .
+
+
+op IdentConnectionWithActive(_,_,_) : Connections IdFunction BoolWithBot -> IdentCs .
+eq IdentConnectionWithActive((id1,up,id2,pp),L,idAct(id1,up),false) = id2 . 
+eq IdentConnectionWithActive(empty,idf1,bwb) = empty . 
+eq IdentConnectionWithActive((id1,up,id2,pp),L,idf1,bwb) = IdentConnectionWithActive(L,idf1,bwb) [owise] . 
+
+endfm
+

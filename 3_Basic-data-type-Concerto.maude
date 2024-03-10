@@ -1,0 +1,287 @@
+
+
+fmod PLACE is
+  inc DECLARATION-SORTS . ---to include the defined sort "Place"
+  sorts InitPlace Places . --- definie two sorts
+  subsort InitPlace < Place . --- InitPlace is a subsort of Place
+  pr SET{Place} .  --- Import the parameterized module of SET of Place 
+  subsort Set{Place} <  Places  .  --- declare the Place set as a sub-type of Places. 
+  ----So, Places with s represents the sort for the set of Places 
+
+---Places are defined here as operations without parameters
+--- for each system to be analyzed, the corresponding operations must be generated for its Places
+--- The same reasoning then applies to the stations, use ports and port ports of the system.
+--- An alternative way to avoid modifying the code relating to Place operations for each system
+--- is to declare places as strings:
+--- pr STRING
+---subsort String < Place . in this case, the following code will not be necessary
+
+
+endfm
+
+fmod STATION is
+  inc DECLARATION-SORTS . ------import modules into another module to include the defined sort "Station"
+  sort Stations .
+  pr SET{Station} .    --- import in mode protecting to encapsulate the definitions within this module
+  subsort Set{Station} <  Stations  . 
+
+ 
+  
+
+endfm
+
+fmod STATION-PLACE is
+  inc DECLARATION-SORTS . ---to include the defined sort "StationPlace"
+  inc PLACE .
+  inc STATION .
+
+  sort StationPlaces .
+  pr SET{StationPlace} . 
+  subsort Set{StationPlace} <  StationPlaces . --- StationPlaces define a set of elements of sort StationPlace
+
+  vars st1 st2 : Station .
+  var S : Stations .
+  var SPs : StationPlaces .
+  var q : Place .
+  var ps : Places .
+
+  op (_;_) : Station Place -> StationPlace . --- an element StationPlace is a tuple (Station;Place)
+  
+  op Pi(_,_) : Station StationPlaces -> Place . --- gives the corresponding place for a station according to the "StationPlaces" set
+ 
+  ceq Pi(st1, ((st2 ; q),SPs)) = q if (st1 == st2) .
+  eq Pi(st1, ((st2 ; q),SPs)) = Pi(st1,SPs) [owise] .  ---otherwise
+
+  op StationsGplaces(_,_) : Places StationPlaces -> Stations .  --- gives the stations associated to a Places group
+
+  ceq StationsGplaces(ps,(st1 ; q),SPs) = st1, StationsGplaces(ps,SPs) if(q in ps) .
+  ceq StationsGplaces(ps,(st1 ; q),SPs) =  StationsGplaces(ps,SPs) if(not(q in ps)) .
+  eq StationsGplaces(ps,empty) = empty .
+
+
+ 
+endfm
+
+fmod IDENT-COMPENENT-BEHAVIOR is
+  inc DECLARATION-SORTS . ---to include the defined sort "IdentC"
+  
+  sorts IdentCs IdentB  .  ---defines two sorts : a set of IdentCs for component IDs (IdentC) and a sort for behavior IDs (IdentB) 
+  
+  pr SET{IdentC} .
+  subsort Set{IdentC} < IdentCs . 
+  
+
+endfm
+
+
+fmod PORT is
+  sort Port .
+
+  sorts UsePort ProPort .
+  subsorts UsePort ProPort < Port .
+
+
+
+endfm
+
+fmod BOOL-WITH-BOT is  --- a new sort to represent the 3 values : true, false and bot based on predefined sort bool
+  pr BOOL . --- importation of sort BOOL
+  
+  sort Bot .
+  sort BoolWithBot .
+  subsorts Bool  Bot < BoolWithBot .
+
+  op bot : -> Bot .
+endfm
+
+fmod CONNECTION is
+  inc DECLARATION-SORTS . --- ---to include the defined sort "Connection"
+  inc IDENT-COMPENENT-BEHAVIOR .
+  inc PORT .
+  
+  sort  Connections . 
+  
+  pr SET{Connection} .  
+  subsort Set{Connection} < Connections . 
+
+  op (_,_,_,_) : IdentC UsePort IdentC ProPort -> Connection .  --- Define a new operator to create a Connection
+
+  var  L : Connections .  
+  vars poru up : UsePort .
+  var pp : ProPort . 
+  vars id id1 id2 : IdentC .  
+
+  --- some operations related to the connections used later
+
+  op InConnectionIdentUsePort(_,_,_) :  IdentC UsePort Connections -> Bool . --- checks whether an IdentC of a UsePort is in Connections
+
+  eq  InConnectionIdentUsePort(id,poru,empty) = false . 
+  eq InConnectionIdentUsePort(id1,up,((id1,up,id2,pp),L)) = true  .  
+  eq InConnectionIdentUsePort(id,poru,((id1,up,id2,pp),L)) = InConnectionIdentUsePort(id,poru,L) [owise] .  
+
+  op InConnectionIdent(_,_) :  IdentC Connections -> Bool .   --- checks whether an IdentC of a UsePort is in Connections 
+
+  eq  InConnectionIdent(id,empty) = false .  
+  ceq InConnectionIdent(id,((id1,up,id2,pp),L)) = true if (id1 == id or id2 == id) .  
+  eq InConnectionIdent(id,((id1,up,id2,pp),L)) = InConnectionIdent(id,L) [owise] .  
+
+  op ConnectionProIdent(_,_) :  IdentC Connections -> Connections .  --- checks if an IdentC is in role Provide Port within connections
+
+  eq ConnectionProIdent(id,empty) = empty .
+  eq ConnectionProIdent(id2,((id1,up,id2,pp),L)) = (id1,up,id2,pp), ConnectionProIdent(id2,L)  .  
+  eq ConnectionProIdent(id,((id1,up,id2,pp),L)) = ConnectionProIdent(id,L) [owise] .  
+
+endfm
+
+fmod ID-FUNCTIONS-COMMUNICATED is
+
+  inc IDENT-COMPENENT-BEHAVIOR .
+  inc PORT .
+  inc CONNECTION .
+
+  sort IdFunction .
+  sorts IdFuncAct IdFunRef IdFunIscon IdFunDis IdFunComp .
+  subsorts IdFuncAct IdFunRef IdFunIscon IdFunDis IdFunComp < IdFunction .
+
+  --- we have 5 types of functions to communicate
+  op idAct(_,_) : IdentC Port -> IdFuncAct .  ---for active
+  op idRef(_,_) : IdentC Port -> IdFunRef .    --- for refusing
+  op idIsCon(_,_) : IdentC Connection -> IdFunIscon .  --- for a connection if it is established
+  op idDiscon(_,_) : IdentC Connection -> IdFunDis .  --- for diconnect instruction
+  op idComp(_,_) : IdentC IdentB -> IdFunComp .  --- for complete execution of behavior
+  
+endfm
+
+
+fmod TRANSITION-TRANSITION-ENDING is
+  inc PLACE .
+  inc STATION .
+  inc DECLARATION-SORTS . --- to include the defined sorts  Transitionn and TransitionnEnding .
+  sorts Transitionns TransitionnEndings .  --- Transitionn is used  as sort beacause Transition is reserved 
+   
+  pr SET{Transitionn} .
+  subsort Set{Transitionn} < Transitionns .
+  
+  pr SET{TransitionnEnding} .
+  subsort Set{TransitionnEnding} < TransitionnEndings . 
+ 
+  op t(_,_) : Place Stations -> Transitionn .   --- define Transition
+  op te(_,_) : Transitionn Station -> TransitionnEnding . --- define Transition Ending
+
+  var pla1 pla2 : Place .
+  var ps : Places .
+  vars S1 S2 : Stations .
+  vars st1 st2 : Station .
+  var trans : Transitionns .
+  var tes : TransitionnEndings .
+
+  --- some operations related to Transitionn and TransitionnEnding used later
+
+  op PlacesTrans(_) : Transitionns -> Places .  --- recupere l'ensemble de places liés a certaines transitions
+  eq PlacesTrans(empty) = empty .
+  eq PlacesTrans(t(pla1,S1),trans) = pla1, PlacesTrans(trans) .
+
+  op RestrictTransToPlace(_,_) : Transitionns Place -> Transitionns . --- restriction des transitions liée à une place
+  
+  eq RestrictTransToPlace(empty,pla1) = empty .
+  eq RestrictTransToPlace((t(pla1,S1),trans),pla1) = t(pla1,S1), RestrictTransToPlace(trans,pla1)  .
+  eq RestrictTransToPlace((t(pla2,S1),trans),pla1) = RestrictTransToPlace(trans,pla1) [owise] .
+ 
+  op RemoveTransitionnEndingStation(_,_) : TransitionnEndings Station -> TransitionnEndings . 
+  --- delete transition endings of a station 
+  
+  eq RemoveTransitionnEndingStation(empty,st1) = empty .
+  eq RemoveTransitionnEndingStation(te(t(pla1,S1),st1),tes,st1) = RemoveTransitionnEndingStation(tes,st1) .
+  eq RemoveTransitionnEndingStation(te(t(pla1,S1),st1),tes,st2) = te(t(pla1,S1),st1),RemoveTransitionnEndingStation(tes,st2) [owise] .
+  
+  op TranElt(_,_,_) : Places Transitionns Stations -> Transitionns .   
+ ---retrieve transitions starting from a place of a set of places and ending in stations included in a set of stations.
+  
+  eq TranElt(ps,empty,S1) = empty .
+  ceq TranElt(ps,t(pla1,S2),trans,S1) = t(pla1,S2),TranElt(ps,trans,S1) if (pla1 in ps and (S2 subset S1)) .
+  eq TranElt(ps,t(pla1,S2),trans,S1) = TranElt(ps,trans,S1) [owise] .
+ 
+  op TranEndElt(_,_) : Transitionn Stations -> TransitionnEndings .  
+  ---Construct the transition endings of a transition according to a set of Stations
+
+  eq TranEndElt(t(pla1,S2), st1,S1)= union(te(t(pla1,S2),st1), TranEndElt(t(pla1,S2), S1) ) .
+  eq TranEndElt(t(pla1,S2),empty) = empty . 
+
+  op TranEndElts(_) : Transitionns -> TransitionnEndings .  
+  ---Construct the transition endings of a set of transitions
+  
+  eq TranEndElts(t(pla1,S1),trans) = union(TranEndElt(t(pla1,S1),S1), TranEndElts(trans) ) .
+  eq TranEndElts(empty) = empty .
+
+
+  op IsSatisfiedTransitionnEndingStation(_,_,_) : Station Transitionns TransitionnEndings -> Bool .
+  ----is used in the entering place rule
+  ---- the parameters used are : a chosen station, the current transitions of a behavior and the trnasition endings of the instance concerned
+  --- the principale is : if a station is chosen as a station of the ending of a transition 
+  ---then for all transitions of the current behavior for which the chosen station is one of its stations
+  ----the transition endings of these transitions according to this station must be included in the trnasition endings of the instances.
+  eq IsSatisfiedTransitionnEndingStation(st1,empty,tes) = true .
+  ceq IsSatisfiedTransitionnEndingStation(st1,t(pla1,S1),trans,tes) = IsSatisfiedTransitionnEndingStation(st1,trans,tes) 
+  if(not(st1 in S1) or (te(t(pla1,S1),st1) in tes) ) .
+  ceq IsSatisfiedTransitionnEndingStation(st1,t(pla1,S1),trans,tes) = false 
+  if( (st1 in S1) and (not(te(t(pla1,S1),st1) in tes)) ) .
+  ---- if we consider that each place has only one station, we can propose a simplified version
+
+endfm 
+
+fmod MARKING is
+  inc TRANSITION-TRANSITION-ENDING .
+  sort Marking . --- Define a new sort Marking
+  
+  vars ps1 ps2 : Places .
+  vars trans1 trans2 : Transitionns .
+  vars tre1 tre2 : TransitionnEndings .
+  
+  op m(_,_,_) : Places Transitionns TransitionnEndings -> Marking .  --- Define a new operator to create a Marking
+  
+  op PlMar : Marking -> Places . ---- gives the places of a marking
+  eq PlMar(m(ps1,trans1,tre1)) = ps1 .
+
+  op TrMar : Marking -> Transitionns . --- gives the transitions of a marking
+  eq TrMar(m(ps1,trans1,tre1)) = trans1 .
+
+  op TrEnMar : Marking -> TransitionnEndings . --- gives the transition endings of a marking
+  eq TrEnMar(m(ps1,trans1,tre1)) = tre1 .
+
+  op  IntersectionMarking(_,_) : Marking Marking -> Marking . --- intersection of two markings
+  eq  IntersectionMarking(m(ps1,trans1,tre1),m(ps2,trans2,tre2)) = 
+  m(intersection(ps1,ps2),intersection(trans1,trans2),intersection(tre1,tre2)) .
+
+  op NotEmptyMarking(_) : Marking -> Bool .  ---to check if a given Marking is empty
+  eq NotEmptyMarking(m(ps1,trans1,tre1)) = (ps1 =/= empty or trans1 =/= empty or tre1 =/= empty ) .
+
+endfm
+
+fmod BEHAVIOR is
+  inc TRANSITION-TRANSITION-ENDING .
+  inc IDENT-COMPENENT-BEHAVIOR .
+
+  pr DECLARATION-SORTS . --- to include the defined sorts Behavior BehaviorId .
+
+  sorts Behaviors QBehavoirId .  ---define new sorts 
+
+  pr SET{Behavior} .
+  subsort Set{Behavior} < Behaviors .  --- Behaviors is set of Behavior
+    
+  pr LIST{BehaviorId} .
+  subsort List{BehaviorId} < QBehavoirId . --- QBehaviorId est une liste pour les element de sort BehaviorId 
+
+  op b(_) : Transitionns -> Behavior .   ---un behavoir est un ensemble de transitions
+  op (_;_) : IdentB Behavior -> BehaviorId . ---BehaviorId est un Behavior avec Identification
+
+  vars idbehx idbehy : IdentB .
+  var behL : QBehavoirId .
+  var beh : Behavior .
+
+  op ExistIdentBehListBeh(_,_) : IdentB QBehavoirId -> Bool .  ---to check if a behavior identifier is used in the behavior list  
+
+  eq ExistIdentBehListBeh(idbehx, nil) = false .
+  eq ExistIdentBehListBeh(idbehx, (idbehx ; beh) behL) = true .
+  eq ExistIdentBehListBeh(idbehx, (idbehy ; beh) behL) = ExistIdentBehListBeh(idbehx,behL) [owise] .
+
+endfm

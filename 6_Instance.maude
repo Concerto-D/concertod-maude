@@ -1,0 +1,86 @@
+fmod INSTANCE is
+  
+  inc COMPENENT-TYPE .
+  inc BEHAVIOR .
+  inc IDENT-COMPENENT-BEHAVIOR .
+  inc MARKING . 
+  inc DECLARATION-SORTS . ------ to include the defined sort instance
+  sort Instances .
+  pr SET{Instance} .
+  subsort Set{Instance} < Instances . 
+
+  vars pla1 pla2 : Place . 
+  var ps : Places .
+  vars  idcx idcy : IdentC .
+  var idbeh : IdentB .
+  vars S1 S2 : Stations .
+  var bl : QBehavoirId .
+  vars mark mm : Marking .
+  var por : Port . 
+  vars t1 trans : Transitionns .
+  var tre : TransitionnEndings .
+  var ct : ComponentType .
+  var Is : Instances .
+
+  op <_,_,_,_> : IdentC ComponentType QBehavoirId Marking -> Instance . ---Instance definition
+
+  op IdentInstance(_) : Instance -> IdentC .  --- gives the id of an instance
+
+  eq IdentInstance(< idcx,ct,bl,mark > ) = idcx .
+
+  op IsUsedIdentInstances(_,_) : IdentC Instances -> Bool . ---to check if an id of instance is used in the set of instances
+
+  eq IsUsedIdentInstances(idcx, empty) = false .
+  eq IsUsedIdentInstances(idcx, < idcx,ct,bl,mark >, Is) = true  .
+  eq IsUsedIdentInstances(idcx, < idcy,ct,bl,mark >, Is) = IsUsedIdentInstances(idcx, Is) [owise] .
+
+  op InstanceIdent(_,_) : Instances IdentC -> Instance . ---gives the instance identified by a given Id
+  --- applied only when we are sure that the instance exists. 
+  --- So the problem of empty instances doesn't occur.
+  eq  InstanceIdent((< idcx,ct,bl,mark >  ,Is) , idcx ) = < idcx,ct,bl,mark >  .
+  eq  InstanceIdent((< idcy,ct,bl,mark > ,Is) , idcx ) =  InstanceIdent(Is,idcx) [owise] .
+
+  op AllTranQuitGroupPlace(_,_,_) : Place Transitionns Stations -> Bool .  
+  --- check that for a given place and for all its transitions, the stations of its transitions are different from the stations given as parameters
+  --- used later to express that places in a group necessarily leave the group according to current behavior
+  eq  AllTranQuitGroupPlace(pla1,empty,S1) = true .
+  ceq AllTranQuitGroupPlace(pla1,t(pla2,S1),t1,S2) = AllTranQuitGroupPlace(pla1,t1,S2) if ((pla1 =/= pla2)  or   intersection(S1,S2) == empty ) .  
+  eq  AllTranQuitGroupPlace(pla1,t(pla2,S1),t1,S2) = false [owise] .
+
+  op ExistSourceTranPlace(_,_) : Place Transitionns -> Bool .  
+  --- check whether for a place and a set of transitions there is a transition among these transitions whose source place is the place in question .
+  eq  ExistSourceTranPlace(pla1,empty) = false .
+  eq  ExistSourceTranPlace(pla1,t(pla1,S1),t1) = true .
+  eq  ExistSourceTranPlace(pla1,t(pla2,S1),t1) = ExistSourceTranPlace(pla1,t1)  [owise].
+
+  op ExitGroupPlace(_,_,_) : Place QBehavoirId Stations -> Bool .  
+  --- check if a place leaves a group according to the current behavior and the stations associated with the places of the group.
+  eq ExitGroupPlace(pla1,nil,S1) = false . ---a place "puit" does not leave the group
+  eq ExitGroupPlace(pla1,(idbeh ; b(t1)) bl,S1) = ExistSourceTranPlace(pla1,t1) and AllTranQuitGroupPlace(pla1,t1,S1) . 
+
+  op AllExitGroup(_,_,_) : Places QBehavoirId Stations -> Bool .  
+  --- check whether for certain places and according to the current transitions in the behavior list 
+  ---the transitions of these places necessarily leave the group. this last condition is determined on the stations associated with the places (3rd parameter).
+  eq AllExitGroup(empty,bl,S1) = true .  --- empty places satisfay all transitions of empty exit group
+  eq AllExitGroup((pla1,ps),bl,S1)  = ExitGroupPlace(pla1,bl,S1) and AllExitGroup(ps,bl,S1) .  
+
+  op active(_,_) : Instance Port -> Bool .   --- active function
+  ---valid when at least the places, tansitions or transition endings marking is non-empty for a given port
+  eq active(< idcx,ct,bl,m(ps,trans,tre) >,por) = NotEmptyMarking(IntersectionMarking(elements(G(por,ct),ct),m(ps,trans,tre))) .
+
+  op activeMarking(_,_,_) : Instance Port Marking -> Bool . --- special case of active with 3 parameters
+
+  eq activeMarking(< idcx,ct,bl,m(ps,trans,tre) >,por,mm) = NotEmptyMarking(IntersectionMarking(elements(G(por,ct),ct),mm)) .
+
+  op refusing(_,_) : Instance Port -> Bool .  --- refusing function
+  --- a port is refused when only places are marked, 
+  ---and all marked places are ready to leave the group of places of the port according to the current behavior.
+  ceq refusing(< idcx,ct,bl,m(ps,trans,tre) >,por) = true if  
+  (AllExitGroup(PlMar(IntersectionMarking(elements(G(por, ct),ct),m(ps,trans,tre))),bl,StationsGplaces(G(por,ct),GetStationPlaces(ct))) and
+  TrMar(IntersectionMarking(elements(G(por,ct),ct),m(ps,trans,tre))) == empty and 
+  TrEnMar(IntersectionMarking(elements(G(por,ct),ct),m(ps,trans,tre))) == empty 
+   )  .
+
+  eq refusing(< idcx,ct,bl,m(ps,trans,tre) >,por) = false [owise] .
+
+endfm

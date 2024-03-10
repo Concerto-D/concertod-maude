@@ -1,0 +1,96 @@
+--------------------------------------some principal functions used in the operating rules ------------------------------------------------
+---------------------------------------------------------modeled separately  ------------------------------------------------
+
+fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
+
+  inc CONCERTO-D-CONFIGURATION .
+
+  var newMark : Marking .
+  var I : Instances .
+  vars id1 id2 : IdentC .
+  var up : UsePort .
+  var pp : ProPort .
+  var L : Connections .
+  var f : F .
+
+  op NotActUseWhenLeavingPro(_,_,_,_) : Marking Instances F Connections ->  Bool .
+  ---   is used to ensure consistency when firing transitions
+  ---   it takes as parameters when used in the firing transition rule: 
+  ----  the new marking after firing, the instances of the concerned local configuration,
+  ---   F for the evaluation of functions and a subset of Connections relted to the local configuration where the instance concerned by firing is a provider.
+  ---   so for each connection it checks that the firing of the concerned instance (provider) does not affect the corresponding user
+  ---   i.e., if the provider for each connection after a firing goes from active to inactive, this implies that the user must be inactive.
+
+  eq NotActUseWhenLeavingPro(newMark,I,f,(id1,up,id2,pp),L) = NotActUseWhenLeavingPro(newMark,I,f,L) and 
+  (
+    ( (Eval(idAct(id2,pp),f, I,empty,[] ) == true) and 
+    (activeMarking(InstanceIdent(I,id2),pp,newMark) == false )) 
+    implies  (Eval(idAct(id1,up),f, I,empty,[] ) == false) 
+  ) .
+
+  eq NotActUseWhenLeavingPro(newMark,I,f,empty) = true .
+
+endfm
+
+
+fmod CONSISTENCY-PORTS-ENTERING-PLACE is
+
+  inc CONCERTO-D-CONFIGURATION .
+
+  var pla : Place .
+  var ps : Places .
+  var gu :  GUses .
+  vars i i' : Instance .
+  var Is : Instances .
+  var L : Connections .
+  var f : F .
+  vars poru up : UsePort .
+  var pp : ProPort .
+  vars IdentIns id1 id2 : IdentC .
+
+  op ConnectedProvidedAllowed(_,_,_,_,_,_,_) : Place GUses Instance Instance Instances Connections F -> Bool . 
+  ---  for the entreing place rule, in addition to the IsSatisfiedTransitionnEndingStation condition modeled earlier on 
+  ---  the choice of a station as an ending for a transition, we need the satifaction of ConnectedProvidedAllowed
+
+  ---  this function takes as parameters: the place concerned by the station chosen for the rule, 
+  ---  the uses ports of the instance concerned by the rule, the instance itself before the rule is fired and after the rule is fired, 
+  ---  the other instances of the configuration as well as its connections and the tuple F of communication functions.
+
+  ---  so for each use port of the instance concerned by the rule, we perform the following check:
+  ---  if, by applying the rule, the status of this port is changed from inactive to active, 
+  ---  knowing that the place of the function belongs to this use port, then
+  ---  three conditions must be met Connected, provided and allowed
+  eq ConnectedProvidedAllowed(pla,empty,i,i',Is,L,f) = true .
+  ceq ConnectedProvidedAllowed(pla,(up ! ps),gu,i,i',Is,L,f) = 
+  Connected(up,IdentInstance(i),L,f)  and 
+  Provided(up,IdentInstance(i),i,Is,L,f)   and 
+  Allowed(up,IdentInstance(i),i,Is,L,f)   and 
+  ConnectedProvidedAllowed(pla,gu,i,i',Is,L,f) 
+  if  ((pla in ps) and active(i,up) == false and active(i',up) == true  ).     
+  ----------in the previous condition we use active directly since it's a local treatment for the concerned configuration
+  eq ConnectedProvidedAllowed(pla,(up ! ps),gu,i,i',Is,L,f) = ConnectedProvidedAllowed(pla,gu,i,i',Is,L,f) [owise] .
+
+  op Connected(_,_,_,_) : UsePort IdentC Connections F -> Bool . 
+  ---  connection must be verified on both user and provider instances
+  eq Connected(up,id1,empty,f) = false .
+  ceq Connected(up,id1,(id1,up,id2,pp),L,f) = true 
+  if(Eval(idIsCon(id2,(id1,up,id2,pp)),f,empty,(id1,up,id2,pp),L,[] )   == true ) .
+  eq Connected(poru,IdentIns,(id1,up,id2,pp),L,f) = Connected(poru,IdentIns,L,f) [owise] .
+
+  op Provided(_,_,_,_,_) : UsePort IdentC  Instances Connections F -> Bool .
+  --- there is an active provide port connected to this use port of the instance concerned
+  eq Provided(up,id1,Is,empty,f) = false .
+  eq Provided(up,id1,Is,(id1,up,id2,pp),L,f) = (Eval(idAct(id2,pp),f,Is,empty,[] ) == true) .
+  eq Provided(poru,IdentIns,Is,(id1,up,id2,pp),L,f) = Provided(poru,IdentIns,Is,L,f) [owise] .
+
+  op Allowed(_,_,_,_,_) : UsePort  IdentC Instances Connections F -> Bool . 
+  --- also theprovide port connected to this use port of the instance must not be refused
+  eq Allowed(up,id1,Is,empty,f) = false .
+  eq Allowed(up,id1,Is,(id1,up,id2,pp),L,f) = (Eval(idRef(id2,pp),f,Is,empty,[] ) == false) . 
+  eq Allowed(poru,IdentIns,Is,(id1,up,id2,pp),L,f) = Allowed(poru,IdentIns,Is,L,f) [owise] .
+
+endfm
+
+
+
+

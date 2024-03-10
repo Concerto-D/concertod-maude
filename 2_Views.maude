@@ -1,0 +1,78 @@
+--------------------------------------------------------view definitions -----------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------
+view Place from TRIV to DECLARATION-SORTS is
+
+  sort Elt to Place .
+
+endv
+
+view StationPlace from TRIV to DECLARATION-SORTS is
+  sort Elt to StationPlace .
+endv
+
+view Station from TRIV to DECLARATION-SORTS is
+  sort Elt to Station .
+endv
+
+view IdentC from TRIV to DECLARATION-SORTS is
+ sort Elt to IdentC .
+endv
+
+view ElementFunctionL from TRIV to DECLARATION-SORTS is
+  sort Elt to ElementFunctionL .
+endv
+
+view ElementFunctionE from TRIV to DECLARATION-SORTS is
+  sort Elt to ElementFunctionE .
+endv
+
+view send from TRIV to DECLARATION-SORTS is
+  sort Elt to send .
+endv
+
+view rec from TRIV to DECLARATION-SORTS is
+  sort Elt to rec .
+endv
+
+view W from TRIV to DECLARATION-SORTS is
+  sort Elt to W .
+endv
+
+
+view Connection from TRIV to DECLARATION-SORTS is
+ sort Elt to Connection .
+endv
+ 
+view Instance from TRIV to DECLARATION-SORTS is
+  sort Elt to Instance .
+endv
+
+view LocalConfiguration from TRIV to DECLARATION-SORTS is
+  sort Elt to LocalConfiguration .
+endv
+
+
+view Transitionn from TRIV to DECLARATION-SORTS is
+  sort Elt to Transitionn .
+endv
+
+
+view TransitionnEnding from TRIV to DECLARATION-SORTS is
+  sort Elt to TransitionnEnding .
+endv
+
+view Behavior from TRIV to DECLARATION-SORTS is
+  sort Elt to Behavior .
+endv
+
+view BehaviorId from TRIV to DECLARATION-SORTS is
+  sort Elt to BehaviorId .
+endv
+
+view GUse from TRIV to DECLARATION-SORTS is
+sort Elt to GUse .
+endv
+
+view GPro from TRIV to DECLARATION-SORTS is
+ sort Elt to GPro .
+endv

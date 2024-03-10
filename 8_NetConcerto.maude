@@ -1,0 +1,10 @@
+
+fmod NET-D-CONFIGURATION is 
+
+inc CONCERTO-D-CONFIGURATION .
+sorts Net .
+subsort LocalConfiguration < Net .
+op emptyNet : -> Net [ctor] .
+op _;_ : Net Net -> Net [ctor assoc comm id: emptyNet] .
+
+endfm

@@ -1,0 +1,73 @@
+
+***(
+
+
+Modifier les nom variable et fonction
+voir si on peut eviter de dupliquer Componenttype for instance et utiliser id au lieu
+voir semantique Sans F
+
+
+
+
+  This file contains the Maude program for Concerto-D
+    content: 
+    A - several functional modules to describe mainly data types and operations on these types
+    B - a system module to describe operational rules.
+
+    A - Functional modules (FM) :
+    
+    () FM-1- a functional module called DECLARATION-SORTS that defines only a few sorts. 
+        Defining these sorts first enables us to create views on them, which allows us to use the views to 
+        create predefined Maude structures for our sorts. 
+        Example: we need to create a set on our sort Place, so we start with the following steps:
+            * declare Place in the first module.
+            * build a view `Place` which is mapping from the module `TRIV` to the module `DECLARATION-SORTS`.
+              The `TRIV` module is a trivial module which has a single sort Elt. the view will be:
+
+                      view Place from TRIV to DECLARATION-SORTS is
+                        sort Elt to Place .
+                      endv
+              
+            * we can then import pr SET{Place} .  
+            which allows you to parameterize the predefined module SET{X :: TRIV} by Place and thus define a set structure on Place
+    
+      Module DECLARATION-SORTS is followed by a view declarations to use 
+
+    () From FM-2 to FM-14  gives the definition of our used sorts ant its equations, starting from basic sorts such as place, station, port ...etc. 
+       to the Configuration module for our configuration sort
+    
+    () From FM-15 to FM22 Some principal functions used in the operating rules are modeled separately. 
+       These functions are mainly related to :
+       * modules for port consistency during the execution of rules releted to firing transition or entering place
+       * modules to select the external functions required in the rules
+       * modules for defining communication operations
+    
+    () FM23 contains the operational rules of Concert-D         
+)
+
+-------------------------------------------------- fonctional module FM1 -------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+fmod DECLARATION-SORTS is 
+
+sorts Place StationPlace Station IdentC ElementFunctionL ElementFunctionE send rec W Connection Instance LocalConfiguration .
+sorts Transitionn TransitionnEnding Behavior BehaviorId GUse GPro .
+
+
+endfm
+
+load 2_Views 
+load 3_Basic-data-type-Concerto
+load 4_Component
+load 5_Program
+load 6_Instance
+load 7_Configuration
+load 8_NetConcerto
+load 9_Operational-semantics-functions
+load 10_Collect-functions
+load 11_Communication-functions
+load 12_Operational-semantics-Concerto-D
+load model-checker
+load 13_Concerto-model-checking
+
+
+

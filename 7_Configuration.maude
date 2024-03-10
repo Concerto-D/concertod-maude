@@ -1,0 +1,106 @@
+
+fmod CONCERTO-D-CONFIGURATION is 
+
+  inc ID-FUNCTIONS-COMMUNICATED .
+  inc INSTANCE .
+  inc PROGRAM .
+  inc CONNECTION .
+  inc BOOL-WITH-BOT .
+  inc DECLARATION-SORTS . ------ to include the defined sorts LocalConfiguration ElementFunctionL ElementFunctionE send rec W
+
+  sorts  LocalConfigurations  ElementFunctionLs ElementFunctionEs Ws . ---define new sorts of type set
+  sorts  Qsend Qrec  . ---define new sorts of type list
+  sort  F . --- define the new sort F
+  subsort IdFunction  < W . --- Idfunction is also an element of W 
+  subsort IdFunction  < send . ---- Idfunction is also an element of the send 
+
+  --- define lists and sets for the included sorts
+  pr SET{ElementFunctionL} .
+    subsort Set{ElementFunctionL} < ElementFunctionLs . 
+
+  pr SET{ElementFunctionE} .
+    subsort Set{ElementFunctionE} < ElementFunctionEs . 
+  
+  pr SET{W} .
+    subsort Set{W} < Ws . 
+
+  pr SET{LocalConfiguration} .
+    subsort Set{LocalConfiguration} < LocalConfigurations . 
+
+  pr LIST{send} .
+    subsort List{send} < Qsend . 
+
+  pr LIST{rec} .
+    subsort List{rec} < Qrec . 
+
+  vars  idf1 idf2 : IdFunction .
+  var ff : F .
+  var lfs : ElementFunctionLs .
+  var efs : ElementFunctionEs .
+  vars Newbwb bwb : BoolWithBot .
+  var Is : Instances .
+  var idcx : IdentC .
+  var idbeh : IdentB .
+  var ct : ComponentType .
+  var por : Port .
+  var Ls : Connections .
+  var pg : Program .
+  var l : Connection .
+  var behL : QBehavoirId .
+  var mark : Marking .
+
+  op el(_) : IdFunction  ->   ElementFunctionL .  --- local functions of configuration to send their evaluation
+  op ee(_;_) : IdFunction BoolWithBot ->   ElementFunctionE .  ---external function to receive their evaluation with current evaluation. 
+  ---initially the current evaluation is bot
+  op F(_,_) :  ElementFunctionLs ElementFunctionEs -> F .  --- all functions to be communicated local or external
+  op (_;_) :  IdFunction BoolWithBot  -> rec .  --- an element to receive
+  op < (_,_),_,_,_,_,_ > : Instances Connections Program F Qrec Qsend  Ws -> LocalConfiguration .   --- definition of local configuration
+
+  --- some functions on configuration
+  op LocalFun(_,_) : IdFunction F -> Bool .  --- determine whether an Id of a function is local to a configuration
+  eq LocalFun(idf1, F(empty,efs )) = false .
+  eq LocalFun(idf1, F((el(idf1),lfs),efs )) = true .
+  eq LocalFun(idf1, F((el(idf2),lfs),efs )) = LocalFun(idf1, F(lfs,efs )) [owise].
+  
+  op ExternFun(_,_) : IdFunction F -> Bool . --- determine whether an Id of a function is extern to a configuration
+  eq ExternFun(idf1, F(lfs,empty )) = false .
+  eq ExternFun(idf1, F(lfs,ee(idf1 ; bwb),efs )) = true  .
+  eq ExternFun(idf1, F(lfs,ee(idf2 ; bwb),efs )) = ExternFun(idf1, F(lfs,efs)) [owise] .
+
+  op ExternEval(_,_) : IdFunction ElementFunctionEs -> BoolWithBot .  
+  ---obtain the evalaution of an external function from a set of external functions
+  eq ExternEval(idf1, ee(idf1 ; bwb), efs ) = bwb  .
+  eq ExternEval(idf1, ee(idf2 ; bwb), efs ) = ExternEval(idf1, efs ) [owise] .
+
+  op SubValExtern(_,_,_) : ElementFunctionEs IdFunction BoolWithBot -> ElementFunctionEs .  
+  --- substitutes the evaluation of an external function from a set of external functions
+  eq SubValExtern(empty,idf1,Newbwb) = empty . 
+  eq SubValExtern((ee(idf1 ; bwb),efs),idf1,Newbwb) = ee(idf1 ; Newbwb), efs  .
+  eq SubValExtern((ee(idf1 ; bwb),efs),idf2,Newbwb) = ee(idf1 ; bwb), SubValExtern(efs,idf2,Newbwb) [owise] .
+ 
+  op LocalEval(_,_,_,_) : IdFunction Instances Connections Program -> BoolWithBot .  
+  ---- gives the evaluation of a local function according to certain parameters of a given configuration
+
+  ceq LocalEval (idAct(idcx,por), Is,Ls,pg) = false if (not IsUsedIdentInstances(idcx,Is)) .   ---if the instance does not yet exist, then the active function = false
+  eq LocalEval (idAct(idcx,por), Is,Ls,pg) = active(InstanceIdent(Is,idcx),por) [owise] . 
+
+  ceq LocalEval (idRef(idcx,por), Is,Ls,pg) = true if (not IsUsedIdentInstances(idcx,Is)) . ---if the instance does not yet exist, then the refusing function = true 
+  eq LocalEval (idRef(idcx,por), Is,Ls,pg) = refusing(InstanceIdent(Is,idcx),por) [owise] . 
+
+  eq LocalEval (idIsCon(idcx,l), Is,Ls,pg) = l in Ls . 
+
+  eq LocalEval (idDiscon(idcx,l), Is,Ls,pg) = disconnect(l,pg) . 
+
+  eq LocalEval (idComp(idcx,idbeh), < idcx,ct,behL,mark >,Is,Ls,pg) =  (not ExistIdentBehListBeh(idbeh,behL) ) and NotPushBProg(idcx,idbeh,pg) .
+ --- the corresponding instance of a wait behavior exists. Then, the evaluation depends on whether or not push idbeh exists in the program or in the behavior list.
+  ceq LocalEval (idComp(idcx,idbeh), Is,Ls,pg) = true if ((not IsUsedIdentInstances(idcx,Is) ) and NotPushBProg(idcx,idbeh,pg)) .
+  --- special case the instance doesn't exist and even the push of idbeh in the program. this is the case when a program is executed and its instance is deleted.
+  eq LocalEval (idComp(idcx,idbeh), Is,Ls,pg) = false [owise] .
+
+  op Eval(_,_,_,_,_) : IdFunction F Instances Connections Program -> BoolWithBot .  --- gives the evaluation according to the two cases local or external
+  ceq Eval(idf1,ff, Is,Ls,pg ) = LocalEval(idf1,Is,Ls,pg) if (LocalFun(idf1,ff)) .
+  ceq Eval(idf1,F(lfs,efs), Is,Ls,pg ) = ExternEval(idf1,efs) if (ExternFun(idf1,F(lfs,efs))) .
+  eq Eval(idf1,ff,Is,Ls,pg ) = bot [owise] .  -------case normally never occurs a function is local or extern
+
+endfm
+
