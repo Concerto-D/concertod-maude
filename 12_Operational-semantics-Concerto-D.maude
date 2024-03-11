@@ -1,7 +1,45 @@
+***(
+fmod test is
+inc NET-D-CONFIGURATION .
+
+op inlist(_,_) : IdFunction Qrec -> Bool .
+
+vars idf1 idf2 : IdFunction .
+var qr : Qrec .
+var bwb : BoolWithBot .
+var t : Transitionns  .
+
+eq inlist(idf1,nil) = false .
+eq inlist(idf1,(idf1 ; bwb) qr) = true .
+eq inlist(idf1,(idf2 ; bwb) qr) =  inlist(idf1, qr) [owise] .
+
+endfm
+)
+
+
+fmod test is
+inc NET-D-CONFIGURATION .
+
+op inlist(_,_) : IdFunction Qrec -> Bool .
+
+vars idf1 idf2 : IdFunction .
+var qr : Qrec .
+var bwb : BoolWithBot .
+var t : Transitionns  .
+
+eq inlist(idf1,nil) = false .
+ceq inlist(idf1,(idf2 ; bwb) qr) = true if (idf1 == idf2)  .
+ceq inlist(idf1,(idf2 ; bwb) qr) =  inlist(idf1, qr) if (idf1 =/= idf2) .
+
+
+
+endfm
+
+
 
 mod OPERATIONAL-SEMANTICS is
 
-inc NET-D-CONFIGURATION .
+inc test .
 
 inc CONSISTENCY-PORTS-FIRING-TRANSITION .
 inc CONSISTENCY-PORTS-ENTERING-PLACE .
@@ -62,13 +100,10 @@ if ( ExternFun(idf,Fx) and LocalFun(idf,Fy) ) .
 ---------- modif
 
 
-
---------attenstion local functions se change de spec initial a final . verifie not (occurs(idf,QRy))
-
 crl [SendEvalFun] : 
 < (Ix,Lx),Rx,F(efls,efes), QRx, idf QSx, Wx > ; < (Iy,Ly),Ry,Fy,QRy,QSy,Wy >   =>
 < (Ix,Lx),Rx,F(efls,UpDateExternalFunctionsSend(efes,IdentConnectionWithActive(Lx,idf,LocalEval(idf,Ix,Lx,Rx)))),QRx,QSx, Wx > ; < (Iy,Ly),Ry,Fy,append(QRy, (idf ; LocalEval(idf,Ix,Lx,Rx)) ),QSy,Wy >  
-if ( LocalFun(idf,F(efls,efes)) and ((idf in Wy) and (true) )  ) .
+if ( LocalFun(idf,F(efls,efes)) and ((idf in Wy) and (not inlist(idf,QRy) )  ) ).
 
 crl [ReceivesRequest] : 
 < (Ix,Lx),Rx,Fx, (idf ; valf ) QRx,  QSx, Wx >   =>
@@ -187,3 +222,4 @@ if (Eval(idComp(id,idbeh),Fx,Ix,Lx, Rx) == true ) .
 
 endm
 
+  

@@ -5,7 +5,7 @@ mod Concerto-PREDS is
   protecting OPERATIONAL-SEMANTICS . 
   including SATISFACTION .
   subsort Net < State .
-  ops DeployC1 DeployS DeployC2 :  -> Prop .
+  ops DeployC1 DeployS DeployC2 W1V S1V R1V W3V S3V R3V W2V S2V R2V :  -> Prop .
 
   var Q : Prop .
 
@@ -51,6 +51,24 @@ mod Concerto-PREDS is
   eq (< (< idc1,ct,qb,m(p2, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= DeployC1 = true .
   eq (< (< idc2,ct,qb,m(p2, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= DeployC2 = true .
   eq (< (< idc3,ct,qb,m(q2, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= DeployS = true .
+  
+  
+  ceq (< (< idc1,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= W1V  = true if (Wx == empty) .
+  ceq (< (< idc1,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= S1V  = true if (QSx == nil) .
+  ceq (< (< idc1,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= R1V  = true if (QRx == nil) .
+
+  ceq (< (< idc2,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= W2V  = true if (Wx == empty) .
+  ceq (< (< idc2,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= S2V  = true if (QSx == nil) .
+  ceq (< (< idc2,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= R2V  = true if (QRx == nil) .
+
+
+
+  ceq (< (< idc3,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= W3V  = true if (Wx == empty) .
+  ceq (< (< idc3,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= S3V  = true if (QSx == nil) .
+  ceq (< (< idc3,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= R3V  = true if (QRx == nil) .
+ 
+
+
   eq gconfig  |= Q = false [owise] .
 
 endm
@@ -81,19 +99,14 @@ eq cc11 =  < (o1, o2) , o1 , (s1 ; o1, s2 ; o2), (t(o1, s2) ), (b(t(o1, s2))) , 
 eq cc22 =  < (p1, p2) , p1 , (r1 ; p1, r2 ; p2), (t(p1, r2) ), (b(t(p1, r2))) , (us1 ! (p2)) , empty     > .
 eq cc33 =  < (q1, q2) , q1 , (t1 ; q1, t2 ; q2), (t(q1, t2) ), (b(t(q1, t2))) , empty , (pr1 ? (q2))   > .
 
+---- 
 eq confx = < (empty, empty) , add(idc1,cc22)  . con(idc1,us1,idc3,pr1) .  pushB(idc1,b(t(p1, r2)),idb1) . [] , F(el(idIsCon(idc1,(idc1,us1,idc3,pr1))) , el(idComp(idc1,idb1)) , el(idAct(idc1,us1)) , el(idDiscon(idc1,(idc1,us1,idc3,pr1)) ) , ee(idIsCon(idc3,(idc1,us1,idc3,pr1)) ; bot) , ee(idComp(idc3,idb3) ; bot ) , ee(idRef(idc3,pr1) ; bot) , ee(idAct(idc3,pr1) ; bot) , ee(idDiscon(idc3,(idc1,us1,idc3,pr1)) ; bot)) , nil , nil  , empty >  .
 eq confy = < (empty, empty) , add(idc2,cc22)  . con(idc2,us1,idc3,pr1) .   pushB(idc2,b(t(p1, r2)),idb2) . [] , F(el(idIsCon(idc2,(idc2,us1,idc3,pr1))) , el(idComp(idc2,idb2)) , el(idAct(idc2,us1)) , el(idDiscon(idc2,(idc2,us1,idc3,pr1)) ) , ee(idIsCon(idc3,(idc2,us1,idc3,pr1)) ; bot) , ee(idComp(idc3,idb3) ; bot ) , ee(idRef(idc3,pr1) ; bot) , ee(idAct(idc3,pr1) ; bot) , ee(idDiscon(idc3,(idc2,us1,idc3,pr1)) ; bot)) , nil , nil  , empty >  .
 eq confz = < (empty, empty) , add(idc3,cc33)  . con(idc1,us1,idc3,pr1) .  con(idc2,us1,idc3,pr1) . pushB(idc3,b(t(q1, t2)),idb3) . [] , F(el(idIsCon(idc3,(idc2,us1,idc3,pr1))) , el(idComp(idc3,idb3)) , el(idAct(idc3,pr1)) , el(idRef(idc3,pr1)) , el(idDiscon(idc3,(idc2,us1,idc3,pr1))) , el(idIsCon(idc3,(idc1,us1,idc3,pr1))) , el(idDiscon(idc3,(idc1,us1,idc3,pr1))) , ee(idIsCon(idc2,(idc2,us1,idc3,pr1)) ; bot) , ee(idComp(idc2,idb2) ; bot ) , ee(idAct(idc2,us1) ; bot) , ee(idDiscon(idc2,(idc2,us1,idc3,pr1)) ; bot) , ee(idIsCon(idc1,(idc1,us1,idc3,pr1)) ; bot) , ee(idComp(idc1,idb1) ; bot ) , ee(idAct(idc1,us1) ; bot) , ee(idDiscon(idc1,(idc1,us1,idc3,pr1)) ; bot)) , nil , nil , empty >  .
  
 
 
-
 ---F(el(idIsCon(idc3,(idc2,us1,idc3,pr1))) , el(idComp(idc3,idb3)) , el(idAct(idc3,pr1)) , el(idRef(idc3,pr1)) , el(idDiscon(idc3,(idc2,us1,idc3,pr1))) , el(idIsCon(idc3,(idc1,us1,idc3,pr1))) , el(idDiscon(idc3,(idc1,us1,idc3,pr1))) , ee(idIsCon(idc2,(idc2,us1,idc3,pr1)) ; bot) , ee(idComp(idc2,idb2) ; bot ) , ee(idAct(idc2,us1) ; bot) , ee(idDiscon(idc2,(idc2,us1,idc3,pr1)) ; bot) , ee(idIsCon(idc1,(idc1,us1,idc3,pr1)) ; bot) , ee(idComp(idc1,idb1) ; bot ) , ee(idAct(idc1,us1) ; bot) , ee(idDiscon(idc1,(idc&,us1,idc3,pr1)) ; bot)) , nil , nil , empty >  .
-
-
-
- 
-
 
  eq  test = confy ; confx ; confz .
 
@@ -105,17 +118,22 @@ endm
 ---red modelCheck(test, [] ( (DeployC1 \/ DeployC2)  -> DeployS )) .
 
 
-----red modelCheck(test, [] ( DeployS -> <> ( DeployC2 ) )) .
+---red modelCheck(test, [] ( DeployS -> ( (<> ( DeployC2 ) )))) .
 
+----   red modelCheck(test, [] ( ~  W1V  )) .
+
+   -----red modelCheck (test, [] (( W3V /\ S3V /\ R3V)  -> ~ (~ W1V /\  R1V   )  )  ) .
+
+
+
+
+--- red modelCheck (test, [] (( W3V /\ S3V /\ R3V)  ->  (~ W2V \/  ~ R2V   )  )  ) .    normelement fausse donne contre example
+----red modelCheck(test, [] ( deadlock ->  ( DeployS  /\  DeployC1   ))) .
  ---red modelCheck(test2instances, <> ( DeployC1 )) .   
 
 ---red modelCheck(test2instances, [] ( DeployC1 -> DeployS )) .
  ---red modelCheck(test3instances, [] ( (DeployC1 \/ DeployC2)  -> DeployS )) .  
  ---rew [10000] test3instances .
-
-
-
-
 --- red modelCheck(gconf1, [] ( d1 -> d2 )) . il tourne infiniement
 --- red modelCheck(gconf1, [] ( (d1 \/ d2) -> d3 )) .
 
