@@ -63,7 +63,7 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   eq ConnectedProvidedAllowed(pla,empty,i,i',Is,L,f) = true .
   ceq ConnectedProvidedAllowed(pla,(up ! ps),gu,i,i',Is,L,f) = 
   Connected(up,IdentInstance(i),L,f)  and 
-  Provided(up,IdentInstance(i),i,Is,L,f)   and 
+ --- Provided(up,IdentInstance(i),i,Is,L,f)   and 
   Allowed(up,IdentInstance(i),i,Is,L,f)   and 
   ConnectedProvidedAllowed(pla,gu,i,i',Is,L,f) 
   if  ((pla in ps) and active(i,up) == false and active(i',up) == true  ).     
@@ -77,11 +77,11 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   if(Eval(idIsCon(id2,(id1,up,id2,pp)),f,empty,(id1,up,id2,pp),L,[] )   == true ) .
   eq Connected(poru,IdentIns,(id1,up,id2,pp),L,f) = Connected(poru,IdentIns,L,f) [owise] .
 
-  op Provided(_,_,_,_,_) : UsePort IdentC  Instances Connections F -> Bool .
+  ---op Provided(_,_,_,_,_) : UsePort IdentC  Instances Connections F -> Bool .
   --- there is an active provide port connected to this use port of the instance concerned
-  eq Provided(up,id1,Is,empty,f) = false .
-  eq Provided(up,id1,Is,(id1,up,id2,pp),L,f) = (Eval(idAct(id2,pp),f,Is,empty,[] ) == true) .
-  eq Provided(poru,IdentIns,Is,(id1,up,id2,pp),L,f) = Provided(poru,IdentIns,Is,L,f) [owise] .
+  ---eq Provided(up,id1,Is,empty,f) = false .
+  ---eq Provided(up,id1,Is,(id1,up,id2,pp),L,f) = (Eval(idAct(id2,pp),f,Is,empty,[] ) == true) .
+  ---eq Provided(poru,IdentIns,Is,(id1,up,id2,pp),L,f) = Provided(poru,IdentIns,Is,L,f) [owise] .
 
   op Allowed(_,_,_,_,_) : UsePort  IdentC Instances Connections F -> Bool . 
   --- also theprovide port connected to this use port of the instance must not be refused

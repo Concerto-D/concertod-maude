@@ -58,12 +58,13 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
   var qsend : Qsend .
 
 
+----------------modifier par la supprission de provided
+
   op CollectFunctionsEnteringPlace(_,_,_,_,_,_,_,_,_) : Place GUses Instance Instance Instances Connections F Ws Qsend -> Qsend .
   --- we follow the same reasoning used to collect external functions for firing
   eq CollectFunctionsEnteringPlace(pla,empty,i,i',Is,L,f,ws,qsend) = nil .
   ceq CollectFunctionsEnteringPlace(pla,(up ! ps),gu,i,i',Is,L,f,ws,qsend) = 
-  append(CollectConnected(up,IdentInstance(i),L,f,ws,qsend),append(CollectProvided(up,IdentInstance(i),i,Is,L,f,ws,qsend), 
-  append(CollectAllowed(up,IdentInstance(i),i,Is,L,f,ws,qsend), CollectFunctionsEnteringPlace(pla,gu,i,i',Is,L,f,ws,qsend)))) 
+  append(CollectConnected(up,IdentInstance(i),L,f,ws,qsend),append(CollectAllowed(up,IdentInstance(i),i,Is,L,f,ws,qsend), CollectFunctionsEnteringPlace(pla,gu,i,i',Is,L,f,ws,qsend))) 
   if  ((pla in ps) and active(i,up) == false and active(i',up) == true  ).   
   eq CollectFunctionsEnteringPlace(pla,(up ! ps),gu,i,i',Is,L,f,ws,qsend) = CollectFunctionsEnteringPlace(pla,gu,i,i',Is,L,f,ws,qsend) [owise] .
 
@@ -79,7 +80,7 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
     ) .
   eq CollectConnected(poru,IdentIns,(id1,up,id2,pp),L,f,ws,qsend) = CollectConnected(poru,IdentIns,L,f,ws,qsend) [owise] .
 
-  op CollectProvided(_,_,_,_,_,_,_) : UsePort IdentC  Instances Connections F Ws Qsend -> Qsend . 
+***( op CollectProvided(_,_,_,_,_,_,_) : UsePort IdentC  Instances Connections F Ws Qsend -> Qsend . 
   eq CollectProvided(up,id1,Is,empty,f,ws,qsend) = nil .
   ceq CollectProvided(up,id1,Is,(id1,up,id2,pp),L,f,ws,qsend) = idAct(id2,pp)
   if (
@@ -89,6 +90,7 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
       ( Eval(idAct(id2,pp),f,empty,empty,[] )   == false  or Eval(idAct(id2,pp),f,empty,empty,[] )   == bot )   
     ) .
   eq CollectProvided(poru,IdentIns,Is,(id1,up,id2,pp),L,f,ws,qsend) = CollectProvided(poru,IdentIns,Is,L,f,ws,qsend) [owise] .
+   )
 
   op CollectAllowed(_,_,_,_,_,_,_) : UsePort  IdentC Instances Connections F Ws Qsend -> Qsend . 
   eq CollectAllowed(up,id1,Is,empty,f,ws,qsend) = nil .
