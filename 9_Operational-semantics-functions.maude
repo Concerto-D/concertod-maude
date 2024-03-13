@@ -11,9 +11,11 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
   var up : UsePort .
   var pp : ProPort .
   var L : Connections .
-  var f : F .
+  var f : ExternalFunctions .
 
-  op NotActUseWhenLeavingPro(_,_,_,_) : Marking Instances F Connections ->  Bool .
+   var idcs : IdentCs .
+
+  op NotActUseWhenLeavingPro(_,_,_,_,_) : IdentCs Marking Instances ExternalFunctions Connections ->  Bool .
   ---   is used to ensure consistency when firing transitions
   ---   it takes as parameters when used in the firing transition rule: 
   ----  the new marking after firing, the instances of the concerned local configuration,
@@ -21,14 +23,14 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
   ---   so for each connection it checks that the firing of the concerned instance (provider) does not affect the corresponding user
   ---   i.e., if the provider for each connection after a firing goes from active to inactive, this implies that the user must be inactive.
 
-  eq NotActUseWhenLeavingPro(newMark,I,f,(id1,up,id2,pp),L) = NotActUseWhenLeavingPro(newMark,I,f,L) and 
+  eq NotActUseWhenLeavingPro(idcs,newMark,I,f,(id1,up,id2,pp),L) = NotActUseWhenLeavingPro(idcs,newMark,I,f,L) and 
   (
-    ( (Eval(idAct(id2,pp),f, I,empty,[] ) == true) and 
+    ( (Eval(idcs,idAct(id2,pp),f, I,empty,[] ) == true) and 
     (activeMarking(InstanceIdent(I,id2),pp,newMark) == false )) 
-    implies  (Eval(idAct(id1,up),f, I,empty,[] ) == false) 
+    implies  (Eval(idcs,idAct(id1,up),f, I,empty,[] ) == false) 
   ) .
 
-  eq NotActUseWhenLeavingPro(newMark,I,f,empty) = true .
+  eq NotActUseWhenLeavingPro(idcs,newMark,I,f,empty) = true .
 
 endfm
 
@@ -43,12 +45,16 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   vars i i' : Instance .
   var Is : Instances .
   var L : Connections .
-  var f : F .
+  var f : ExternalFunctions .
+ 
   vars poru up : UsePort .
   var pp : ProPort .
   vars IdentIns id1 id2 : IdentC .
 
-  op ConnectedProvidedAllowed(_,_,_,_,_,_,_) : Place GUses Instance Instance Instances Connections F -> Bool . 
+  
+   var idcs : IdentCs .
+
+  op ConnectedProvidedAllowed(_,_,_,_,_,_,_,_) : IdentCs Place GUses Instance Instance Instances Connections ExternalFunctions -> Bool . 
   ---  for the entreing place rule, in addition to the IsSatisfiedTransitionnEndingStation condition modeled earlier on 
   ---  the choice of a station as an ending for a transition, we need the satifaction of ConnectedProvidedAllowed
 
@@ -60,22 +66,22 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   ---  if, by applying the rule, the status of this port is changed from inactive to active, 
   ---  knowing that the place of the function belongs to this use port, then
   ---  three conditions must be met Connected, provided and allowed
-  eq ConnectedProvidedAllowed(pla,empty,i,i',Is,L,f) = true .
-  ceq ConnectedProvidedAllowed(pla,(up ! ps),gu,i,i',Is,L,f) = 
-  Connected(up,IdentInstance(i),L,f)  and 
+  eq ConnectedProvidedAllowed(idcs,pla,empty,i,i',Is,L,f) = true .
+  ceq ConnectedProvidedAllowed(idcs,pla,(up ! ps),gu,i,i',Is,L,f) = 
+  Connected(idcs,up,IdentInstance(i),L,f)  and 
  --- Provided(up,IdentInstance(i),i,Is,L,f)   and 
-  Allowed(up,IdentInstance(i),i,Is,L,f)   and 
-  ConnectedProvidedAllowed(pla,gu,i,i',Is,L,f) 
+  Allowed(idcs,up,IdentInstance(i),i,Is,L,f)   and 
+  ConnectedProvidedAllowed(idcs,pla,gu,i,i',Is,L,f) 
   if  ((pla in ps) and active(i,up) == false and active(i',up) == true  ).     
   ----------in the previous condition we use active directly since it's a local treatment for the concerned configuration
-  eq ConnectedProvidedAllowed(pla,(up ! ps),gu,i,i',Is,L,f) = ConnectedProvidedAllowed(pla,gu,i,i',Is,L,f) [owise] .
+  eq ConnectedProvidedAllowed(idcs,pla,(up ! ps),gu,i,i',Is,L,f) = ConnectedProvidedAllowed(idcs,pla,gu,i,i',Is,L,f) [owise] .
 
-  op Connected(_,_,_,_) : UsePort IdentC Connections F -> Bool . 
+  op Connected(_,_,_,_,_) : IdentCs UsePort IdentC Connections ExternalFunctions -> Bool . 
   ---  connection must be verified on both user and provider instances
-  eq Connected(up,id1,empty,f) = false .
-  ceq Connected(up,id1,(id1,up,id2,pp),L,f) = true 
-  if(Eval(idIsCon(id2,(id1,up,id2,pp)),f,empty,(id1,up,id2,pp),L,[] )   == true ) .
-  eq Connected(poru,IdentIns,(id1,up,id2,pp),L,f) = Connected(poru,IdentIns,L,f) [owise] .
+  eq Connected(idcs,up,id1,empty,f) = false .
+  ceq Connected(idcs,up,id1,(id1,up,id2,pp),L,f) = true 
+  if(Eval(idcs,idIsCon(id2,(id1,up,id2,pp)),f,empty,(id1,up,id2,pp),L,[] )   == true ) .
+  eq Connected(idcs,poru,IdentIns,(id1,up,id2,pp),L,f) = Connected(idcs,poru,IdentIns,L,f) [owise] .
 
   ---op Provided(_,_,_,_,_) : UsePort IdentC  Instances Connections F -> Bool .
   --- there is an active provide port connected to this use port of the instance concerned
@@ -83,11 +89,11 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   ---eq Provided(up,id1,Is,(id1,up,id2,pp),L,f) = (Eval(idAct(id2,pp),f,Is,empty,[] ) == true) .
   ---eq Provided(poru,IdentIns,Is,(id1,up,id2,pp),L,f) = Provided(poru,IdentIns,Is,L,f) [owise] .
 
-  op Allowed(_,_,_,_,_) : UsePort  IdentC Instances Connections F -> Bool . 
+  op Allowed(_,_,_,_,_,_) : IdentCs UsePort  IdentC Instances Connections ExternalFunctions -> Bool . 
   --- also theprovide port connected to this use port of the instance must not be refused
-  eq Allowed(up,id1,Is,empty,f) = false .
-  eq Allowed(up,id1,Is,(id1,up,id2,pp),L,f) = (Eval(idRef(id2,pp),f,Is,empty,[] ) == false) . 
-  eq Allowed(poru,IdentIns,Is,(id1,up,id2,pp),L,f) = Allowed(poru,IdentIns,Is,L,f) [owise] .
+  eq Allowed(idcs,up,id1,Is,empty,f) = false .
+  eq Allowed(idcs,up,id1,Is,(id1,up,id2,pp),L,f) = (Eval(idcs,idRef(id2,pp),f,Is,empty,[] ) == false) . 
+  eq Allowed(idcs,poru,IdentIns,Is,(id1,up,id2,pp),L,f) = Allowed(idcs,poru,IdentIns,Is,L,f) [owise] .
 
 endfm
 

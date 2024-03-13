@@ -6,7 +6,7 @@ inc CONCERTO-D-CONFIGURATION .
 
 
 var idents : IdentCs . 
-var efs : ElementFunctionEs .
+var f : ExternalFunctions .
 var bwb : BoolWithBot .
 var L : Connections .
 var up : UsePort .
@@ -14,11 +14,11 @@ var pp : ProPort .
 var idf1 : IdFunction .
 vars id1 id2 : IdentC .
 
-op UpDateExternalFunctionsSend(_,_) : ElementFunctionEs IdentCs -> ElementFunctionEs .  -----------IdentCs contain one or 0 element
-eq  UpDateExternalFunctionsSend(efs,empty) = efs .
+op UpDateExternalFunctionsSend(_,_) : ExternalFunctions IdentCs -> ExternalFunctions .  -----------IdentCs contain one or 0 element
+eq  UpDateExternalFunctionsSend(f,empty) = f .
 eq  UpDateExternalFunctionsSend(empty,idents) = empty .
-ceq UpDateExternalFunctionsSend(ee(idRef(id1,pp) ; bwb),efs,idents) = ee(idRef(id1,pp) ; bot), efs if (id1 in idents ) .
-eq  UpDateExternalFunctionsSend(ee(idf1 ; bwb),efs,idents) = ee(idf1 ; bwb), UpDateExternalFunctionsSend(efs,idents) [owise] .
+ceq UpDateExternalFunctionsSend(f(idRef(id1,pp) ; bwb),f,idents) = f(idRef(id1,pp) ; bot), f if (id1 in idents ) .
+eq  UpDateExternalFunctionsSend(f(idf1 ; bwb),f,idents) = f(idf1 ; bwb), UpDateExternalFunctionsSend(f,idents) [owise] .
 
 
 op IdentConnectionWithActive(_,_,_) : Connections IdFunction BoolWithBot -> IdentCs .

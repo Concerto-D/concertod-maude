@@ -70,6 +70,7 @@ fmod IDENT-COMPENENT-BEHAVIOR is
   pr SET{IdentC} .
   subsort Set{IdentC} < IdentCs . 
   
+    ops idc1 idc2 idc3 idc4 : -> IdentC .
 
 endfm
 
@@ -138,11 +139,15 @@ fmod ID-FUNCTIONS-COMMUNICATED is
   inc IDENT-COMPENENT-BEHAVIOR .
   inc PORT .
   inc CONNECTION .
-
+  
   sort IdFunction .
   sorts IdFuncAct IdFunRef IdFunIscon IdFunDis IdFunComp .
   subsorts IdFuncAct IdFunRef IdFunIscon IdFunDis IdFunComp < IdFunction .
-
+  var idf : IdFunction .
+  var l : Connection .
+  var idc : IdentC .
+  var p : Port .
+  var idb : IdentB .
   --- we have 5 types of functions to communicate
   op idAct(_,_) : IdentC Port -> IdFuncAct .  ---for active
   op idRef(_,_) : IdentC Port -> IdFunRef .    --- for refusing
@@ -150,6 +155,14 @@ fmod ID-FUNCTIONS-COMMUNICATED is
   op idDiscon(_,_) : IdentC Connection -> IdFunDis .  --- for diconnect instruction
   op idComp(_,_) : IdentC IdentB -> IdFunComp .  --- for complete execution of behavior
   
+  --- get the identifier op a IdFunction 'new modification'
+  op GetIdentForIdfunction(_) : IdFunction -> IdentC .
+  eq GetIdentForIdfunction(idAct(idc,p)) = idc .
+  eq GetIdentForIdfunction(idRef(idc,p)) = idc .
+  eq GetIdentForIdfunction(idIsCon(idc,l)) = idc .
+  eq GetIdentForIdfunction(idDiscon(idc,l)) = idc .
+  eq GetIdentForIdfunction(idComp(idc,idb)) = idc .
+
 endfm
 
 
