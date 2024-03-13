@@ -18,12 +18,9 @@ view IdentC from TRIV to DECLARATION-SORTS is
  sort Elt to IdentC .
 endv
 
-view ElementFunctionL from TRIV to DECLARATION-SORTS is
-  sort Elt to ElementFunctionL .
-endv
 
-view ElementFunctionE from TRIV to DECLARATION-SORTS is
-  sort Elt to ElementFunctionE .
+view ExternalFunction from TRIV to DECLARATION-SORTS is
+  sort Elt to ExternalFunction .
 endv
 
 view send from TRIV to DECLARATION-SORTS is
