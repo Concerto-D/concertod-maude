@@ -32,7 +32,7 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-FIRING is
   (   
   (not idAct(id1,up) in ws) and 
   (not (occurs(idAct(id1,up),qsend)))  and
-    ExternFun(idAct(id1,up),f) and
+   (not LocalFun(idAct(id1,up),idcs)) and
   ( Eval(idcs,idAct(id1,up),f,empty,empty,[] )   == true  or Eval(idcs,idAct(id1,up),f,empty,empty,[] )   == bot ) and
   ( (LocalEval(idAct(id2,pp),Is,empty,[] ) == true) and (activeMarking(InstanceIdent(Is,id2),pp,newMark) == false ))  
   ) .
@@ -41,6 +41,8 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-FIRING is
 
 
 endfm
+
+
 
 fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
 
@@ -74,25 +76,16 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
   eq CollectConnected(idcs,up,id1,empty,f,ws,qsend) = nil .
   ceq CollectConnected(idcs,up,id1,(id1,up,id2,pp),L,f,ws,qsend) = idIsCon(id2,(id1,up,id2,pp))
   if(
+    
     (not (idIsCon(id2,(id1,up,id2,pp)) in ws)) and 
     (not (occurs(idIsCon(id2,(id1,up,id2,pp)),qsend)))  and
-    (not LocalFun(idIsCon(id2,(id1,up,id2,pp)),idcs)) and
+       (not (id2 in idcs)) and
+   ---- (not LocalFun(idIsCon(id2,(id1,up,id2,pp)),idcs)) 
     ( Eval(idcs,idIsCon(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == false  or Eval(idcs,idIsCon(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == bot )
     
     ) .
   eq CollectConnected(idcs,poru,IdentIns,(id1,up,id2,pp),L,f,ws,qsend) = CollectConnected(idcs,poru,IdentIns,L,f,ws,qsend) [owise] .
 
-***( op CollectProvided(_,_,_,_,_,_,_) : UsePort IdentC  Instances Connections F Ws Qsend -> Qsend . 
-  eq CollectProvided(up,id1,Is,empty,f,ws,qsend) = nil .
-  ceq CollectProvided(up,id1,Is,(id1,up,id2,pp),L,f,ws,qsend) = idAct(id2,pp)
-  if (
-      (not idAct(id2,pp) in ws) and 
-      (not (occurs(idAct(id2,pp),qsend)))  and
-      ExternFun(idAct(id2,pp),f) and
-      ( Eval(idAct(id2,pp),f,empty,empty,[] )   == false  or Eval(idAct(id2,pp),f,empty,empty,[] )   == bot )   
-    ) .
-  eq CollectProvided(poru,IdentIns,Is,(id1,up,id2,pp),L,f,ws,qsend) = CollectProvided(poru,IdentIns,Is,L,f,ws,qsend) [owise] .
-   )
 
   op CollectAllowed(_,_,_,_,_,_,_,_) : IdentCs UsePort  IdentC Instances Connections ExternalFunctions Ws Qsend -> Qsend . 
   eq CollectAllowed(idcs,up,id1,Is,empty,f,ws,qsend) = nil .
@@ -100,7 +93,8 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
   if (
       (not idRef(id2,pp) in ws) and 
       (not (occurs(idRef(id2,pp),qsend)))  and
-      (not LocalFun(idRef(id2,pp),idcs)) and
+      (not (id2 in idcs)) and
+      --- (not LocalFun(idRef(id2,pp),idcs))    
       ( Eval(idcs,idRef(id2,pp),f,empty,empty,[] )   == true  or Eval(idcs,idRef(id2,pp),f,empty,empty,[])   == bot )   
     ) .
   eq CollectAllowed(idcs,poru,IdentIns,Is,(id1,up,id2,pp),L,f,ws,qsend) = CollectAllowed(idcs,poru,IdentIns,Is,L,f,ws,qsend) [owise] .

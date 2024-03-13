@@ -176,7 +176,7 @@ if
 (IsSatisfiedTransitionnEndingStation(s,b,te(t(q,s,S),s), tes) 
 and 
 
-ConnectedProvidedAllowed (IdsNodx,Pi(s,GetStationPlaces(ct)), GetUsePort(ct), < idd1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >,
+ConnectedAndAllowed(IdsNodx,Pi(s,GetStationPlaces(ct)), GetUsePort(ct), < idd1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >,
 < idd1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) >,Ix, Lx,Fx)) 
 .  
 
@@ -208,11 +208,12 @@ if
 < idd1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) >,Ix, Lx,Fx,Wx,QSx) =/= nil )
 ) .
 
-
+***(
 crl [ExternalFunctionsForDisconnectPorts] : 
 < IdsNodx,(Ix,Lx), dcon(idd1,use,idd2,pro) . Rx,Fx, QRx, QSx, Wx >    =>  
 < IdsNodx,(Ix,Lx), dcon(idd1,use,idd2,pro) . Rx,Fx, QRx, append(QSx,CollectFunctionsDiscon(IdsNodx,(idd1,use,idd2,pro),Fx,Wx,QSx)), Wx >   
 if (((idd1,use,idd2,pro) in Lx)  and (CollectFunctionsDiscon(IdsNodx,(idd1,use,idd2,pro),Fx,Wx,QSx) =/= nil) ) .
+)
 
 crl [ExternalFunctionsForWait] :
 < IdsNodx,(Ix,Lx), wait(idd1,idbeh) . Rx,Fx, QRx, QSx, Wx >     =>  
@@ -235,7 +236,7 @@ crl [ConnectPorts] : < IdsNodx,(Ix,Lx), con(id,use,idd1,pro) . Rx,Fx, QRx, QSx, 
 if (id =/= idd1 and ((InstanceIdent(Ix,id) in Ix) or (InstanceIdent(Ix,idd1) in Ix)) and (not InConnectionIdentUsePort(id,use,Lx)) ) . 
 
 
-
+***(
 crl [DisconnectPorts] : < IdsNodx,(Ix,Lx), dcon(id,use,idd1,pro) . Rx,Fx, QRx, QSx, Wx >     =>  
 < IdsNodx,(Ix,delete((id,use,idd1,pro),Lx)), Rx,Fx, QRx, QSx, Wx >  
 if
@@ -249,6 +250,7 @@ Eval(IdsNodx,idAct(id,use),Fx,Ix,Lx,dcon(id,use,idd1,pro) . Rx) == false
 
 ) .
 
+)
 
 crl [PushingBehavior] : < IdsNodx,(< idd1,ct,qb,mrk >,Ix,Lx), pushB(id, behx, idbeh) . Rx,Fx, QRx, QSx, Wx > 
 =>   < IdsNodx,(< idd1,ct,append(qb,(idbeh ; behx)),mrk >,Ix,Lx),  Rx,Fx, QRx, QSx, Wx >  
