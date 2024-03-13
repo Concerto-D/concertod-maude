@@ -1,0 +1,888 @@
+{   
+    "components":[
+        {
+            "name": "mariadb_master",
+            "short": "mdbm",
+            "places": [
+                "initiated",
+                "configured",
+                "bootstrapped",
+                "restarted",
+                "registered",
+                "deployed",
+                "interrupted"
+            ],
+            "start": "initiated",
+            "transitions": [
+                {
+                    "name": "configure0",
+                    "from": "initiated",
+                    "to": "configured",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "configure1",
+                    "from": "initiated",
+                    "to": "configured",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "bootstrap",
+                    "from": "configured",
+                    "to": "bootstrapped",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "start",
+                    "from": "bootstrapped",
+                    "to": "restarted",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "register",
+                    "from": "restarted",
+                    "to": "registered",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "deploy",
+                    "from": "registered",
+                    "to": "deployed",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "interrupt",
+                    "from": "deployed",
+                    "to": "interrupted",
+                    "behavior": "interrupt"
+                },
+                {
+                    "name": "pause",
+                    "from": "interrupted",
+                    "to": "bootstrapped",
+                    "behavior": "pause"
+                },
+                {
+                    "name": "update",
+                    "from": "interrupted",
+                    "to": "configured",
+                    "behavior": "update"
+                },
+                {
+                    "name": "uninstall",
+                    "from": "interrupted",
+                    "to": "initiated",
+                    "behavior": "uninstall"
+                }
+            ],
+            "ports" : [
+                {
+                    "name": "service",
+                    "type": "provide",
+                    "places": ["deployed"]
+                },
+                {
+                    "name": "haproxy",
+                    "type": "use",
+                    "places": ["bootstrapped", "restarted"]
+                },
+                {
+                    "name": "common",
+                    "type": "use",
+                    "places": ["restarted", "registered", "deployed", "interrupted"]
+                }
+            ]
+        },{
+            "name": "mariadb",
+            "short": "mdb",
+            "places": [
+                "initiated",
+                "configured",
+                "bootstrapped",
+                "restarted",
+                "registered",
+                "deployed",
+                "interrupted"
+            ],
+            "start": "initiated",
+            "transitions": [
+                {
+                    "name": "configure0",
+                    "from": "initiated",
+                    "to": "configured",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "configure1",
+                    "from": "initiated",
+                    "to": "configured",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "bootstrap",
+                    "from": "configured",
+                    "to": "bootstrapped",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "start",
+                    "from": "bootstrapped",
+                    "to": "restarted",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "register",
+                    "from": "restarted",
+                    "to": "registered",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "deploy",
+                    "from": "registered",
+                    "to": "deployed",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "interrupt",
+                    "from": "deployed",
+                    "to": "interrupted",
+                    "behavior": "interrupt"
+                },
+                {
+                    "name": "pause",
+                    "from": "interrupted",
+                    "to": "bootstrapped",
+                    "behavior": "pause"
+                },
+                {
+                    "name": "update",
+                    "from": "interrupted",
+                    "to": "configured",
+                    "behavior": "update"
+                },
+                {
+                    "name": "uninstall",
+                    "from": "interrupted",
+                    "to": "initiated",
+                    "behavior": "uninstall"
+                }
+            ],
+            "ports" : [
+                {
+                    "name": "service",
+                    "type": "provide",
+                    "places": ["deployed"]
+                },
+                {
+                    "name": "haproxy",
+                    "type": "use",
+                    "places": ["bootstrapped", "restarted"]
+                },
+                {
+                    "name": "common",
+                    "type": "use",
+                    "places": ["restarted", "registered", "deployed", "interrupted"]
+                }
+            ]
+        },
+        {
+            "name": "mariadb_worker",
+            "short": "mdbw",
+            "places": [
+                "initiated",
+                "configured",
+                "bootstrapped",
+                "restarted",
+                "registered",
+                "deployed",
+                "interrupted"
+            ],
+            "start": "initiated",
+            "transitions": [
+                {
+                    "name": "configure0",
+                    "from": "initiated",
+                    "to": "configured",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "configure1",
+                    "from": "initiated",
+                    "to": "configured",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "bootstrap",
+                    "from": "configured",
+                    "to": "bootstrapped",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "start",
+                    "from": "bootstrapped",
+                    "to": "restarted",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "register",
+                    "from": "restarted",
+                    "to": "registered",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "deploy",
+                    "from": "registered",
+                    "to": "deployed",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "interrupt",
+                    "from": "deployed",
+                    "to": "interrupted",
+                    "behavior": "interrupt"
+                },
+                {
+                    "name": "pause",
+                    "from": "interrupted",
+                    "to": "bootstrapped",
+                    "behavior": "pause"
+                },
+                {
+                    "name": "update",
+                    "from": "interrupted",
+                    "to": "configured",
+                    "behavior": "update"
+                },
+                {
+                    "name": "uninstall",
+                    "from": "interrupted",
+                    "to": "initiated",
+                    "behavior": "uninstall"
+                }
+            ],
+            "ports" : [
+                {
+                    "name": "service",
+                    "type": "provide",
+                    "places": ["deployed"]
+                },
+                {
+                    "name": "master",
+                    "type": "use",
+                    "places": ["restarted", "registered", "bootstrapped", "deployed", "interrupted"]
+                },
+                {
+                    "name": "haproxy",
+                    "type": "use",
+                    "places": ["bootstrapped", "restarted"]
+                },
+                {
+                    "name": "common",
+                    "type": "use",
+                    "places": ["restarted", "registered", "deployed", "interrupted"]
+                }
+            ]
+        },
+        {
+            "name": "rabbitmq",
+            "short": "rbmq",
+            "places": ["initiated", "deployed"],
+            "start": "initiated",
+            "transitions": [
+                {
+                    "name": "deploy",
+                    "from": "initiated",
+                    "to": "deployed",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "uninstall",
+                    "from": "deployed",
+                    "to": "initiated",
+                    "behavior": "uninstall"
+                }
+            ],
+            "ports" : [
+                {
+                    "name": "service",
+                    "type": "provide",
+                    "places": ["deployed"]
+                },
+                {
+                    "name": "facts",
+                    "type": "use",
+                    "places": ["deployed"]
+                }
+            ]
+        },
+        {
+            "name": "ovswitch",
+            "short": "ovs",
+            "places": ["initiated", "deployed"],
+            "start": "initiated",
+            "transitions": [
+                {
+                    "name": "deploy",
+                    "from": "initiated",
+                    "to": "deployed",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "uninstall",
+                    "from": "deployed",
+                    "to": "initiated",
+                    "behavior": "uninstall"
+                }
+            ],
+            "ports" : [
+                {
+                    "name": "service",
+                    "type": "provide",
+                    "places": ["deployed"]
+                },
+                {
+                    "name": "facts",
+                    "type": "use",
+                    "places": ["deployed"]
+                }
+            ]
+        },
+        {
+            "name": "nova",
+            "short": "nova",
+            "places": ["initiated", "pulled", "ready", "restarted", "deployed", "interrupted"],
+            "start": "initiated",
+            "transitions": [
+                {
+                    "name": "pull0",
+                    "from": "initiated",
+                    "to": "pulled",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "pull1",
+                    "from": "initiated",
+                    "to": "pulled",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "pull2",
+                    "from": "initiated",
+                    "to": "pulled",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "ready0",
+                    "from": "pulled",
+                    "to": "ready",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "ready1",
+                    "from": "pulled",
+                    "to": "ready",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "start",
+                    "from": "ready",
+                    "to": "restarted",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "deploy",
+                    "from": "restarted",
+                    "to": "deployed",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "cell_setup",
+                    "from": "pulled",
+                    "to": "deployed",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "interrupt",
+                    "from": "deployed",
+                    "to": "interrupted",
+                    "behavior": "interrupt"
+                },
+                {
+                    "name": "pause",
+                    "from": "interrupted",
+                    "to": "ready",
+                    "behavior": "pause"
+                },
+                {
+                    "name": "unpull",
+                    "from": "interrupted",
+                    "to": "pulled",
+                    "behavior": "update"
+                },
+                {
+                    "name": "uninstall",
+                    "from": "interrupted",
+                    "to": "initiated",
+                    "behavior": "uninstall"
+                }
+            ],
+            "ports" :  [
+                {
+                    "name": "service",
+                    "type": "provide",
+                    "places": ["deployed"]
+                },
+                {
+                    "name": "mariadb",
+                    "type": "use",
+                    "places": ["restarted","ready","pulled","deployed"]
+                },
+                {
+                    "name": "keystone",
+                    "type": "use",
+                    "places": ["restarted","ready","interrupted","deployed"]
+                }
+            ]
+        },
+        {
+            "name": "neutron",
+            "short": "neutron",
+            "places": ["initiated", "pulled", "deployed"],
+            "start": "initiated",
+            "transitions": [
+                {
+                    "name": "pull0",
+                    "from": "initiated",
+                    "to": "pulled",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "pull1",
+                    "from": "initiated",
+                    "to": "pulled",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "pull2",
+                    "from": "initiated",
+                    "to": "pulled",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "deploy",
+                    "from": "pulled",
+                    "to": "deployed",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "stop",
+                    "from": "deployed",
+                    "to": "pulled",
+                    "behavior": "stop"
+                },
+                {
+                    "name": "turnoff",
+                    "from": "deployed",
+                    "to": "initiated",
+                    "behavior": "uninstall"
+                }
+            ],
+            "ports" : [
+                {
+                    "name": "service",
+                    "type": "provide",
+                    "places": ["deployed"]
+                },
+                {
+                    "name": "mariadb",
+                    "type": "use",
+                    "places": ["deployed", "pulled"]
+                },
+                {
+                    "name": "keystone",
+                    "type": "use",
+                    "places": ["deployed", "pulled"]
+                }
+            ]
+        },
+        {
+            "name": "memcached",
+            "short": "mem",
+            "places": ["initiated", "deployed"],
+            "start": "initiated",
+            "transitions": [
+                {
+                    "name": "deploy",
+                    "from": "initiated",
+                    "to": "deployed",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "uninstall",
+                    "from": "deployed",
+                    "to": "initiated",
+                    "behavior": "uninstall"
+                }
+            ],
+            "ports" : [
+                {
+                    "name": "service",
+                    "type": "provide",
+                    "places": ["deployed"]
+                },
+                {
+                    "name": "facts",
+                    "type": "use",
+                    "places": ["deployed"]
+                }
+            ]
+        },
+        {
+            "name": "keystone",
+            "short": "key",
+            "places": ["initiated", "pulled", "deployed"],
+            "start": "initiated",
+            "transitions": [
+                {
+                    "name": "pull",
+                    "from": "initiated",
+                    "to": "pulled",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "deploy",
+                    "from": "pulled",
+                    "to": "deployed",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "stop",
+                    "from": "deployed",
+                    "to": "pulled",
+                    "behavior": "stop"
+                },
+                {
+                    "name": "turnoff",
+                    "from": "deployed",
+                    "to": "initiated",
+                    "behavior": "uninstall"
+                }
+            ],
+            "ports" : [
+                {
+                    "name": "service",
+                    "type": "provide",
+                    "places": ["deployed"]
+                },
+                {
+                    "name": "mariadb",
+                    "type": "use",
+                    "places": ["deployed", "pulled"]
+                }
+            ]
+        },
+        {
+            "name": "haproxy",
+            "short": "hap",
+            "places": [
+                "initiated",
+                "deployed"
+            ],
+            "start": "initiated",
+            "transitions": [
+                {
+                    "name": "deploy",
+                    "from": "initiated",
+                    "to": "deployed",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "uninstall",
+                    "from": "deployed",
+                    "to": "initiated",
+                    "behavior": "uninstall"
+                }
+            ],
+            "ports" : [
+                {
+                    "name": "service",
+                    "type": "provide",
+                    "places": ["deployed"]
+                },
+                {
+                    "name": "facts",
+                    "type": "use",
+                    "places": ["deployed"]
+                }
+            ]
+        },
+        {
+            "name": "glance",
+            "short": "glance",
+            "places": [
+                "initiated",
+                "pulled",
+                "deployed"
+            ],
+            "start": "initiated",
+            "transitions": [
+                {
+                    "name": "pull0",
+                    "from": "initiated",
+                    "to": "pulled",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "pull1",
+                    "from": "initiated",
+                    "to": "pulled",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "pull2",
+                    "from": "initiated",
+                    "to": "pulled",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "deploy",
+                    "from": "pulled",
+                    "to": "deployed",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "stop",
+                    "from": "deployed",
+                    "to": "pulled",
+                    "behavior": "stop"
+                },
+                {
+                    "name": "turnoff",
+                    "from": "deployed",
+                    "to": "initiated",
+                    "behavior": "uninstall"
+                }
+            ],
+            "ports" : [
+                {
+                    "name": "service",
+                    "type": "provide",
+                    "places": ["deployed"]
+                },
+                {
+                    "name": "mariadb",
+                    "type": "use",
+                    "places": ["pulled", "deployed"]
+                },
+                {
+                    "name": "keystone",
+                    "type": "use",
+                    "places": ["pulled", "deployed"]
+                }
+            ]
+        },
+        {
+            "name": "facts",
+            "short": "facts",
+            "places": ["initiated", "deployed"],
+            "start": "initiated",
+            "transitions": [
+                {
+                    "name": "deploy",
+                    "from": "initiated",
+                    "to": "deployed",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "uninstall",
+                    "from": "deployed",
+                    "to": "initiated",
+                    "behavior": "uninstall"
+                }
+            ],
+            "ports" : [
+                {
+                    "name": "service",
+                    "type": "provide",
+                    "places": ["deployed"]
+                }
+            ]
+        },
+        {
+            "name": "common",
+            "short": "com",
+            "places": ["initiated", "configured", "deployed"],
+            "start": "initiated",
+            "transitions": [
+                {
+                    "name": "configure",
+                    "from": "initiated",
+                    "to": "configured",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "deploy",
+                    "from": "configured",
+                    "to": "deployed",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "stop",
+                    "from": "deployed",
+                    "to": "configured",
+                    "behavior": "stop"
+                },
+                {
+                    "name": "uninstall",
+                    "from": "deployed",
+                    "to": "initiated",
+                    "behavior": "uninstall"
+                }
+            ],
+            "ports" : [
+                {
+                    "name": "service",
+                    "type": "provide",
+                    "places": ["deployed"]
+                },
+                {
+                    "name": "facts",
+                    "type": "use",
+                    "places": ["configured","deployed"]
+                }
+            ]
+        }
+    ],
+    "instances" : [
+        {
+            "name": "facts",
+            "component": "facts"
+        },
+        {
+            "name": "common",
+            "component": "common"
+        },
+        {
+            "name": "haproxy",
+            "component": "haproxy"
+        },
+        {
+            "name": "memcached",
+            "component": "memcached"
+        },
+        {
+            "name": "ovswitch",
+            "component": "ovswitch"
+        },
+        {
+            "name": "rabbitmq",
+            "component": "rabbitmq"
+        },
+        {
+            "name": "mariadb",
+            "component": "mariadb"
+        },
+        {
+            "name": "keystone",
+            "component": "keystone"
+        },
+        {
+            "name": "nova",
+            "component": "nova"
+        },
+        {
+            "name": "neutron",
+            "component": "neutron"
+        },
+        {
+            "name": "glance",
+            "component": "glance"
+        }
+    ],
+    "connects": [
+        {
+            "provider": "facts",
+            "provide_port": "service",
+            "user": "common",
+            "use_port": "facts"
+        },
+        {
+            "provider": "facts",
+            "provide_port": "service",
+            "user": "haproxy",
+            "use_port": "facts"
+        },
+        {
+            "provider": "facts",
+            "provide_port": "service",
+            "user": "memcached",
+            "use_port": "facts"
+        },
+        {
+            "provider": "facts",
+            "provide_port": "service",
+            "user": "ovswitch",
+            "use_port": "facts"
+        },
+        {
+            "provider": "facts",
+            "provide_port": "service",
+            "user": "rabbitmq",
+            "use_port": "facts"
+        },
+        {
+            "provider": "common",
+            "provide_port": "service",
+            "user": "mariadb",
+            "use_port": "common"
+        },
+        {
+            "provider": "haproxy",
+            "provide_port": "service",
+            "user": "mariadb",
+            "use_port": "haproxy"
+        },
+        {
+            "provider": "mariadb",
+            "provide_port": "service",
+            "user": "nova",
+            "use_port": "mariadb"
+        },
+        {
+            "provider": "mariadb",
+            "provide_port": "service",
+            "user": "keystone",
+            "use_port": "mariadb"
+        },
+        {
+            "provider": "mariadb",
+            "provide_port": "service",
+            "user": "neutron",
+            "use_port": "mariadb"
+        },
+        {
+            "provider": "mariadb",
+            "provide_port": "service",
+            "user": "glance",
+            "use_port": "mariadb"
+        },
+        {
+            "provider": "keystone",
+            "provide_port": "service",
+            "user": "nova",
+            "use_port": "keystone"
+        },
+        {
+            "provider": "keystone",
+            "provide_port": "service",
+            "user": "neutron",
+            "use_port": "keystone"
+        },
+        {
+            "provider": "keystone",
+            "provide_port": "service",
+            "user": "glance",
+            "use_port": "keystone"
+        }
+    ]
+}
