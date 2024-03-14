@@ -49,7 +49,7 @@ voir semantique Sans F
 --------------------------------------------------------------------------------------------------------------------------------
 fmod DECLARATION-SORTS is 
 
-sorts Place StationPlace Station IdentC ExternalFunction send rec W Connection Instance LocalConfiguration .
+sorts Place Station StationPlace  IdentC ExternalFunction send rec W Connection Instance LocalConfiguration .
 sorts Transitionn TransitionnEnding Behavior BehaviorId GUse GPro .
 
 

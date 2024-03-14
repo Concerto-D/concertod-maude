@@ -25,9 +25,6 @@ fmod STATION is
   pr SET{Station} .    --- import in mode protecting to encapsulate the definitions within this module
   subsort Set{Station} <  Stations  . 
 
- 
-  
-
 endfm
 
 fmod STATION-PLACE is
@@ -52,14 +49,13 @@ fmod STATION-PLACE is
   ceq Pi(st1, ((st2 ; q),SPs)) = q if (st1 == st2) .
   eq Pi(st1, ((st2 ; q),SPs)) = Pi(st1,SPs) [owise] .  ---otherwise
 
-  op StationsGplaces(_,_) : Places StationPlaces -> Stations .  --- gives the stations associated to a Places group
+  op StationsGroupPlaces(_,_) : Places StationPlaces -> Stations .  --- gives the stations associated to a Places group
+  
+  eq StationsGroupPlaces(ps,empty) = empty .
+  ceq StationsGroupPlaces(ps,((st1 ; q),SPs)) = st1, StationsGroupPlaces(ps,SPs) if(q in ps) .
+  eq StationsGroupPlaces(ps,((st1 ; q),SPs)) =  StationsGroupPlaces(ps,SPs) [owise] .
+  
 
-  ceq StationsGplaces(ps,(st1 ; q),SPs) = st1, StationsGplaces(ps,SPs) if(q in ps) .
-  ceq StationsGplaces(ps,(st1 ; q),SPs) =  StationsGplaces(ps,SPs) if(not(q in ps)) .
-  eq StationsGplaces(ps,empty) = empty .
-
-
- 
 endfm
 
 fmod IDENT-COMPENENT-BEHAVIOR is
@@ -70,8 +66,6 @@ fmod IDENT-COMPENENT-BEHAVIOR is
   pr SET{IdentC} .
   subsort Set{IdentC} < IdentCs . 
   
-    ops idc1 idc2 idc3 idc4 : -> IdentC .
-
 endfm
 
 
@@ -80,8 +74,6 @@ fmod PORT is
 
   sorts UsePort ProPort .
   subsorts UsePort ProPort < Port .
-
-
 
 endfm
 
@@ -93,6 +85,7 @@ fmod BOOL-WITH-BOT is  --- a new sort to represent the 3 values : true, false an
   subsorts Bool  Bot < BoolWithBot .
 
   op bot : -> Bot .
+
 endfm
 
 fmod CONNECTION is
@@ -107,18 +100,18 @@ fmod CONNECTION is
 
   op (_,_,_,_) : IdentC UsePort IdentC ProPort -> Connection .  --- Define a new operator to create a Connection
 
-  var  L : Connections .  
-  vars poru up : UsePort .
-  var pp : ProPort . 
+  var  L : Connections . --- we use L for Connections Like in the formal description of configuration tuple  
+  vars up up1 : UsePort .  
+  var pp : ProPort .   
   vars id id1 id2 : IdentC .  
 
   --- some operations related to the connections used later
 
   op InConnectionIdentUsePort(_,_,_) :  IdentC UsePort Connections -> Bool . --- checks whether an IdentC of a UsePort is in Connections
 
-  eq  InConnectionIdentUsePort(id,poru,empty) = false . 
-  eq InConnectionIdentUsePort(id1,up,((id1,up,id2,pp),L)) = true  .  
-  eq InConnectionIdentUsePort(id,poru,((id1,up,id2,pp),L)) = InConnectionIdentUsePort(id,poru,L) [owise] .  
+  eq InConnectionIdentUsePort(id,up,empty) = false . 
+  eq InConnectionIdentUsePort(id,up,((id,up,id2,pp),L)) = true  .  
+  eq InConnectionIdentUsePort(id,up,((id1,up1,id2,pp),L)) = InConnectionIdentUsePort(id,up,L) [owise] .  
 
   op InConnectionIdent(_,_) :  IdentC Connections -> Bool .   --- checks whether an IdentC of a UsePort is in Connections 
 
@@ -126,7 +119,7 @@ fmod CONNECTION is
   ceq InConnectionIdent(id,((id1,up,id2,pp),L)) = true if (id1 == id or id2 == id) .  
   eq InConnectionIdent(id,((id1,up,id2,pp),L)) = InConnectionIdent(id,L) [owise] .  
 
-  op ConnectionProIdent(_,_) :  IdentC Connections -> Connections .  --- checks if an IdentC is in role Provide Port within connections
+  op ConnectionProIdent(_,_) :  IdentC Connections -> Connections .  --- checks restriction on connections for an IdentC which is in role Provide Port within connections
 
   eq ConnectionProIdent(id,empty) = empty .
   eq ConnectionProIdent(id2,((id1,up,id2,pp),L)) = (id1,up,id2,pp), ConnectionProIdent(id2,L)  .  
@@ -190,41 +183,41 @@ fmod TRANSITION-TRANSITION-ENDING is
 
   --- some operations related to Transitionn and TransitionnEnding used later
 
-  op PlacesTrans(_) : Transitionns -> Places .  --- recupere l'ensemble de places liés a certaines transitions
-  eq PlacesTrans(empty) = empty .
-  eq PlacesTrans(t(pla1,S1),trans) = pla1, PlacesTrans(trans) .
+  op PlacesSourceOfTransitions(_) : Transitionns -> Places .  --- retrieves the set of places linked to certain transitions
+  eq PlacesSourceOfTransitions(empty) = empty .
+  eq PlacesSourceOfTransitions((t(pla1,S1),trans)) = pla1, PlacesSourceOfTransitions(trans) .
 
-  op RestrictTransToPlace(_,_) : Transitionns Place -> Transitionns . --- restriction des transitions liée à une place
+  op RestrictTransitionsToPlace(_,_) : Transitionns Place -> Transitionns . --- restrict transitions to those linked to a particular place
   
-  eq RestrictTransToPlace(empty,pla1) = empty .
-  eq RestrictTransToPlace((t(pla1,S1),trans),pla1) = t(pla1,S1), RestrictTransToPlace(trans,pla1)  .
-  eq RestrictTransToPlace((t(pla2,S1),trans),pla1) = RestrictTransToPlace(trans,pla1) [owise] .
+  eq RestrictTransitionsToPlace(empty,pla1) = empty .
+  eq RestrictTransitionsToPlace((t(pla1,S1),trans),pla1) = t(pla1,S1), RestrictTransitionsToPlace(trans,pla1)  .
+  eq RestrictTransitionsToPlace((t(pla2,S1),trans),pla1) = RestrictTransitionsToPlace(trans,pla1) [owise] .
  
   op RemoveTransitionnEndingStation(_,_) : TransitionnEndings Station -> TransitionnEndings . 
   --- delete transition endings of a station 
   
   eq RemoveTransitionnEndingStation(empty,st1) = empty .
-  eq RemoveTransitionnEndingStation(te(t(pla1,S1),st1),tes,st1) = RemoveTransitionnEndingStation(tes,st1) .
-  eq RemoveTransitionnEndingStation(te(t(pla1,S1),st1),tes,st2) = te(t(pla1,S1),st1),RemoveTransitionnEndingStation(tes,st2) [owise] .
+  eq RemoveTransitionnEndingStation((te(t(pla1,S1),st1),tes),st1) = RemoveTransitionnEndingStation(tes,st1) .
+  eq RemoveTransitionnEndingStation((te(t(pla1,S1),st1),tes),st2) = te(t(pla1,S1),st1),RemoveTransitionnEndingStation(tes,st2) [owise] .
   
-  op TranElt(_,_,_) : Places Transitionns Stations -> Transitionns .   
+  op TransitionsOfPlacesWithRespectToStations(_,_,_) : Places Transitionns Stations -> Transitionns .   
  ---retrieve transitions starting from a place of a set of places and ending in stations included in a set of stations.
   
-  eq TranElt(ps,empty,S1) = empty .
-  ceq TranElt(ps,t(pla1,S2),trans,S1) = t(pla1,S2),TranElt(ps,trans,S1) if (pla1 in ps and (S2 subset S1)) .
-  eq TranElt(ps,t(pla1,S2),trans,S1) = TranElt(ps,trans,S1) [owise] .
+  eq TransitionsOfPlacesWithRespectToStations(ps,empty,S1) = empty .
+  ceq TransitionsOfPlacesWithRespectToStations(ps,(t(pla1,S2),trans),S1) = t(pla1,S2),TransitionsOfPlacesWithRespectToStations(ps,trans,S1) if ((pla1 in ps) and (S2 subset S1)) .
+  eq TransitionsOfPlacesWithRespectToStations(ps,(t(pla1,S2),trans),S1) = TransitionsOfPlacesWithRespectToStations(ps,trans,S1) [owise] .
  
-  op TranEndElt(_,_) : Transitionn Stations -> TransitionnEndings .  
+  op TransitionEndingsOfOneTransition(_,_) : Transitionn Stations -> TransitionnEndings .  
   ---Construct the transition endings of a transition according to a set of Stations
+  eq TransitionEndingsOfOneTransition(t(pla1,S2),empty) = empty . 
+  eq TransitionEndingsOfOneTransition(t(pla1,S2), (st1,S1)) = union(te(t(pla1,S2),st1), TransitionEndingsOfOneTransition(t(pla1,S2), S1) ) .
 
-  eq TranEndElt(t(pla1,S2), st1,S1)= union(te(t(pla1,S2),st1), TranEndElt(t(pla1,S2), S1) ) .
-  eq TranEndElt(t(pla1,S2),empty) = empty . 
 
-  op TranEndElts(_) : Transitionns -> TransitionnEndings .  
+  op TranEndingsOfTransitions(_) : Transitionns -> TransitionnEndings .  
   ---Construct the transition endings of a set of transitions
-  
-  eq TranEndElts(t(pla1,S1),trans) = union(TranEndElt(t(pla1,S1),S1), TranEndElts(trans) ) .
-  eq TranEndElts(empty) = empty .
+  eq TransitionEndingsOfTransitions(empty) = empty .
+  eq TransitionEndingsOfTransitions(t(pla1,S1),trans) = union(TransitionEndingsOfOneTransition(t(pla1,S1),S1), TransitionEndingsOfTransitions(trans) ) .
+
 
 
   op IsSatisfiedTransitionnEndingStation(_,_,_) : Station Transitionns TransitionnEndings -> Bool .
@@ -252,17 +245,17 @@ fmod MARKING is
   
   op m(_,_,_) : Places Transitionns TransitionnEndings -> Marking .  --- Define a new operator to create a Marking
   
-  op PlMar : Marking -> Places . ---- gives the places of a marking
-  eq PlMar(m(ps1,trans1,tre1)) = ps1 .
+  op PlacesOfMarking : Marking -> Places . ---- gives the places of a marking
+  eq PlacesOfMarking(m(ps1,trans1,tre1)) = ps1 .
 
-  op TrMar : Marking -> Transitionns . --- gives the transitions of a marking
-  eq TrMar(m(ps1,trans1,tre1)) = trans1 .
+  op TransitionsOfMarking : Marking -> Transitionns . --- gives the transitions of a marking
+  eq TransitionsOfMarking(m(ps1,trans1,tre1)) = trans1 .
 
-  op TrEnMar : Marking -> TransitionnEndings . --- gives the transition endings of a marking
-  eq TrEnMar(m(ps1,trans1,tre1)) = tre1 .
+  op TransitionEndingsOfMarking : Marking -> TransitionnEndings . --- gives the transition endings of a marking
+  eq TransitionEndingsOfMarking(m(ps1,trans1,tre1)) = tre1 .
 
-  op  IntersectionMarking(_,_) : Marking Marking -> Marking . --- intersection of two markings
-  eq  IntersectionMarking(m(ps1,trans1,tre1),m(ps2,trans2,tre2)) = 
+  op  IntersectionMarkings(_,_) : Marking Marking -> Marking . --- intersection of two markings
+  eq  IntersectionMarkings(m(ps1,trans1,tre1),m(ps2,trans2,tre2)) = 
   m(intersection(ps1,ps2),intersection(trans1,trans2),intersection(tre1,tre2)) .
 
   op NotEmptyMarking(_) : Marking -> Bool .  ---to check if a given Marking is empty

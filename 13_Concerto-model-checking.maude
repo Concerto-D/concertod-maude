@@ -40,7 +40,7 @@ mod Concerto-PREDS is
   --- description of previously defined sorts IdentC and IdentB
 
   ops idb1 idb2 idb3 idb4 : -> IdentB .
-  
+  ops idc1 idc2 idc3 idc4 : -> IdentC .
   ops us1 us2 us3 us4 : -> UsePort .
   ops pr1 pr2 pr3 pr4 : -> ProPort .
 

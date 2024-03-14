@@ -44,9 +44,9 @@ view Instance from TRIV to DECLARATION-SORTS is
   sort Elt to Instance .
 endv
 
-view LocalConfiguration from TRIV to DECLARATION-SORTS is
-  sort Elt to LocalConfiguration .
-endv
+---view LocalConfiguration from TRIV to DECLARATION-SORTS is
+  ---sort Elt to LocalConfiguration .
+---endv
 
 
 view Transitionn from TRIV to DECLARATION-SORTS is
