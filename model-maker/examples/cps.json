@@ -1,0 +1,248 @@
+{
+    "components": [
+        {
+            "name": "database",
+            "short": "db",
+            "places": [
+                "initiated",
+                "configured",
+                "bootstrapped",
+                "restarted",
+                "registered",
+                "deployed",
+                "interrupted"
+            ],
+            "start": "initiated",
+            "transitions": [
+                {
+                    "name": "configure0",
+                    "from": "initiated",
+                    "to": "configured",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "configure1",
+                    "from": "initiated",
+                    "to": "configured",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "bootstrap",
+                    "from": "configured",
+                    "to": "bootstrapped",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "start",
+                    "from": "bootstrapped",
+                    "to": "restarted",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "register",
+                    "from": "restarted",
+                    "to": "registered",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "deploy",
+                    "from": "registered",
+                    "to": "deployed",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "interrupt",
+                    "from": "deployed",
+                    "to": "interrupted",
+                    "behavior": "interrupt"
+                },
+                {
+                    "name": "pause",
+                    "from": "interrupted",
+                    "to": "bootstrapped",
+                    "behavior": "pause"
+                },
+                {
+                    "name": "update",
+                    "from": "interrupted",
+                    "to": "configured",
+                    "behavior": "update"
+                },
+                {
+                    "name": "uninstall",
+                    "from": "interrupted",
+                    "to": "initiated",
+                    "behavior": "uninstall"
+                }
+            ],
+            "ports" : [
+                {
+                    "name": "service",
+                    "type": "provide",
+                    "places": ["deployed"]
+                }
+            ]
+        },
+        {
+            "name": "system",
+            "short": "sys",
+            "places": [
+                "on", "off"
+            ],
+            "start": "off",
+            "transitions": [
+                {
+                    "name": "switch_on",
+                    "from": "off",
+                    "to": "on",
+                    "behavior": "switch_off"
+                },
+                {
+                    "name": "switch_off",
+                    "from": "on",
+                    "to": "off",
+                    "behavior": "switch_on"
+                }
+            ],
+            "ports" : [
+                {
+                    "name": "db",
+                    "type": "use",
+                    "places": ["on"]
+                },
+                {
+                    "name": "service",
+                    "type": "provide",
+                    "places": ["on"]
+                }
+            ]
+        },
+        {
+            "name": "listener",
+            "short": "lis",
+            "places": [
+                "off", "paused", "configured", "running"
+            ],
+            "start": "off",
+            "transitions": [
+                {
+                    "name": "start",
+                    "from": "off",
+                    "to": "paused",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "configure",
+                    "from": "paused",
+                    "to": "configured",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "deploy",
+                    "from": "configured",
+                    "to": "deployed",
+                    "behavior": "deploy"
+                },
+                {
+                    "name": "update",
+                    "from": "deployed",
+                    "to": "paused",
+                    "behavior": "update"
+                },
+                {
+                    "name": "destroy",
+                    "from": "paused",
+                    "to": "off",
+                    "behavior": "destroy"
+                }
+            ],
+            "ports" : [
+                {
+                    "name": "system",
+                    "type": "use",
+                    "places": ["running", "configured"]
+                },
+                {
+                    "name": "rcv",
+                    "type": "provide",
+                    "places": ["running"]
+                },
+                {
+                    "name": "config",
+                    "type": "provide",
+                    "places": ["running", "configured"]
+                }
+            ]
+        },
+        {
+            "name": "sensor",
+            "short": "sens",
+            "places": [
+                "off", "provisionned", "installed", "configured", "running"
+            ],
+            "start": "off",
+            "transitions": [
+                {
+                    "name": "provision0",
+                    "from": "off",
+                    "to": "provisioned",
+                    "behavior": "start"
+                },
+                {
+                    "name": "provision1",
+                    "from": "off",
+                    "to": "provisioned",
+                    "behavior": "start"
+                },
+                {
+                    "name": "provision2",
+                    "from": "off",
+                    "to": "provisioned",
+                    "behavior": "start"
+                },
+                {
+                    "name": "install",
+                    "from": "provisioned",
+                    "to": "installed",
+                    "behavior": "start"
+                },
+                {
+                    "name": "configure",
+                    "from": "installed",
+                    "to": "configured",
+                    "behavior": "start"
+                },
+                {
+                    "name": "run",
+                    "from": "configured",
+                    "to": "running",
+                    "behavior": "start"
+                },
+                {
+                    "name": "pause",
+                    "from": "running",
+                    "to": "provisioned",
+                    "behavior": "pause"
+                },
+                {
+                    "name": "stop",
+                    "from": "provisioned",
+                    "to": "off",
+                    "behavior": "stop"
+                }
+            ],
+            "ports" : [
+                {
+                    "name": "rcv_service",
+                    "type": "use",
+                    "places": ["running", "configured"]
+                },
+                {
+                    "name": "config_service",
+                    "type": "use",
+                    "places": ["configured", "installed"]
+                }
+            ]
+        }
+    ]
+}
