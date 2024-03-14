@@ -14,7 +14,7 @@ var pp : ProPort .
 var idf1 : IdFunction .
 vars id1 id2 : IdentC .
 
-op UpDateExternalFunctionsSend(_,_) : ExternalFunctions IdentCs -> ExternalFunctions .  -----------IdentCs contain one or 0 element
+op  UpDateExternalFunctionsSend(_,_) : ExternalFunctions IdentCs -> ExternalFunctions .  -----------IdentCs contain one or 0 element
 eq  UpDateExternalFunctionsSend(f,empty) = f .
 eq  UpDateExternalFunctionsSend(empty,idents) = empty .
 ceq UpDateExternalFunctionsSend(f(idRef(id1,pp) ; bwb),f,idents) = f(idRef(id1,pp) ; bot), f if (id1 in idents ) .
