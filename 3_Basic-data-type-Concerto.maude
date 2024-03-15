@@ -213,7 +213,7 @@ fmod TRANSITION-TRANSITION-ENDING is
   eq TransitionEndingsOfOneTransition(t(pla1,S2), (st1,S1)) = union(te(t(pla1,S2),st1), TransitionEndingsOfOneTransition(t(pla1,S2), S1) ) .
 
 
-  op TranEndingsOfTransitions(_) : Transitionns -> TransitionnEndings .  
+  op TransitionEndingsOfTransitions(_) : Transitionns -> TransitionnEndings .  
   ---Construct the transition endings of a set of transitions
   eq TransitionEndingsOfTransitions(empty) = empty .
   eq TransitionEndingsOfTransitions(t(pla1,S1),trans) = union(TransitionEndingsOfOneTransition(t(pla1,S1),S1), TransitionEndingsOfTransitions(trans) ) .

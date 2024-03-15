@@ -71,10 +71,10 @@ fmod COMPENENT-TYPE is
   --- gives the elements of Marking (places, transitions, transitionendings) of group of places depending a ComponentType
 
   eq MarkingWithRespectToPlaces(ps1,< ps,q,sps,ts,bs,gu,gp >) = 
-  m(ps1, TransitionsOfPlacesWithRespectToStations(ps1,ts,StationsGroupPlaces(ps1,sps)), TranEndingsOfTransitions(TransitionsOfPlacesWithRespectToStations(ps1,ts,StationsGroupPlaces(ps1,sps)))) .
+  m(ps1, TransitionsOfPlacesWithRespectToStations(ps1,ts,StationsGroupPlaces(ps1,sps)), TransitionEndingsOfTransitions(TransitionsOfPlacesWithRespectToStations(ps1,ts,StationsGroupPlaces(ps1,sps)))) .
 
 endfm
 
 
-
+--- voir comment reduire le calcul de marking
 

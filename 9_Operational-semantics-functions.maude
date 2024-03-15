@@ -25,9 +25,9 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
 
   eq NotActUseWhenLeavingPro(idcs,newMark,I,f,(id1,up,id2,pp),L) = NotActUseWhenLeavingPro(idcs,newMark,I,f,L) and 
   (
-    ( (Eval(idcs,idAct(id2,pp),f, I,empty,[] ) == true) and 
-    (activeMarking(InstanceIdent(I,id2),pp,newMark) == false )) 
-    implies  (Eval(idcs,idAct(id1,up),f, I,empty,[] ) == false) 
+    ( (Evaluation(idcs,idAct(id2,pp),f, I,empty,[] ) == true) and 
+    (activeMarking(InstanceOfIdent(I,id2),pp,newMark) == false )) 
+    implies  (Evaluation(idcs,idAct(id1,up),f, I,empty,[] ) == false) 
   ) .
 
   eq NotActUseWhenLeavingPro(idcs,newMark,I,f,empty) = true .
@@ -68,8 +68,8 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   ---  three conditions must be met Connected, provided and allowed
   eq ConnectedAndAllowed(idcs,pla,empty,i,i',Is,L,f) = true .
   ceq ConnectedAndAllowed(idcs,pla,(up ! ps),gu,i,i',Is,L,f) = 
-  Connected(idcs,up,IdentInstance(i),L,f)  and 
-  Allowed(idcs,up,IdentInstance(i),i,Is,L,f)   and 
+  Connected(idcs,up,IdentOfInstance(i),L,f)  and 
+  Allowed(idcs,up,IdentOfInstance(i),i,Is,L,f)   and 
   ConnectedAndAllowed(idcs,pla,gu,i,i',Is,L,f) 
   if  ((pla in ps) and active(i,up) == false and active(i',up) == true  ).     
   ----------in the previous condition we use active directly since it's a local treatment for the concerned configuration
@@ -79,13 +79,13 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   ---  connection must be verified on both user and provider instances
   eq Connected(idcs,up,id1,empty,f) = false .
   ceq Connected(idcs,up,id1,(id1,up,id2,pp),L,f) = true 
-  if(Eval(idcs,idIsCon(id2,(id1,up,id2,pp)),f,empty,(id1,up,id2,pp),L,[] )   == true ) .
+  if(Evaluation(idcs,idIsCon(id2,(id1,up,id2,pp)),f,empty,(id1,up,id2,pp),L,[] )   == true ) .
   eq Connected(idcs,poru,IdentIns,(id1,up,id2,pp),L,f) = Connected(idcs,poru,IdentIns,L,f) [owise] .
 
   op Allowed(_,_,_,_,_,_) : IdentCs UsePort  IdentC Instances Connections ExternalFunctions -> Bool . 
   --- also theprovide port connected to this use port of the instance must not be refused
   eq Allowed(idcs,up,id1,Is,empty,f) = false .
-  eq Allowed(idcs,up,id1,Is,(id1,up,id2,pp),L,f) = (Eval(idcs,idRef(id2,pp),f,Is,empty,[] ) == false) . 
+  eq Allowed(idcs,up,id1,Is,(id1,up,id2,pp),L,f) = (Evaluation(idcs,idRef(id2,pp),f,Is,empty,[] ) == false) . 
   eq Allowed(idcs,poru,IdentIns,Is,(id1,up,id2,pp),L,f) = Allowed(idcs,poru,IdentIns,Is,L,f) [owise] .
 
 endfm

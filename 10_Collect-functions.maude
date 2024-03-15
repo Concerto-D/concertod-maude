@@ -32,9 +32,9 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-FIRING is
   (   
   (not idAct(id1,up) in ws) and 
   (not (occurs(idAct(id1,up),qsend)))  and
-   (not LocalFun(idAct(id1,up),idcs)) and ---a changer simplifier
-  ( Eval(idcs,idAct(id1,up),f,empty,empty,[] )   == true  or Eval(idcs,idAct(id1,up),f,empty,empty,[] )   == bot ) and
-  ( (LocalEval(idAct(id2,pp),Is,empty,[] ) == true) and (activeMarking(InstanceIdent(Is,id2),pp,newMark) == false ))  
+   (not LocalFunction(idAct(id1,up),idcs)) and ---a changer simplifier
+  ( Evaluation(idcs,idAct(id1,up),f,empty,empty,[] )   == true  or Evaluation(idcs,idAct(id1,up),f,empty,empty,[] )  == bot ) and
+  ( (LocalEvaluation(idAct(id2,pp),Is,empty,[] ) == true) and (activeMarking(InstanceOfIdent(Is,id2),pp,newMark) == false ))  
   ) .
 
   eq CollectFunctionFiring(idcs,newMark,Is,(id1,up,id2,pp),L,f,ws,qsend) = CollectFunctionFiring(idcs,newMark,Is,L,f,ws,qsend) [owise] .
@@ -68,7 +68,7 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
   --- we follow the same reasoning used to collect external functions for firing
   eq CollectFunctionsEnteringPlace(idcs,pla,empty,i,i',Is,L,f,ws,qsend) = nil .
   ceq CollectFunctionsEnteringPlace(idcs,pla,(up ! ps),gu,i,i',Is,L,f,ws,qsend) = 
-  append(CollectConnected(idcs,up,IdentInstance(i),L,f,ws,qsend),append(CollectAllowed(idcs,up,IdentInstance(i),i,Is,L,f,ws,qsend), CollectFunctionsEnteringPlace(idcs,pla,gu,i,i',Is,L,f,ws,qsend))) 
+  append(CollectConnected(idcs,up,IdentOfInstance(i),L,f,ws,qsend),append(CollectAllowed(idcs,up,IdentOfInstance(i),i,Is,L,f,ws,qsend), CollectFunctionsEnteringPlace(idcs,pla,gu,i,i',Is,L,f,ws,qsend))) 
   if  ((pla in ps) and active(i,up) == false and active(i',up) == true  ).   
   eq CollectFunctionsEnteringPlace(idcs,pla,(up ! ps),gu,i,i',Is,L,f,ws,qsend) = CollectFunctionsEnteringPlace(idcs,pla,gu,i,i',Is,L,f,ws,qsend) [owise] .
 
@@ -81,7 +81,7 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
     (not (occurs(idIsCon(id2,(id1,up,id2,pp)),qsend)))  and
        (not (id2 in idcs)) and
    ---- (not LocalFun(idIsCon(id2,(id1,up,id2,pp)),idcs)) 
-    ( Eval(idcs,idIsCon(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == false  or Eval(idcs,idIsCon(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == bot )
+    ( Evaluation(idcs,idIsCon(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == false  or Evaluation(idcs,idIsCon(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == bot )
     
     ) .
   eq CollectConnected(idcs,poru,IdentIns,(id1,up,id2,pp),L,f,ws,qsend) = CollectConnected(idcs,poru,IdentIns,L,f,ws,qsend) [owise] .
@@ -95,7 +95,7 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
       (not (occurs(idRef(id2,pp),qsend)))  and
       (not (id2 in idcs)) and
       --- (not LocalFun(idRef(id2,pp),idcs))    
-      ( Eval(idcs,idRef(id2,pp),f,empty,empty,[] )   == true  or Eval(idcs,idRef(id2,pp),f,empty,empty,[])   == bot )   
+      ( Evaluation(idcs,idRef(id2,pp),f,empty,empty,[] )   == true  or Evaluation(idcs,idRef(id2,pp),f,empty,empty,[])   == bot )   
     ) .
   eq CollectAllowed(idcs,poru,IdentIns,Is,(id1,up,id2,pp),L,f,ws,qsend) = CollectAllowed(idcs,poru,IdentIns,Is,L,f,ws,qsend) [owise] .
 

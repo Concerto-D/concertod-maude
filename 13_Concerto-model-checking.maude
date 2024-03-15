@@ -1,11 +1,16 @@
-------------------------------------- partie verification
+---    Verification of system
+---    Example: 2 clients and one server
+---    each component is on a separate site
+---    each component contains 3 states with a single transition between two states.
+---    the last state is a use port for the client, while the last state is a provide port for the server.
 
 mod Concerto-PREDS is 
+--- define system and the propositions of system used in verification
 
   protecting OPERATIONAL-SEMANTICS . 
   including SATISFACTION .
   subsort Net < State .
-  ops DeployC1 DeployS DeployC2 W1V S1V R1V W3V S3V R3V W2V S2V R2V :  -> Prop .
+  ops DeployC1 DeployS DeployC2 :  -> Prop .  --- propositions of verification
 
   var Q : Prop .
 
@@ -24,192 +29,58 @@ mod Concerto-PREDS is
   var ts : Transitionns .
   var tes  : TransitionnEndings .
   var  IdsNodx : IdentCs .
-------------
-  ----------------------------------------
+
   op p1 : -> InitPlace .
   op q1 : -> InitPlace .
-  op o1 : -> InitPlace .
+  ops p2 p3 : -> Place .
+  ops q2 q3 : -> Place .
+ 
+  ops s1 s2 s3   : -> Station .
+  ops t1 t2 t3  : -> Station .
 
-  ops p2 p3 p4 p5 p6 p7 p8 p9 p10 : -> Place .
-  ops q2 q3 q4 q5 q6 q7 q8 q9 q10 : -> Place .
-  ops o2 o3 o4 o5 o6 o7 o8 o9 o10 : -> Place .
- ---Like Places, explicit stations of system
-  ops s1 s2 s3 s4 s5 s6 s7 s8 s9 s10   : -> Station .
-  ops r1 r2 r3 r4 r5 r6 r7 r8 r9 r10   : -> Station .
-  ops t1 t2 t3 t4 t5 t6 t7 t8 t9 t10   : -> Station .
-  --- description of previously defined sorts IdentC and IdentB
+  ops idb1 idb2 idb3  : -> IdentB .
+  ops idc1 idc2 idc3  : -> IdentC .
 
-  ops idb1 idb2 idb3 idb4 : -> IdentB .
-  ops idc1 idc2 idc3 idc4 : -> IdentC .
-  ops us1 us2 us3 us4 : -> UsePort .
-  ops pr1 pr2 pr3 pr4 : -> ProPort .
+  ops us1 : -> UsePort .
+  ops pr1 : -> ProPort .
 
--------------------------------------------------
+  ops c1 c2  : -> ComponentType .
+  ops confx confy confz : -> LocalConfiguration .
+  ops test : -> Net .
 
+  eq c1 =  < (p1, p2, p3) , p1 , (s1 ; p1, s2 ; p2 , s3 ; p3), (t(p1, s2), t(p2, s3) ), (b(t(p1, s2),t(p2, s3))) , (us1 ! (p3)) , empty     > .
+  eq c2 =  < (q1, q2 , q3) , q1 , (t1 ; q1, t2 ; q2 , t3 ; q3), (t(q1, t2), t(q2, t3)  ), (b(t(q1, t2),t(q2, t3))) , empty , (pr1 ? (q3))   > .
 
-------------------
+  eq confx = < (idc1),(empty, empty) , add(idc1,c1)   . con(idc1,us1,idc3,pr1) . pushB(idc1,b(t(p1, s2),t(p2, s3)),idb1) .  [] , empty , nil , nil  , empty >  .
+  eq confy = < (idc2),(empty, empty) , add(idc2,c1)  . con(idc2,us1,idc3,pr1) .  pushB(idc2,b(t(p1, s2),t(p2, s3)),idb2) . [] , empty , nil , nil  , empty >  .
+  eq confz = < (idc3),(empty, empty) , add(idc3,c2)  .  con(idc1,us1,idc3,pr1) . con(idc2,us1,idc3,pr1) . pushB(idc3,b(t(q1, t2),t(q2, t3)),idb3) . [] , empty , nil , nil , empty >  .
+ 
+  eq test =  confx ; confy ; confz  .
+
+--------------------------------- When are the verification propositions true? -----
   eq (< IdsNodx,(< idc1,ct,qb,m(p3, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= DeployC1 = true .
+  --- So Deploy Client 1 is true when instance of idc1 must in place p3
   eq (< IdsNodx,(< idc2,ct,qb,m(p3, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= DeployC2 = true .
   eq (< IdsNodx,(< idc3,ct,qb,m(q3, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= DeployS = true .
-  
-  
-  ceq (< IdsNodx,(< idc1,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= W1V  = true if (Wx == empty) .
-  ceq (< IdsNodx,(< idc1,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= S1V  = true if (QSx == nil) .
-  ceq (< IdsNodx,(< idc1,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= R1V  = true if (QRx == nil) .
-
-  ceq (< IdsNodx,(< idc2,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= W2V  = true if (Wx == empty) .
-  ceq (< IdsNodx,(< idc2,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= S2V  = true if (QSx == nil) .
-  ceq (< IdsNodx,(< idc2,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= R2V  = true if (QRx == nil) .
-
-
-
-  ceq (< IdsNodx,(< idc3,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= W3V  = true if (Wx == empty) .
-  ceq (< IdsNodx,(< idc3,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= S3V  = true if (QSx == nil) .
-  ceq (< IdsNodx,(< idc3,ct,qb,m(ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= R3V  = true if (QRx == nil) .
- 
-
 
   eq gconfig  |= Q = false [owise] .
 
 endm
 
 mod Concerto-CHECK is 
+  --- import model checker of Maude
   protecting Concerto-PREDS . 
   including MODEL-CHECKER . 
   including LTL-SIMPLIFIER . 
 
-
-  ops c1 c2 c3 cc11 cc22 cc33 : -> ComponentType .
-  ops confxx confyy confzz  confx confy confz : -> LocalConfiguration .
-  ops test test2 : -> LocalConfigurations .
-  
----eq c1 =  < (o1, o2) , o1 , (s1 ; o1, s2 ; o2), (t(o1, s2) ), (b(t(o1, s2))) , empty, empty   > .
-eq c2 =  < (p1, p2) , p1 , (r1 ; p1, r2 ; p2 ), (t(p1, r2) ), (b(t(p1, r2))) , (us1 ! (p2)) , empty     > .
-eq c3 =  < (q1, q2 ) , q1 , (t1 ; q1, t2 ; q2 ), (t(q1, t2) ), (b(t(q1, t2))) , empty , (pr1 ? (q2))   > .
-
-eq confx = < (idc1),(empty, empty) , add(idc1,c2)  . con(idc1,us1,idc3,pr1) .  pushB(idc1,b(t(p1, r2)),idb1) .  [] , empty, nil , nil  , empty >  .
-eq confy = < (idc2),(empty, empty) , add(idc2,c2)  . con(idc2,us1,idc3,pr1) .  pushB(idc2,b(t(p1, r2)),idb2) . [] , empty , nil , nil  , empty >  .
-eq confz = < (idc3),(empty, empty) , add(idc3,c3)  . con(idc1,us1,idc3,pr1) . pushB(idc3,b(t(q1, t2)),idb3) . [] , empty , nil , nil , empty >  .
-
----eq cc11 =  < (o1, o2) , o1 , (s1 ; o1, s2 ; o2), (t(o1, s2) ), (b(t(o1, s2))) , empty, empty   > .
----eq cc22 =  < (p1, p2, p3) , p1 , (r1 ; p1, r2 ; p2 , r3 ; p3), (t(p1, r2), t(p2, r3) ), (b(t(p1, r2),t(p2, r3))) , empty , empty     > .
----eq cc33 =  < (q1, q2 , q3) , q1 , (t1 ; q1, t2 ; q2 , t3 ; q3), (t(q1, t2), t(q2, t3)  ), (b(t(q1, t2),t(q2, t3))) , empty , empty   > .
-
-eq cc22 =  < (p1, p2, p3) , p1 , (r1 ; p1, r2 ; p2 , r3 ; p3), (t(p1, r2), t(p2, r3) ), (b(t(p1, r2),t(p2, r3))) , (us1 ! (p2)) , empty     > .
-eq cc33 =  < (q1, q2 , q3) , q1 , (t1 ; q1, t2 ; q2 , t3 ; q3), (t(q1, t2), t(q2, t3)  ), (b(t(q1, t2),t(q2, t3))) , empty , (pr1 ? (q2))   > .
-
----eq confxx = < (idc1),(empty, empty) , add(idc1,cc22)   . con(idc1,us1,idc3,pr1) . pushB(idc1,b(t(p1, r2),t(p2, r3)),idb1) .  [] , empty , nil , nil  , empty >  .
----eq confyy = < (idc2),(empty, empty) , add(idc2,cc22)  . con(idc2,us1,idc3,pr1) .  pushB(idc2,b(t(p1, r2),t(p2, r3)),idb2) . [] , empty , nil , nil  , empty >  .
----eq confzz = < (idc3),(empty, empty) , add(idc3,cc33)  .  con(idc1,us1,idc3,pr1) . con(idc2,us1,idc3,pr1) . pushB(idc3,b(t(q1, t2),t(q2, t3)),idb3) . [] , empty , nil , nil , empty >  .
-
-eq confxx = < (idc1, idc3),(empty, empty) , add(idc1,cc22) . add(idc3,cc33)  .  con(idc1,us1,idc3,pr1)  . con(idc2,us1,idc3,pr1) . pushB(idc3,b(t(q1, t2),t(q2, t3)),idb3) . pushB(idc1,b(t(p1, r2),t(p2, r3)),idb1) .  [] , empty , nil , nil  , empty >  .
-eq confyy = < (idc2),(empty, empty) , add(idc2,cc22)  . con(idc2,us1,idc3,pr1) .  pushB(idc2,b(t(p1, r2),t(p2, r3)),idb2) . [] , empty , nil , nil  , empty >  .
-----eq confzz = < (idc3),(empty, empty) ,   . [] , empty , nil , nil , empty >  .
-
-
-
- eq  test =  confx ; confz .
-
- eq  test2 =  confxx ; confyy   .
-
 endm
 
-  ------------------------------------Examples of verification-------------------------------------------------------
+  ------------------------------------Examples of verification over test -------------------------------------------------------
 
----red modelCheck(test2, [] ( (DeployC1 \/ DeployC2)  -> DeployS )) .
+---  red modelCheck(test, [] ( (DeployC1 \/ DeployC2)  -> DeployS )) .
+---  red modelCheck(test, [] ( DeployS -> ( (<> ( DeployC2 ) )))) .
+---  red modelCheck(test, [] ( DeployS -> ( (<> ( DeployC2 ) /\ <> ( DeployC1 ) )))) .
+---  red modelCheck(test, [] ( DeployS -> ( (<> ( DeployC2 ) )))) .
+---  red modelCheck(test, [] ~ DeployC1  ) .
+---  red modelCheck(test, [] ( DeployS -> ( <> ( DeployC2 ) /\  <> ( DeployC1 ) ))) .
 
- ---  red modelCheck(test2, [] ( DeployS -> ( (<> ( DeployC2 ) )))) .
---- red modelCheck(test2, [] ( DeployS -> ( (<> ( DeployC2 ) /\ <> ( DeployC1 ) )))) .
-
----         red modelCheck(test, [] ( DeployS -> ( (<> ( DeployC2 ) )))) .
-
- --- red modelCheck(test, [] ( DeployS -> (  <> ( DeployC2 ) ))) .
-
-------------------------------------------------------------------------------------------red modelCheck(test2, [] ( DeployS -> (  <> ( DeployC2 ) ))) .
-
-------------------------------------------------------------------------------------------red modelCheck(test2, [] ~ DeployC1  ) .
-----  red modelCheck(test, [] ( DeployS -> ( <> ( DeployC2 ) /\  <> ( DeployC1 ) ))) .
-----   red modelCheck(test, [] ( ~  W1V  )) .
-
-   -----red modelCheck (test, [] (( W3V /\ S3V /\ R3V)  -> ~ (~ W1V /\  R1V   )  )  ) .
-
-
-
-
---- red modelCheck (test, [] (( W3V /\ S3V /\ R3V)  ->  (~ W2V \/  ~ R2V   )  )  ) .    normelement fausse donne contre example
-----red modelCheck(test, [] ( deadlock ->  ( DeployS  /\  DeployC1   ))) .
- ---red modelCheck(test2instances, <> ( DeployC1 )) .   
-
----red modelCheck(test2instances, [] ( DeployC1 -> DeployS )) .
- ---red modelCheck(test3instances, [] ( (DeployC1 \/ DeployC2)  -> DeployS )) .  
- ---rew [10000] test3instances .
---- red modelCheck(gconf1, [] ( d1 -> d2 )) . il tourne infiniement
---- red modelCheck(gconf1, [] ( (d1 \/ d2) -> d3 )) .
-
-
----red modelCheck(Fig1, <> AccessibleStateP3  ) .
----red modelCheck(Fig2, <> AccessibleStateP3  ) .
-
-
-***(
-  ---eq cc11 =  < (p1, p2, p3) , p1 , s1 ; p1, s2 ; p2, s3 ; p3, (t(p1, s2), t(p2, s3) ), (b(t(p2, s3),t(p1, s2))) , empty , empty   > .
-  eq cc33 =  < (q1, q2, q3) , q1 , (r1 ; q1, r2 ; q2, r3 ; q3), (t(q1, r2), t(q2, r3) ), (b(t(q2, r3),t(q1, r2))) , empty , empty > .
-
-  eq cc11 =  < (p1, p2, p3) , p1 , s1 ; p1, s2 ; p2, s3 ; p3, (t(p1, s2), t(p2, s3) ), (b(t(p2, s3),t(p1, s2))) , us1 ! (p3), empty   > .
-  eq cc22 =  < (q1, q2, q3) , q1 , (r1 ; q1, r2 ; q2, r3 ; q3), (t(q1, r2), t(q2, r3) ), (b(t(q2, r3),t(q1, r2))) , empty , pr1 ? (q3)> .
-
-  eq confx = < (empty, empty) , add(idc1,cc11)  . con(idc1,us1,idc2,pr1) .  pushB(idc1,b(t(p2, s3),t(p1, s2)),idb1) . [], F(el(idIsCon(idc1,(idc1,us1,idc2,pr1))),el(idComp(idc1,idb1)),el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
----  eq confz = < (empty, empty) , add(idc3,cc11)  . con(idc3,us1,idc2,pr1) .  pushB(idc3,b(t(p2, s3),t(p1, s2)),idb3) . [], F(el(idIsCon(idc3,(idc3,us1,idc2,pr1))),el(idComp(idc3,idb3)),el(idAct(idc3,us1)),el(idDiscon(idc3,idc3,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc3,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc3,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
-----eq confy = < (empty, empty) , add(idc2,cc22)  . con(idc1,us1,idc2,pr1) . con(idc3,us1,idc2,pr1) .   pushB(idc2,b(t(q2, r3),t(q1, r2)),idb2) . [], F(el(idIsCon(idc2,(idc1,us1,idc2,pr1))),el(idIsCon(idc2,(idc3,us1,idc2,pr1))),el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idRef(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1)),el(idDiscon(idc2,idc3,us1,idc2,pr1))  ,ee(idIsCon(idc1,(idc1,us1,idc2,pr1)) ; bot),ee(idIsCon(idc3,(idc3,us1,idc2,pr1)) ; bot), ee(idComp(idc1,idb1) ; bot ) ,ee(idComp(idc3,idb3) ; bot ), ee(idAct(idc1,us1) ; bot), ee(idAct(idc3,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot),ee(idDiscon(idc3,idc3,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
-eq confy = < (empty, empty) , add(idc2,cc22)  . con(idc1,us1,idc2,pr1)  .   pushB(idc2,b(t(q2, r3),t(q1, r2)),idb2) . [], F(el(idIsCon(idc2,(idc1,us1,idc2,pr1))),el(idIsCon(idc2,(idc3,us1,idc2,pr1))),el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idRef(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1)),el(idDiscon(idc2,idc3,us1,idc2,pr1))  ,ee(idIsCon(idc1,(idc1,us1,idc2,pr1)) ; bot),ee(idIsCon(idc3,(idc3,us1,idc2,pr1)) ; bot), ee(idComp(idc1,idb1) ; bot ) ,ee(idComp(idc3,idb3) ; bot ), ee(idAct(idc1,us1) ; bot), ee(idAct(idc3,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot),ee(idDiscon(idc3,idc3,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
-
-  eq confz = < (empty, empty) , add(idc3,cc33)  .  pushB(idc3,b(t(p2, s3),t(p1, s2)),idb3) . [], F(empty,empty), nil, nil  , empty >  .
-
-
-  eq confxx = < (empty, empty) , add(idc1,cc11)  . con(idc1,us1,idc2,pr1) .  pushB(idc1,b(t(p2, s3),t(p1, s2)),idb1) . [], F(el(idIsCon(idc1,(idc1,us1,idc2,pr1))),el(idComp(idc1,idb1)),el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
-  eq confyy = < (empty, empty) , add(idc2,cc22)  . con(idc1,us1,idc2,pr1) .   pushB(idc2,b(t(q2, r3),t(q1, r2)),idb2) . [], F(el(idIsCon(idc2,(idc1,us1,idc2,pr1))),el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idRef(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1))  ,ee(idIsCon(idc1,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc1,idb1) ; bot ) , ee(idAct(idc1,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
-
-
-  eq test3instances = confy ; confx ; confz .
-  eq test2instances =  confxx ; confyy .
-)
-
-
-
-
-
-
-
-
-
-***(
-ops c1 c2 cc11 cc22 : -> ComponentType .
-ops confx confy confxx confyy confzz  : -> LocalConfiguration .
-ops  test  test1 : -> LocalConfigurations .
-
-eq c1 =  < (p1, p2) , p1 , (s1 ; p1, s2 ; p2), (t(p1, s2) ), (b(t(p1, s2))) , us1 ! (p2), empty   > .
-eq c2 =  < (q1, q2) , q1 , (r1 ; q1, r2 ; q2), (t(q1, r2) ), (b(t(q1, r2))) , empty, pr1 ? (q2) > .
-eq confx = < (empty, empty) , add(idc1,c1)  . con(idc1,us1,idc2,pr1) .  pushB(idc1,b(t(p1, s2)),idb1) . [], F(el(idIsCon(idc1,(idc1,us1,idc2,pr1))),el(idComp(idc1,idb1)),el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
-eq confy = < (empty, empty) , add(idc2,c2)  . con(idc1,us1,idc2,pr1) .   pushB(idc2,b(t(q1, r2)),idb2) . [], F(el(idIsCon(idc2,(idc1,us1,idc2,pr1))),el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idRef(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1))  ,ee(idIsCon(idc1,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc1,idb1) ; bot ) , ee(idAct(idc1,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
----eq confy = < (empty, empty) , add(idc2,c2)  . con(idc1,us1,idc2,pr1) . [], F(el(idIsCon(idc2,(idc1,us1,idc2,pr1))),el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idRef(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1))  ,ee(idIsCon(idc1,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc1,idb1) ; bot ) , ee(idAct(idc1,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
-
-
-
-eq cc11 =  < (p1, p2, p3) , p1 , (s1 ; p1, s2 ; p2, s3 ; p3), (t(p1, s2), t(p2, s3) ), (b(t(p2, s3),t(p1, s2))) , us1 ! (p3), empty   > .
-eq cc22 =  < (q1, q2, q3) , q1 , (r1 ; q1, r2 ; q2, r3 ; q3), (t(q1, r2), t(q2, r3) ), (b(t(q2, r3),t(q1, r2))) , empty, pr1 ? (q3) > .
-
-
-
-eq confxx = < (empty, empty) , add(idc1,cc11)  . con(idc1,us1,idc2,pr1) .  pushB(idc1,b(t(p2, s3),t(p1, s2)),idb1) . [], F(el(idIsCon(idc1,(idc1,us1,idc2,pr1))),el(idComp(idc1,idb1)),el(idAct(idc1,us1)),el(idDiscon(idc1,idc1,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc1,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
-eq confzz = < (empty, empty) , add(idc3,cc11)  . con(idc3,us1,idc2,pr1) .  pushB(idc3,b(t(p2, s3),t(p1, s2)),idb3) . [], F(el(idIsCon(idc3,(idc3,us1,idc2,pr1))),el(idComp(idc3,idb3)),el(idAct(idc3,us1)),el(idDiscon(idc3,idc3,us1,idc2,pr1) ) , ee(idIsCon(idc2,(idc3,us1,idc2,pr1)) ; bot), ee(idComp(idc2,idb2) ; bot ) , ee(idRef(idc2,pr1) ; bot), ee(idAct(idc2,pr1) ; bot),ee(idDiscon(idc2,idc3,us1,idc2,pr1) ; bot)), nil, nil  , empty >  .
-
-eq confyy = < (empty, empty) , add(idc2,cc22)  . con(idc1,us1,idc2,pr1) .   pushB(idc2,b(t(q2, r3),t(q1, r2)),idb2) . [], F(el(idIsCon(idc2,(idc1,us1,idc2,pr1))),el(idComp(idc2,idb2)), el(idAct(idc2,pr1)),el(idRef(idc2,pr1)),el(idDiscon(idc2,idc1,us1,idc2,pr1))  ,ee(idIsCon(idc1,(idc1,us1,idc2,pr1)) ; bot), ee(idComp(idc1,idb1) ; bot ) , ee(idAct(idc1,us1) ; bot),ee(idDiscon(idc1,idc1,us1,idc2,pr1) ; bot)), nil, nil , empty >  .
-
-----eq confw = < (empty, empty) , add(idc1,c33)  .  pushB(idc1,b(t(p2, s3),t(p1, s2)),idb1)  . [], F(el(idComp(idc1,idb1)) , empty), nil, nil  , empty >  .
-
----eq c33 =  < (p1, p2, p3) , p1 , (s1 ; p1, s2 ; p2, s3 ; p3), (t(p1, s2), t(p2, s3) ), (b(t(p2, s3),t(p1, s2))) , empty, empty   > .
- 
-eq test = confxx, confyy, confzz .
-
-eq test1 =  confx, confy .
-)
