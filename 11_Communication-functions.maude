@@ -1,30 +1,35 @@
 
-
 fmod COMMUNICATION-FUNCTIONS is
 
-inc CONCERTO-D-CONFIGURATION .
+    inc CONCERTO-D-CONFIGURATION .
 
+    var idcs : IdentCs . 
+    var f : ExternalFunctions .
+    var bwb : BoolWithBot .
+    var L : Connections .
+    var up : UsePort .
+    var pp : ProPort .
+    var idf1 : IdFunction .
+    vars id1 id2 : IdentC .
 
-var idents : IdentCs . 
-var f : ExternalFunctions .
-var bwb : BoolWithBot .
-var L : Connections .
-var up : UsePort .
-var pp : ProPort .
-var idf1 : IdFunction .
-vars id1 id2 : IdentC .
+   op IdentConnectionWhenSendActive(_,_,_) : Connections IdFunction BoolWithBot -> IdentCs .
+   --- Since the update when sending an evaluation of a local function only concerns 
+   --- the case of the refusing function if the sender sends an evlaution (false) for its active function'idAct(id1,u)'. 
+   --- The objective of this function is to determine the ident id2 of instacne of the remote site in relation with the local instance identified by id1, 
+   --- which claims the active function with a false evlaution. 
+   --- Note that the expected result of this function is id2 if it exists, otherwise empty, 
+   --- so the result of the function is a set that can contain either an empty element or a single identifier.
+ 
+    eq IdentConnectionWhenSendActive(((id1,up,id2,pp),L),idAct(id1,up),false) = id2 . 
+    eq IdentConnectionWhenSendActive(empty,idf1,bwb) = empty . 
+    eq IdentConnectionWhenSendActive(((id1,up,id2,pp),L),idf1,bwb) = IdentConnectionWhenSendActive(L,idf1,bwb) [owise] . 
 
-op  UpDateExternalFunctionsSend(_,_) : ExternalFunctions IdentCs -> ExternalFunctions .  -----------IdentCs contain one or 0 element
-eq  UpDateExternalFunctionsSend(f,empty) = f .
-eq  UpDateExternalFunctionsSend(empty,idents) = empty .
-ceq UpDateExternalFunctionsSend(f(idRef(id1,pp) ; bwb),f,idents) = f(idRef(id1,pp) ; bot), f if (id1 in idents ) .
-eq  UpDateExternalFunctionsSend(f(idf1 ; bwb),f,idents) = f(idf1 ; bwb), UpDateExternalFunctionsSend(f,idents) [owise] .
-
-
-op IdentConnectionWithActive(_,_,_) : Connections IdFunction BoolWithBot -> IdentCs .
-eq IdentConnectionWithActive((id1,up,id2,pp),L,idAct(id1,up),false) = id2 . 
-eq IdentConnectionWithActive(empty,idf1,bwb) = empty . 
-eq IdentConnectionWithActive((id1,up,id2,pp),L,idf1,bwb) = IdentConnectionWithActive(L,idf1,bwb) [owise] . 
-
+    op  UpDateExternalFunctionsSend(_,_) : ExternalFunctions IdentCs -> ExternalFunctions .  
+    --- The update is related only to the refusing function who we know its identifier if exist.
+    eq  UpDateExternalFunctionsSend(f,empty) = f .
+    eq  UpDateExternalFunctionsSend(empty,idcs) = empty .
+    ceq UpDateExternalFunctionsSend((f(idRef(id1,pp) ; bwb),f),idcs) = f(idRef(id1,pp) ; bot), f if (id1 in idcs ) .
+    eq  UpDateExternalFunctionsSend((f(idf1 ; bwb),f),idcs) = f(idf1 ; bwb), UpDateExternalFunctionsSend(f,idcs) [owise] .
+    
 endfm
 

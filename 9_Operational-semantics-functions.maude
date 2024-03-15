@@ -12,8 +12,7 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
   var pp : ProPort .
   var L : Connections .
   var f : ExternalFunctions .
-
-   var idcs : IdentCs .
+  var idcs : IdentCs .
 
   op NotActUseWhenLeavingPro(_,_,_,_,_) : IdentCs Marking Instances ExternalFunctions Connections ->  Bool .
   ---   is used to ensure consistency when firing transitions
@@ -29,7 +28,6 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
     (activeMarking(InstanceOfIdent(I,id2),pp,newMark) == false )) 
     implies  (Evaluation(idcs,idAct(id1,up),f, I,empty,[] ) == false) 
   ) .
-
   eq NotActUseWhenLeavingPro(idcs,newMark,I,f,empty) = true .
 
 endfm

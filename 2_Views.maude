@@ -1,9 +1,7 @@
 --------------------------------------------------------view definitions -----------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------
 view Place from TRIV to DECLARATION-SORTS is
-
   sort Elt to Place .
-
 endv
 
 view StationPlace from TRIV to DECLARATION-SORTS is
@@ -43,11 +41,6 @@ endv
 view Instance from TRIV to DECLARATION-SORTS is
   sort Elt to Instance .
 endv
-
----view LocalConfiguration from TRIV to DECLARATION-SORTS is
-  ---sort Elt to LocalConfiguration .
----endv
-
 
 view Transitionn from TRIV to DECLARATION-SORTS is
   sort Elt to Transitionn .

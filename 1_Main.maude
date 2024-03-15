@@ -1,13 +1,10 @@
 
 ***(
 
-
-Modifier les nom variable et fonction
-voir si on peut eviter de dupliquer Componenttype for instance et utiliser id au lieu
-voir semantique Sans F
-
-
-
+  Note for optimization
+  some optimization by eliminating redundant computing in the refusing function, for example
+  see if we can avoid duplicating Componenttype several times on the same type of instances
+  -----------------------------------------------------------------------------------------
 
   This file contains the Maude program for Concerto-D
     content: 
@@ -31,27 +28,16 @@ voir semantique Sans F
             * we can then import pr SET{Place} .  
             which allows you to parameterize the predefined module SET{X :: TRIV} by Place and thus define a set structure on Place
     
-      Module DECLARATION-SORTS is followed by a view declarations to use 
+      Module DECLARATION-SORTS is followed by a view declarations to use (file_2: Views)
+    () Basic data are defined in (file_3: 3_Basic-data-type-Concerto) and so on until we end up in file_13 for model-checking.
+    )
 
-    () From FM-2 to FM-14  gives the definition of our used sorts ant its equations, starting from basic sorts such as place, station, port ...etc. 
-       to the Configuration module for our configuration sort
-    
-    () From FM-15 to FM22 Some principal functions used in the operating rules are modeled separately. 
-       These functions are mainly related to :
-       * modules for port consistency during the execution of rules releted to firing transition or entering place
-       * modules to select the external functions required in the rules
-       * modules for defining communication operations
-    
-    () FM23 contains the operational rules of Concert-D         
-)
-
--------------------------------------------------- fonctional module FM1 -------------------------------------------------------
+-------------------------------------------------- Main -------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------
 fmod DECLARATION-SORTS is 
 
 sorts Place Station StationPlace  IdentC ExternalFunction send rec W Connection Instance LocalConfiguration .
 sorts Transitionn TransitionnEnding Behavior BehaviorId GUse GPro .
-
 
 endfm
 
@@ -66,7 +52,8 @@ load 9_Operational-semantics-functions
 load 10_Collect-functions
 load 11_Communication-functions
 load 12_Operational-semantics-Concerto-D
-load model-checker
+load model-checker  
+--- load model-checker of Maude to be used in Concerto-model-checking
 load 13_Concerto-model-checking
 
 

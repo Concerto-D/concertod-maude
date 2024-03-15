@@ -30,6 +30,7 @@ mod Concerto-PREDS is
   var tes  : TransitionnEndings .
   var  IdsNodx : IdentCs .
 
+  ------------------part concerned by the automatic generation 'Python'---------------------------
   op p1 : -> InitPlace .
   op q1 : -> InitPlace .
   ops p2 p3 : -> Place .
@@ -56,7 +57,7 @@ mod Concerto-PREDS is
   eq confz = < (idc3),(empty, empty) , add(idc3,c2)  .  con(idc1,us1,idc3,pr1) . con(idc2,us1,idc3,pr1) . pushB(idc3,b(t(q1, t2),t(q2, t3)),idb3) . [] , empty , nil , nil , empty >  .
  
   eq test =  confx ; confy ; confz  .
-
+-------------------------------------------- End part generation--------------------------------
 --------------------------------- When are the verification propositions true? -----
   eq (< IdsNodx,(< idc1,ct,qb,m(p3, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= DeployC1 = true .
   --- So Deploy Client 1 is true when instance of idc1 must in place p3

@@ -45,7 +45,8 @@ fmod CONCERTO-D-CONFIGURATION is
 
   op f(_;_) : IdFunction BoolWithBot ->   ExternalFunction .  ---external function with an evaluation (initially = bot) . 
   op (_;_) :  IdFunction BoolWithBot  -> rec .  --- an element to receive
-  op < _,(_,_),_,_,_,_,_ > : IdentCs Instances Connections Program ExternalFunctions Qrec Qsend  Ws -> LocalConfiguration .   --- definition of local configuration
+  op < _,(_,_),_,_,_,_,_ > : IdentCs Instances Connections Program ExternalFunctions Qrec Qsend  Ws -> LocalConfiguration .   
+  --- definition of local configuration
 
   --- some functions on configuration
   op LocalFunction(_,_) : IdFunction IdentCs -> Bool .  --- determine whether an Id of a function is local in a configuration
@@ -96,7 +97,6 @@ fmod CONCERTO-D-CONFIGURATION is
   eq ExistIdFunctionInReceiveQueue(idf1,nil) = false .
   ceq ExistIdFunctionInReceiveQueue(idf1,(idf2 ; bwb) qr) = true if (idf1 == idf2)  .
   eq ExistIdFunctionInReceiveQueue(idf1,(idf2 ; bwb) qr) =  ExistIdFunctionInReceiveQueue(idf1, qr) [owise] .
-
 
 endfm
 

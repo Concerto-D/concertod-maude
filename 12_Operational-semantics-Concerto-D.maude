@@ -11,7 +11,6 @@ mod OPERATIONAL-SEMANTICS is
   inc COMMUNICATION-FUNCTIONS .
 
   var lcx lcy : LocalConfiguration .
-
   vars Rx Ry : Program .
   vars Ix Iy : Instances . 
   vars Lx Ly : Connections .
@@ -26,7 +25,6 @@ mod OPERATIONAL-SEMANTICS is
   var inst : Instance .
   var use : UsePort .
   var pro : ProPort .
-
 
   vars id id1 id2 : IdentC .
   vars qb : QBehavoirId .
@@ -43,7 +41,6 @@ mod OPERATIONAL-SEMANTICS is
   var s : Station .
   vars IdsNodx IdsNody : IdentCs .  
 
-
   -----------------------------------------------------Rules -----------------------------------------------------------------------
   ----------------------------------------------------------------------------------------------------------------------------------
   -------------------------------------------------Rules of evolution components------------------------------------------------------
@@ -56,73 +53,64 @@ mod OPERATIONAL-SEMANTICS is
   rl [EndingTransitionn] : < IdsNodx,(< id1,ct, qb,m(ps, t(q,s,S), ts,tes) > , Ix,Lx),Rx,Fx, QRx, QSx, Wx >  =>
   < IdsNodx,(< id1,ct, qb,m(ps, ts, te(t(q,s,S),s), tes  ) > , Ix,Lx),Rx,Fx, QRx, QSx, Wx >  .
 
-
   crl [EnteringPlace] : < IdsNodx,(< id1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,Lx),Rx,Fx, QRx, QSx, Wx >  =>
   < IdsNodx,(< id1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > 
-
   if 
-  (IsSatisfiedTransitionnEndingStation(s,b,te(t(q,s,S),s), tes) and 
-
+  (IsSatisfiedTransitionnEndingStation(s,b,te(t(q,s,S),s), tes) 
+  and 
   ConnectedAndAllowed(IdsNodx,Pi(s,GetStationPlaces(ct)), GetUsePorts(ct), < id1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >,
-  < id1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) >,Ix, Lx,Fx)) .  
+  < id1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) >,Ix, Lx,Fx)
+  ) .  
 
   crl [FinishingBehavior] : < IdsNodx,(< id1,ct,(idbeh ; b(b)) qb,m(ps,empty,empty) > , Ix,Lx),Rx,Fx, QRx, QSx, Wx >   =>
   < IdsNodx,(< id1,ct, qb,m(ps,empty,empty) > , Ix,Lx),Rx,Fx, QRx, QSx, Wx >  
   if (intersection(ps,PlacesSourceOfTransitions(b)) == empty) .
 
-
-  -------------------------------------------------- Instructions of program------------------------------------------------------------------------- 
-
+  -------------------------------------------------- Instructions of program------------------------------------------------------------------
+  ---------------------------------------------------------------------------------------------------------------------------------------------
   crl [AddComponentInstance] :   < IdsNodx,(Ix,Lx), add(id, ct) . Rx,Fx, QRx, QSx, Wx >     =>
-  < IdsNodx,(insert( < id, ct, nil, m(InitialPlace(ct) ,empty,empty)  > , Ix),Lx),  Rx,Fx, QRx, QSx, Wx >  
-  
+  < IdsNodx,(insert( < id, ct, nil, m(InitialPlace(ct) ,empty,empty)  > , Ix),Lx),  Rx,Fx, QRx, QSx, Wx >    
   if (not IsUsedIdentInstances(id,Ix))   .  
 
-
   crl [DeleteComponentInstance] : < IdsNodx,(< id1,ct,qb,mrk > ,Ix,Lx), del(id) . Rx,Fx, QRx, QSx, Wx >     =>   
-  < IdsNodx,(Ix,Lx), Rx,Fx, QRx, QSx, Wx >   if (id == id1 and (not InConnectionIdent(id,Lx)) ) . 
+  < IdsNodx,(Ix,Lx), Rx,Fx, QRx, QSx, Wx >  
+  if (id == id1 and (not InConnectionIdent(id,Lx)) ) . 
 
   crl [ConnectPorts] : < IdsNodx,(Ix,Lx), con(id,use,id1,pro) . Rx,Fx, QRx, QSx, Wx >    =>   
   < IdsNodx,(Ix,(id,use,id1,pro),Lx), Rx,Fx, QRx, QSx, Wx > 
   if (id =/= id1 and ((InstanceOfIdent(Ix,id) in Ix) or (InstanceOfIdent(Ix,id1) in Ix)) and (not InConnectionIdentUsePort(id,use,Lx)) ) . 
 
-
   crl [DisconnectPorts] : < IdsNodx,(Ix,Lx), dcon(id,use,id1,pro) . Rx,Fx, QRx, QSx, Wx >     =>  
   < IdsNodx,(Ix,delete((id,use,id1,pro),Lx)), Rx,Fx, QRx, QSx, Wx >  
   if
-  (  ((id,use,id1,pro) in Lx)
-    and
+  (  
+  (id,use,id1,pro) in Lx
+  and
   Evaluation(IdsNodx,idDiscon(id,(id,use,id1,pro)),Fx,Ix,Lx,dcon(id,use,id1,pro) . Rx) == true
   and
   Evaluation(IdsNodx,idDiscon(id1,(id,use,id1,pro)),Fx,Ix,Lx,dcon(id,use,id1,pro) . Rx) == true
   and
   Evaluation(IdsNodx,idAct(id,use),Fx,Ix,Lx,dcon(id,use,id1,pro) . Rx) == false
-
   ) .
-
-
 
   crl [PushingBehavior] : < IdsNodx,(< id1,ct,qb,mrk >,Ix,Lx), pushB(id, behx, idbeh) . Rx,Fx, QRx, QSx, Wx > 
   =>   < IdsNodx,(< id1,ct,append(qb,(idbeh ; behx)),mrk >,Ix,Lx),  Rx,Fx, QRx, QSx, Wx >  
   if (id == id1 and IsBehaviorOfComponent(behx,ct)) .
     
-
   crl [Waiting] : < IdsNodx,( < id1,ct,qb,mrk > ,Ix,Lx), wait(id,idbeh) . Rx,Fx, QRx, QSx, Wx > 
   =>   < IdsNodx,( < id1,ct,qb,mrk > ,Ix,Lx), Rx,Fx, QRx, QSx, Wx > 
   if (Evaluation(IdsNodx,idComp(id,idbeh),Fx,Ix,Lx, Rx) == true ) .
 
-  -----------------------------------------------------Rules  for collecting the evaluation of external functions------------
+  -----------------------------------------------Rules  for collecting the evaluation of external functions----------------------------------------
+  -------------------------------------------------------------------------------------------------------------------------------------------------
 
   crl [ExternalFunctionsForFiringTransitionns] : < IdsNodx,(< id1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx >  =>
   < IdsNodx,(  < id1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix , Lx),Rx,Fx, QRx, append(QSx,CollectFunctionFiring(IdsNodx,m(ps,union(ts, RestrictTransitionsToPlace(b,p) ),tes),< id1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,ConnectionProIdent(id1,Lx),Fx,Wx,QSx)), Wx >  
   if (RestrictTransitionsToPlace(b,p) =/= empty and CollectFunctionFiring(IdsNodx,m(ps,union(ts, RestrictTransitionsToPlace(b,p) ),tes),< id1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,ConnectionProIdent(id1,Lx ),Fx,Wx,QSx) =/= nil) . 
 
-
-
   crl [ExternalFunctionsForEnteringPlace] : < IdsNodx,(< id1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,Lx),Rx,Fx, QRx, QSx, Wx > =>
   < IdsNodx,(< id1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,Lx),Rx,Fx, QRx, append(QSx,CollectFunctionsEnteringPlace(IdsNodx,Pi(s,GetStationPlaces(ct)), GetUsePorts(ct), < id1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >,
   < id1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) >,Ix, Lx,Fx,Wx,QSx)), Wx > 
-
   if 
   (
     IsSatisfiedTransitionnEndingStation(s,b,te(t(q,s,S),s), tes) 
@@ -131,33 +119,28 @@ mod OPERATIONAL-SEMANTICS is
     < id1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionnEndingStation(tes,s) ) >,Ix, Lx,Fx,Wx,QSx) =/= nil )
   ) .
 
-
   crl [ExternalFunctionsForDisconnectPorts] : 
   < IdsNodx,(Ix,Lx), dcon(id1,use,id2,pro) . Rx,Fx, QRx, QSx, Wx >    =>  
   < IdsNodx,(Ix,Lx), dcon(id1,use,id2,pro) . Rx,Fx, QRx, append(QSx,CollectFunctionsDiscon(IdsNodx,(id1,use,id2,pro),Fx,Wx,QSx)), Wx >   
   if (((id1,use,id2,pro) in Lx)  and (CollectFunctionsDiscon(IdsNodx,(id1,use,id2,pro),Fx,Wx,QSx) =/= nil) ) .
-
 
   crl [ExternalFunctionsForWait] :
   < IdsNodx,(Ix,Lx), wait(id1,idbeh) . Rx,Fx, QRx, QSx, Wx >     =>  
   < IdsNodx,(Ix,Lx), wait(id1,idbeh) . Rx,Fx, QRx, append(QSx,CollectFunctionWait(IdsNodx,id1,idbeh,Fx,Wx,QSx)), Wx >    
   if (CollectFunctionWait(IdsNodx,id1,idbeh,Fx,Wx,QSx) =/= nil ) .
 
-
-  --------------------------------------------Rules for communication----------------------------------------------------------------------
-  -----------------------------------------------------------------------------------------------------------------------------------------
+  --------------------------------------------------------------Rules for communication---------------------------------------------------------------------
+  ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
   crl [SendRequest] : 
   < IdsNodx,(Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > ; < IdsNody,(Iy,Ly),Ry,Fy,QRy,QSy,Wy >  =>
   < IdsNodx,(Ix,Lx),Rx,AddFunctionExtern(idf,Fx),QRx,QSx, (Wx, idf) >  ;  < IdsNody,(Iy,Ly),Ry,Fy,append(QRy, (idf ; bot) ),QSy,Wy > 
   if ( (not LocalFunction(idf,IdsNodx)) and LocalFunction(idf,IdsNody) ) .
 
-
   crl [SendEvaluationFunction] : 
   < IdsNodx,(Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > ; < IdsNody,(Iy,Ly),Ry,Fy,QRy,QSy,Wy >   =>
-  < IdsNodx,(Ix,Lx),Rx,UpDateExternalFunctionsSend(Fx,IdentConnectionWithActive(Lx,idf,LocalEvaluation(idf,Ix,Lx,Rx))),QRx,QSx, Wx > ; < IdsNody,(Iy,Ly),Ry,Fy,append(QRy, (idf ; LocalEvaluation(idf,Ix,Lx,Rx)) ),QSy,Wy >  
+  < IdsNodx,(Ix,Lx),Rx,UpDateExternalFunctionsSend(Fx,IdentConnectionWhenSendActive(Lx,idf,LocalEvaluation(idf,Ix,Lx,Rx))),QRx,QSx, Wx > ; < IdsNody,(Iy,Ly),Ry,Fy,append(QRy, (idf ; LocalEvaluation(idf,Ix,Lx,Rx)) ),QSy,Wy >  
   if ( LocalFunction(idf,IdsNodx) and ((idf in Wy) and (not ExistIdFunctionInReceiveQueue(idf,QRy) )  ) ) .
-
 
   crl [ReceivesRequest] : 
   < IdsNodx,(Ix,Lx),Rx,Fx, (idf ; valf ) QRx,  QSx, Wx >   =>
@@ -168,8 +151,6 @@ mod OPERATIONAL-SEMANTICS is
   < IdsNodx,(Ix,Lx),Rx,Fx, (idf ; valf ) QRx,  QSx, Wx >   =>
   < IdsNodx,(Ix,Lx),Rx,SubstitueEvaluationOfFunction(Fx,idf,valf),QRx,QSx, delete(idf,Wx) >  
   if ( not LocalFunction(idf,IdsNodx) ) .  
-
-
 
 endm
 

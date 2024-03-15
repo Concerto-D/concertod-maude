@@ -1,6 +1,4 @@
 
------------- a modifier les fonctions selon la nouvelle modification
-
 
 fmod COLLECT-EXTERNAL-FUNCTIONS-FIRING is
 
@@ -32,16 +30,13 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-FIRING is
   (   
   (not idAct(id1,up) in ws) and 
   (not (occurs(idAct(id1,up),qsend)))  and
-   (not LocalFunction(idAct(id1,up),idcs)) and ---a changer simplifier
+  (not (id1 in idcs)) and
   ( Evaluation(idcs,idAct(id1,up),f,empty,empty,[] )   == true  or Evaluation(idcs,idAct(id1,up),f,empty,empty,[] )  == bot ) and
   ( (LocalEvaluation(idAct(id2,pp),Is,empty,[] ) == true) and (activeMarking(InstanceOfIdent(Is,id2),pp,newMark) == false ))  
   ) .
-
   eq CollectFunctionFiring(idcs,newMark,Is,(id1,up,id2,pp),L,f,ws,qsend) = CollectFunctionFiring(idcs,newMark,Is,L,f,ws,qsend) [owise] .
 
-
 endfm
-
 
 
 fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
@@ -59,10 +54,8 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
   var pp : ProPort .
   vars IdentIns id1 id2 : IdentC .
   var ws : Ws .
-  var qsend : Qsend .
-  
-   var idcs : IdentCs .   
-----------------modifier par la supprission de provided
+  var qsend : Qsend .  
+  var idcs : IdentCs .   
 
   op CollectFunctionsEnteringPlace(_,_,_,_,_,_,_,_,_,_) : IdentCs Place GUses Instance Instance Instances Connections ExternalFunctions Ws Qsend -> Qsend .
   --- we follow the same reasoning used to collect external functions for firing
@@ -76,13 +69,10 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
   eq CollectConnected(idcs,up,id1,empty,f,ws,qsend) = nil .
   ceq CollectConnected(idcs,up,id1,(id1,up,id2,pp),L,f,ws,qsend) = idIsCon(id2,(id1,up,id2,pp))
   if(
-    
     (not (idIsCon(id2,(id1,up,id2,pp)) in ws)) and 
     (not (occurs(idIsCon(id2,(id1,up,id2,pp)),qsend)))  and
-       (not (id2 in idcs)) and
-   ---- (not LocalFun(idIsCon(id2,(id1,up,id2,pp)),idcs)) 
+    (not (id2 in idcs)) and
     ( Evaluation(idcs,idIsCon(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == false  or Evaluation(idcs,idIsCon(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == bot )
-    
     ) .
   eq CollectConnected(idcs,poru,IdentIns,(id1,up,id2,pp),L,f,ws,qsend) = CollectConnected(idcs,poru,IdentIns,L,f,ws,qsend) [owise] .
 
@@ -93,87 +83,72 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
   if (
       (not idRef(id2,pp) in ws) and 
       (not (occurs(idRef(id2,pp),qsend)))  and
-      (not (id2 in idcs)) and
-      --- (not LocalFun(idRef(id2,pp),idcs))    
+      (not (id2 in idcs)) and  
       ( Evaluation(idcs,idRef(id2,pp),f,empty,empty,[] )   == true  or Evaluation(idcs,idRef(id2,pp),f,empty,empty,[])   == bot )   
     ) .
   eq CollectAllowed(idcs,poru,IdentIns,Is,(id1,up,id2,pp),L,f,ws,qsend) = CollectAllowed(idcs,poru,IdentIns,Is,L,f,ws,qsend) [owise] .
 
 endfm
 
-
-
-
 fmod COLLECT-EXTERNAL-FUNCTIONS-WAIT is
 
-inc CONCERTO-D-CONFIGURATION .
+  inc CONCERTO-D-CONFIGURATION .
 
+  var bwb : BoolWithBot .
+  var  id1 : IdentC .
+  var idbeh : IdentB .
+  var f : ExternalFunctions .
+  var ws : Ws .
+  var qsend : Qsend .
+  var idf1 : IdFunction .
+  var idcs : IdentCs .   
 
-var bwb : BoolWithBot .
-
-var  id1 : IdentC .
-var idbeh : IdentB .
-var f : ExternalFunctions .
-var ws : Ws .
-var qsend : Qsend .
-var idf1 : IdFunction .
-
-var idcs : IdentCs .   
-
-
-op CollectFunctionWait(_,_,_,_,_,_) : IdentCs IdentC IdentB ExternalFunctions Ws Qsend -> Qsend .
-ceq CollectFunctionWait(idcs,id1,idbeh,f,ws,qsend) = nil if (id1 in idcs) .
-ceq CollectFunctionWait(idcs,id1,idbeh,f(idf1 ; bwb),f,ws,qsend) =  CollectFunctionWait(idcs,id1,idbeh,f,ws,qsend) 
-if ((idf1 =/= idComp(id1,idbeh))  and (not (id1 in idcs)) ) .
-eq CollectFunctionWait(idcs,id1,idbeh,f(idComp(id1,idbeh) ; bwb),f,ws,qsend) = 
-if 
-(( bwb == true ) or (idComp(id1,idbeh) in ws) or (idComp(id1,idbeh) in qsend) )  then nil else idComp(id1,idbeh) fi .
-eq CollectFunctionWait(idcs,id1,idbeh,empty,ws,qsend) = idComp(id1,idbeh) . 
+  op CollectFunctionWait(_,_,_,_,_,_) : IdentCs IdentC IdentB ExternalFunctions Ws Qsend -> Qsend .
+  ceq CollectFunctionWait(idcs,id1,idbeh,f,ws,qsend) = nil if (id1 in idcs) .
+  ceq CollectFunctionWait(idcs,id1,idbeh,f(idf1 ; bwb),f,ws,qsend) =  CollectFunctionWait(idcs,id1,idbeh,f,ws,qsend) 
+  if ((idf1 =/= idComp(id1,idbeh))  and (not (id1 in idcs)) ) .
+  eq CollectFunctionWait(idcs,id1,idbeh,f(idComp(id1,idbeh) ; bwb),f,ws,qsend) = 
+  if (( bwb == true ) or (idComp(id1,idbeh) in ws) or (idComp(id1,idbeh) in qsend) )  then nil else idComp(id1,idbeh) fi .
+  eq CollectFunctionWait(idcs,id1,idbeh,empty,ws,qsend) = idComp(id1,idbeh) . 
 
 endfm
 
-
-
 fmod COLLECT-EXTERNAL-FUNCTIONS-DISCONNECT is
 
-inc CONCERTO-D-CONFIGURATION .
+  inc CONCERTO-D-CONFIGURATION .
 
-var bwb : BoolWithBot .
+  var bwb : BoolWithBot .
+  var up : UsePort .
+  var pp : ProPort .
+  vars  id1 id2 : IdentC .
+  var f : ExternalFunctions .
+  var ws : Ws .
+  var qsend : Qsend .
+  var idf1 : IdFunction .
+  var idcs : IdentCs . 
+  var l : Connection .  
 
-var up : UsePort .
-var pp : ProPort .
-vars  id1 id2 : IdentC .
-var f : ExternalFunctions .
-var ws : Ws .
-var qsend : Qsend .
-var idf1 : IdFunction .
+  op CollectFunctionsDiscon(_,_,_,_,_) : IdentCs Connection ExternalFunctions Ws Qsend -> Qsend .
+  ceq CollectFunctionsDiscon(idcs,(id1,up,id2,pp),f,ws,qsend) = append(ActiveCollect(id1,up,f,ws,qsend),(DisconCollect(id1,(id1,up,id2,pp),f,ws,qsend))) 
+  if (not (id1 in idcs) ) .
+  ceq CollectFunctionsDiscon(idcs,(id1,up,id2,pp),f,ws,qsend) = DisconCollect(id2,(id1,up,id2,pp),f,ws,qsend) 
+  if (not (id2 in idcs) ) .
+  eq CollectFunctionsDiscon(idcs,(id1,up,id2,pp),f,ws,qsend) = nil [owise] .
 
-var idcs : IdentCs . 
-var l : Connection .  
+  op ActiveCollect(_,_,_,_,_) : IdentC UsePort ExternalFunctions Ws Qsend -> Qsend .
+  ceq ActiveCollect(id1,up,f(idf1 ; bwb),f,ws,qsend) =  ActiveCollect(id1,up,f,ws,qsend) if (idf1 =/= idAct(id1,up)) .
+  eq ActiveCollect(id1,up,f(idAct(id1,up) ; bwb),f,ws,qsend) = 
+  if 
+  (( bwb == false ) or (idAct(id1,up) in ws) or (idAct(id1,up) in qsend) ) then nil else idAct(id1,up) fi .
+  eq ActiveCollect(id1,up,empty,ws,qsend) = idAct(id1,up) . 
 
+  op DisconCollect(_,_,_,_,_) : IdentC Connection ExternalFunctions Ws Qsend -> Qsend .
 
-op CollectFunctionsDiscon(_,_,_,_,_) : IdentCs Connection ExternalFunctions Ws Qsend -> Qsend .
-
-ceq CollectFunctionsDiscon(idcs,(id1,up,id2,pp),f,ws,qsend) = append(ActiveCollect(id1,up,f,ws,qsend),(DisconCollect(id1,(id1,up,id2,pp),f,ws,qsend))) 
-if (not (id1 in idcs) ) .
-ceq CollectFunctionsDiscon(idcs,(id1,up,id2,pp),f,ws,qsend) = DisconCollect(id2,(id1,up,id2,pp),f,ws,qsend) 
-if (not (id2 in idcs) ) .
-eq CollectFunctionsDiscon(idcs,(id1,up,id2,pp),f,ws,qsend) = nil [owise] .
-
-op ActiveCollect(_,_,_,_,_) : IdentC UsePort ExternalFunctions Ws Qsend -> Qsend .
-ceq ActiveCollect(id1,up,f(idf1 ; bwb),f,ws,qsend) =  ActiveCollect(id1,up,f,ws,qsend) if (idf1 =/= idAct(id1,up)) .
-eq ActiveCollect(id1,up,f(idAct(id1,up) ; bwb),f,ws,qsend) = 
-if 
-(( bwb == false ) or (idAct(id1,up) in ws) or (idAct(id1,up) in qsend) ) then nil else idAct(id1,up) fi .
-eq ActiveCollect(id1,up,empty,ws,qsend) = idAct(id1,up) . 
-
-op DisconCollect(_,_,_,_,_) : IdentC Connection ExternalFunctions Ws Qsend -> Qsend .
-
-ceq DisconCollect(id1,l,f(idf1 ; bwb),f,ws,qsend) =  DisconCollect(id1,l,f,ws,qsend) if (idf1 =/= idDiscon(id1,l)) .
-eq DisconCollect(id1,l,f(idDiscon(id1,l) ; bwb),f,ws,qsend) = 
-if 
-(( bwb == true ) or (idDiscon(id1,l) in ws) or (idDiscon(id1,l) in qsend) ) then nil else idDiscon(id1,l) fi .
-eq DisconCollect(id1,l,empty,ws,qsend) = idDiscon(id1,l) . 
+  ceq DisconCollect(id1,l,f(idf1 ; bwb),f,ws,qsend) =  DisconCollect(id1,l,f,ws,qsend) if (idf1 =/= idDiscon(id1,l)) .
+  eq DisconCollect(id1,l,f(idDiscon(id1,l) ; bwb),f,ws,qsend) = 
+  if 
+  (( bwb == true ) or (idDiscon(id1,l) in ws) or (idDiscon(id1,l) in qsend) ) then nil else idDiscon(id1,l) fi .
+  eq DisconCollect(id1,l,empty,ws,qsend) = idDiscon(id1,l) . 
 
 endfm
 

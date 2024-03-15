@@ -1,6 +1,6 @@
 
 fmod NET-D-CONFIGURATION is 
-
+--- a Net of local configurations
 inc CONCERTO-D-CONFIGURATION .
 sorts Net .
 subsort LocalConfiguration < Net .
