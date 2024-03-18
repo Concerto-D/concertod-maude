@@ -130,7 +130,7 @@ class Behavior:
     def transitions(self) -> Iterable[Transition]:
         return self._transitions.values()
 
-    def transitions_has_dict(self) -> Dict[str, Transition]:
+    def transitions_as_dict(self) -> Dict[str, Transition]:
         return self._transitions
 
     def get_transition(self, name: str) -> Transition:
@@ -441,7 +441,7 @@ class Instruction(ABC):
 
 class Add(Instruction):
 
-    def __init__(self, component: str, component_type: str):
+    def __init__(self, component: str, component_type: ComponentType):
         self._comp = component
         self._ctype = component_type
 
@@ -455,10 +455,10 @@ class Add(Instruction):
         return self._ctype
 
     def triplet(self) -> (str, str, str):
-        return 'add', self._comp, self._ctype
+        return 'add', self._comp, self._ctype.name()
 
     def __str__(self):
-        return f"add({self._comp}, {self._ctype})"
+        return f"add({self._comp}, {self._ctype.name()})"
 
     def __eq__(self, other):
         if isinstance(other, Add):
@@ -607,24 +607,28 @@ class Wait(Instruction):
 
 class PushB(Instruction):
 
-    def __init__(self, component: str, behavior: str):
+    def __init__(self, component: str, behavior: str, id: str):
         self._component = component
         self._behavior = behavior
+        self._idbhv = id
 
     def component(self) -> str:
         return self._component
 
     def behavior(self) -> str:
         return self._behavior
+    
+    def id(self) -> str:
+        return self._idbhv
 
-    def triplet(self) -> (str, str, str):
-        return 'pushB', self._component, self._behavior
+    def triplet(self) -> (str, str, str, str):
+        return 'pushB', self._component, self._behavior, self._idbhv
 
     def isPushB(self):
         return True
 
     def __str__(self):
-        return f"pushB({self._component}, {self._behavior})"
+        return f"pushB({self._component}, {self._behavior}, {self._idbhv})"
 
     def __eq__(self, other):
         if isinstance(other, PushB):
@@ -637,8 +641,12 @@ class PushB(Instruction):
 
 class Program:
     
-    def __init__(self, instructions) -> None:
+    def __init__(self, id, instructions) -> None:
+        self.__id = id
         self.__instructions = instructions
         
     def instructions(self):
         return self.__instructions
+        
+    def id(self):
+        return self.__id
