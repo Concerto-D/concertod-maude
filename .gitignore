@@ -1,0 +1,13 @@
+# Python
+*.pyc
+__pycache__/
+venv/
+*.pyo
+*.pyc
+*.pyd
+*.pyo
+*.pyc
+
+# Maude
+*.maude.tmp
+*.maude.sty
