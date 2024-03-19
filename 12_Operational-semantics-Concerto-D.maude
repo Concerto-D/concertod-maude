@@ -139,7 +139,8 @@ mod OPERATIONAL-SEMANTICS is
 
   crl [SendEvaluationFunction] : 
   < IdsNodx,(Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > ; < IdsNody,(Iy,Ly),Ry,Fy,QRy,QSy,Wy >   =>
-  < IdsNodx,(Ix,Lx),Rx,UpDateExternalFunctionsSend(Fx,IdentConnectionWhenSendActive(Lx,idf,LocalEvaluation(idf,Ix,Lx,Rx))),QRx,QSx, Wx > ; < IdsNody,(Iy,Ly),Ry,Fy,append(QRy, (idf ; LocalEvaluation(idf,Ix,Lx,Rx)) ),QSy,Wy >  
+  < IdsNodx,(Ix,Lx),Rx,UpDateExternalFunctionsSend(Fx,IdentConnectionWhenSendActive(Lx,idf,LocalEvaluation(idf,Ix,Lx,Rx))),QRx,QSx, Wx > ; 
+  < IdsNody,(Iy,Ly),Ry,Fy,append(QRy, (idf ; LocalEvaluation(idf,Ix,Lx,Rx)) ),QSy,Wy >  
   if ( LocalFunction(idf,IdsNodx) and ((idf in Wy) and (not ExistIdFunctionInReceiveQueue(idf,QRy) )  ) ) .
 
   crl [ReceivesRequest] : 
