@@ -50,8 +50,8 @@ def gen_maude_program(program):
     ids = ', '.join(list_ids)
     plan = ' . '.join(map(lambda instr: __make_instruction(instr), program.instructions()))
     pushb_instr = filter(lambda instr: instr.isPushB(), program.instructions())
-    identB = "ops " + ' '.join(map(lambda instr: f"{instr.id()}", pushb_instr)) + ": -> IdentB ."
-    identC = "ops " + ' '.join(list_ids) + " -> IdentC ."
+    identB = "ops " + ' '.join(map(lambda instr: f"{instr.id()}", pushb_instr)) + " : -> IdentB ."
+    identC = "ops " + ' '.join(list_ids) + " : -> IdentC ."
     return identB + '\n' + identC + '\n' + f"eq conf{cap1(program.id())} = <({ids}), (empty, empty), {plan} . [], empty, nil, nil, empty > ."
 
 def gen_maude_from_type(type: ComponentType) -> str:
