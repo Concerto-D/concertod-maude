@@ -9,6 +9,6 @@ venv/
 *.pyc
 
 # Maude
-example.maude
+example*.maude
 *.maude.tmp
 *.maude.sty
