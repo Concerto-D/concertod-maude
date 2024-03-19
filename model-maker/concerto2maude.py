@@ -65,7 +65,7 @@ def gen_maude_from_type(type: ComponentType) -> str:
         dict_place_station = {f"{name}{cap1(place.name())}": f"st{cap1(name)}{cap1(place.name())}" for place in type.places()}
         places = list(map(lambda place: f"{name}{cap1(place.name())}", type.places()))
         stations = list(map(lambda place: f"st{cap1(name)}{cap1(place.name())}", type.places()))
-        st_places = list(map(lambda stp: f"{stp[0]} ; {stp[1]}" , zip(places, stations)))
+        st_places = list(map(lambda stp: f"{stp[1]} ; {stp[0]}" , zip(places, stations)))
         init = f"{name}{cap1(type.initial_place().name())}"
         place = "ops " + ' '.join(places) + " : -> Place ."
         station = "ops " + ' '.join(stations) + " : -> Station ."
@@ -154,7 +154,7 @@ def write_maude(filename, content):
         file.write(content)
     
 # ------------------- 
-# Example
+# Example: Basic
 # ------------------- 
     
 def smalltype():
@@ -182,12 +182,19 @@ def smallprogram(name):
     ])
     return program
 
+
+# ------------------- 
+# Example: CPS
 # ------------------- 
 
-if __name__ == "__main__":
-    programs = deploy_maude(1)
+def cps(n):
+    programs = cps_deploy_maude(n)
     maude = gen_maude(programs)
-    write_maude("example.maude", maude)
-    # maude = gen_maude([smallprogram("n1"), smallprogram("n2")])
-    # print(maude)
+    write_maude("example_deploy_cps.maude", maude)
+    programs = cps_deploy_update_maude(n)
+    maude = gen_maude(programs)
+    write_maude("example_deploy_update_cps.maude", maude)
+
+if __name__ == "__main__":
+    cps(1)
    
