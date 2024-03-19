@@ -1,6 +1,7 @@
 from concerto import *
 from itertools import chain
 from examples.openstack import *
+from examples.cps import *
 
 type_of_comp = {}
 
@@ -155,6 +156,9 @@ def smallprogram(name):
 # ------------------- 
 
 if __name__ == "__main__":
-   maude = gen_maude([smallprogram("n1"), smallprogram("n2")])
-   print(maude)
+    programs = deploy_maude(1)
+    maude = gen_maude(programs)
+    print(maude)
+    # maude = gen_maude([smallprogram("n1"), smallprogram("n2")])
+    # print(maude)
    
