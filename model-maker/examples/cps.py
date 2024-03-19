@@ -106,33 +106,36 @@ def database_type():
 #     return program
 
 def db_deploy():
-    return  Program("database",[
-        Add("database", database_type()),
-        Connect("database", "service", "system", "db_service"),
-        PushB("database", "deploy", "db1")
+    return  Program("prog_database",[
+        Add("mydb0", database_type()),
+        Connect("mydb0", "service", "mysys0", "db_service"),
+        PushB("mydb0", "deploy", "db1"),
+        # PushB("db0", "interrupt", "db2"),
+        # PushB("db0", "update", "db3"),
+        # PushB("db0", "deploy", "db4"),
     ])
     
 def sys_deploy(n):
     program = [
-        Add("system", system_type()),
-        Connect("database", "service", "system", "db_service"),
+        Add("mysys0", system_type()),
+        Connect("mydb0", "service", "mysys0", "db_service"),
     ]
     for i in range(n):
         program += [
             Add(f"listener_{i}", listener_type()),
-            Connect("system", "sys", f"listener_{i}", "sys_service"),
+            Connect("mysys0", "sys", f"listener_{i}", "sys_service"),
             Connect(f"listener_{i}", "rcv", f"sensor_{i}", "rcv_service"),
             Connect(f"listener_{i}", "config", f"sensor_{i}", "config_service")
         ]
-    program += [PushB("system", "deploy", "sys1")]
+    program += [PushB("mysys0", "deploy", "sys1")]
     program += [
         PushB(f"listener_{i}", "deploy", f"{i}lst1")
         for i in range(n)
     ]
-    return Program("system", program)
+    return Program("prog_system", program)
 
 def sensor_deploy(i):
-    return Program(f"sensor_{i}", [
+    return Program(f"prog_sensor_{i}", [
         Add(f"sensor_{i}", sensor_type()),
         Connect(f"listener_{i}", "rcv", f"sensor_{i}", "rcv_service"),
         Connect(f"listener_{i}", "config", f"sensor_{i}", "config_service"),

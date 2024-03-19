@@ -14,25 +14,39 @@ def flatmap(func, iterable):
 
 def gen_maude(programs):
     conf_names = list(map(lambda program: f"conf_{program.id()}", programs))
-    res = "ops " + ' '.join(conf_names) + " : ->  LocalConfiguration ."
+    maude = "ops " + ' '.join(conf_names) + " : ->  LocalConfiguration ."
     adds = flatmap(lambda program: filter(lambda instr: instr.isAdd(), program.instructions()), programs) # Get all add from all programs using flatmap
     types = set()
     for add in adds:
         type_of_comp[add.component()] = add.type()
         types.add(add.type())
-    res += "\nop test : -> Net ."
-    res += "\n" + '\n'.join(map(lambda type: gen_maude_from_type(type), types))
-    res += "\n" + '\n'.join(map(lambda program: gen_maude_program(program), programs))
-    res += "\n" + f"eq test = {' ; '.join(conf_names)} ."
-    return res 
+    maude += "\nop test : -> Net ."
+    maude += "\n" + '\n'.join(map(lambda type: gen_maude_from_type(type), types))
+    maude += "\n" + '\n'.join(map(lambda program: gen_maude_program(program), programs))
+    maude += "\n" + f"eq test = {' ; '.join(conf_names)} ."
+    
+    lines = maude.split('\n')
+    indented_lines = ['\t' + line for line in lines]
+    indented_maude = '\n'.join(indented_lines)
+    res = f"""mod Concerto-PREDS is 
+\tprotecting OPERATIONAL-SEMANTICS . 
+\tincluding SATISFACTION .
+
+{indented_maude}
+endm 
+    """
+    
+    return res
 
 def gen_maude_program(program):
     add_instr = filter(lambda instr: instr.isAdd(), program.instructions())
-    ids = ', '.join(map(lambda add: add.component(), add_instr))
+    list_ids = list(map(lambda add: add.component(), add_instr))
+    ids = ', '.join(list_ids)
     plan = ' . '.join(map(lambda instr: __make_instruction(instr), program.instructions()))
     pushb_instr = filter(lambda instr: instr.isPushB(), program.instructions())
-    identB = "ops " + ' '.join(map(lambda instr: f"{instr.id()}", pushb_instr)) + ": -> IdentB."
-    return identB + '\n' + f"eq conf_{program.id()} = <({ids}), (empty, empty), {plan} . [], empty, nil, nil, empty >."
+    identB = "ops " + ' '.join(map(lambda instr: f"{instr.id()}", pushb_instr)) + ": -> IdentB ."
+    identC = "ops" + ' '.join(list_ids) + " -> IdentC ."
+    return identB + '\n' + identC + '\n' + f"eq conf_{program.id()} = <({ids}), (empty, empty), {plan} . [], empty, nil, nil, empty > ."
 
 def gen_maude_from_type(type: ComponentType) -> str:
     name = type.name()
@@ -49,15 +63,15 @@ def gen_maude_from_type(type: ComponentType) -> str:
         init = f"{name}_{type.initial_place().name()}"
         place = "ops " + ' '.join(places) + " : -> Place ."
         station = "ops " + ' '.join(stations) + " : -> Station ."
-        initPlace = f"op {init} : -> InitPlace."
+        initPlace = f"op {init} : -> InitPlace ."
         
     if type.provide_ports():
         proPort = "ops " + ' '.join(map(lambda port: f"{name}_{port.name()}", type.provide_ports())) + " : -> ProPort ."
-        provide_ports = ', '.join(map(lambda port: __make_port(name, port, "!"), type.provide_ports()))
+        provide_ports = ', '.join(map(lambda port: __make_port(name, port, "?"), type.provide_ports()))
         
     if type.use_ports():
         usePort = "ops " + ' '.join(map(lambda port: f"{name}_{port.name()}", type.use_ports())) + " : -> UsePort ."
-        use_ports = ', '.join(map(lambda port: __make_port(name, port, "?"), type.use_ports()))
+        use_ports = ', '.join(map(lambda port: __make_port(name, port, "!"), type.use_ports()))
         
     behavior_transitions = {}
     transitions = {}
@@ -84,7 +98,7 @@ def gen_maude_from_type(type: ComponentType) -> str:
     transition_names = ', '.join(transitions.keys())
     behavior_names = ', '.join(eq_behaviors_tmp.keys())
 
-    comp = f"eq {name} = < ({','.join(places)}), {init}, {', '.join(st_places)}, ({transition_names}), ({behavior_names}), {provide_ports}, {use_ports} > ."
+    comp = f"eq {name} = < ({','.join(places)}), {init}, {', '.join(st_places)}, ({transition_names}), ({behavior_names}), {use_ports}, {provide_ports} > ."
     
     content = [componentType, place, station, initPlace, proPort, usePort, ops_transitions, eq_transitions, ops_behaviors, eq_behaviors, comp]
     return '\n'.join(content)
@@ -112,12 +126,12 @@ def __make_del(delete: Delete):
 def __make_con(connect: Connect):    
     type_pro = type_of_comp[connect.provider()].name()
     type_use = type_of_comp[connect.user()].name()
-    return f"con({connect.provider()},{type_pro}_{connect.providing_port()},{connect.user()},{type_use}_{connect.using_port()})" 
+    return f"con({connect.user()},{type_use}_{connect.using_port()},{connect.provider()},{type_pro}_{connect.providing_port()})" 
     
 def __make_dcon(disconnect: Disconnect):
     type_pro = type_of_comp[disconnect.provider()].name()
     type_use = type_of_comp[disconnect.user()].name()
-    return f"dcon({disconnect.provider()},{type_pro}_{disconnect.providing_port()},{disconnect.user()},{type_use}_{disconnect.using_port()})" 
+    return f"dcon({disconnect.user()},{type_use}_{disconnect.using_port()},{disconnect.provider()},{type_pro}_{disconnect.providing_port()})" 
 
 def __make_pushb(pushb: PushB):
     type_comp = type_of_comp[pushb.component()]
@@ -125,6 +139,13 @@ def __make_pushb(pushb: PushB):
 
 def __make_wait(wait: Wait):
     return f"wait({wait.component()}, {wait.behavior()})"
+    
+def write_maude(filename, content):
+    file = filename
+    if not filename.endswith(".maude"):
+        file = file + ".maude"
+    with open(file, 'w') as file:
+        file.write(content)
     
 # ------------------- 
 # Example
@@ -160,7 +181,7 @@ def smallprogram(name):
 if __name__ == "__main__":
     programs = deploy_maude(1)
     maude = gen_maude(programs)
-    print(maude)
+    write_maude("example.maude", maude)
     # maude = gen_maude([smallprogram("n1"), smallprogram("n2")])
     # print(maude)
    
