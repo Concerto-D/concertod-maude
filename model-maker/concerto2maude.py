@@ -5,15 +5,21 @@ from examples.cps import *
 
 type_of_comp = {}
 
+def cap1(input_string):
+    if len(input_string) == 0:
+        return input_string
+    else:
+        return input_string[0].upper() + input_string[1:]
+
 def __make_port(typename, port, sep_port_bounded="!"):
-    bounded = list(map(lambda place: f"{typename}_{place.name()}", port.bound_places()))
-    return f"{typename}_{port.name()} {sep_port_bounded} ({', '.join(bounded)})" 
+    bounded = list(map(lambda place: f"{typename}{cap1(place.name())}", port.bound_places()))
+    return f"{typename}{cap1(port.name())} {sep_port_bounded} ({', '.join(bounded)})" 
 
 def flatmap(func, iterable):
     return list(chain.from_iterable(map(func, iterable)))
 
 def gen_maude(programs):
-    conf_names = list(map(lambda program: f"conf_{program.id()}", programs))
+    conf_names = list(map(lambda program: f"conf{cap1(program.id())}", programs))
     maude = "ops " + ' '.join(conf_names) + " : ->  LocalConfiguration ."
     adds = flatmap(lambda program: filter(lambda instr: instr.isAdd(), program.instructions()), programs) # Get all add from all programs using flatmap
     types = set()
@@ -46,7 +52,7 @@ def gen_maude_program(program):
     pushb_instr = filter(lambda instr: instr.isPushB(), program.instructions())
     identB = "ops " + ' '.join(map(lambda instr: f"{instr.id()}", pushb_instr)) + ": -> IdentB ."
     identC = "ops " + ' '.join(list_ids) + " -> IdentC ."
-    return identB + '\n' + identC + '\n' + f"eq conf_{program.id()} = <({ids}), (empty, empty), {plan} . [], empty, nil, nil, empty > ."
+    return identB + '\n' + identC + '\n' + f"eq conf{cap1(program.id())} = <({ids}), (empty, empty), {plan} . [], empty, nil, nil, empty > ."
 
 def gen_maude_from_type(type: ComponentType) -> str:
     name = type.name()
@@ -56,33 +62,33 @@ def gen_maude_from_type(type: ComponentType) -> str:
     componentType = f"op {name} : -> ComponentType ."
     
     if type.places() is not []:
-        dict_place_station = {f"{name}_{place.name()}": f"st_{name}_{place.name()}" for place in type.places()}
-        places = list(map(lambda place: f"{name}_{place.name()}", type.places()))
-        stations = list(map(lambda place: f"st_{name}_{place.name()}", type.places()))
+        dict_place_station = {f"{name}{cap1(place.name())}": f"st{cap1(name)}{cap1(place.name())}" for place in type.places()}
+        places = list(map(lambda place: f"{name}{cap1(place.name())}", type.places()))
+        stations = list(map(lambda place: f"st{cap1(name)}{cap1(place.name())}", type.places()))
         st_places = list(map(lambda stp: f"{stp[0]} ; {stp[1]}" , zip(places, stations)))
-        init = f"{name}_{type.initial_place().name()}"
+        init = f"{name}{cap1(type.initial_place().name())}"
         place = "ops " + ' '.join(places) + " : -> Place ."
         station = "ops " + ' '.join(stations) + " : -> Station ."
         initPlace = f"op {init} : -> InitPlace ."
         
     if type.provide_ports():
-        proPort = "ops " + ' '.join(map(lambda port: f"{name}_{port.name()}", type.provide_ports())) + " : -> ProPort ."
+        proPort = "ops " + ' '.join(map(lambda port: f"{name}{cap1(port.name())}", type.provide_ports())) + " : -> ProPort ."
         provide_ports = ', '.join(map(lambda port: __make_port(name, port, "?"), type.provide_ports()))
         
     if type.use_ports():
-        usePort = "ops " + ' '.join(map(lambda port: f"{name}_{port.name()}", type.use_ports())) + " : -> UsePort ."
+        usePort = "ops " + ' '.join(map(lambda port: f"{name}{cap1(port.name())}", type.use_ports())) + " : -> UsePort ."
         use_ports = ', '.join(map(lambda port: __make_port(name, port, "!"), type.use_ports()))
         
     behavior_transitions = {}
     transitions = {}
     for behavior in type.behaviors():
-        behavior_name = f"{name}_{behavior.name()}"
+        behavior_name = f"{name}{cap1(behavior.name())}"
         behavior_transitions[behavior_name] = []
         for transition in behavior.transitions_as_dict().keys():
             act_transition = behavior.transitions_as_dict()[transition]
-            source = f"{name}_{act_transition.source().name()}"
-            dest = dict_place_station[f"{name}_{act_transition.destination()[0].name()}"]
-            transition_name = f"{name}_{transition}"
+            source = f"{name}{cap1(act_transition.source().name())}"
+            dest = dict_place_station[f"{name}{cap1(act_transition.destination()[0].name())}"]
+            transition_name = f"{name}{cap1(transition)}"
             transitions[transition_name] = f"t({source}, {dest})"
             behavior_transitions[behavior_name].append(transition_name)
     
@@ -126,16 +132,16 @@ def __make_del(delete: Delete):
 def __make_con(connect: Connect):    
     type_pro = type_of_comp[connect.provider()].name()
     type_use = type_of_comp[connect.user()].name()
-    return f"con({connect.user()},{type_use}_{connect.using_port()},{connect.provider()},{type_pro}_{connect.providing_port()})" 
+    return f"con({connect.user()},{type_use}{cap1(connect.using_port())},{connect.provider()},{type_pro}{cap1(connect.providing_port())})" 
     
 def __make_dcon(disconnect: Disconnect):
     type_pro = type_of_comp[disconnect.provider()].name()
     type_use = type_of_comp[disconnect.user()].name()
-    return f"dcon({disconnect.user()},{type_use}_{disconnect.using_port()},{disconnect.provider()},{type_pro}_{disconnect.providing_port()})" 
+    return f"dcon({disconnect.user()},{type_use}{cap1(disconnect.using_port())},{disconnect.provider()},{type_pro}{cap1(disconnect.providing_port())})" 
 
 def __make_pushb(pushb: PushB):
     type_comp = type_of_comp[pushb.component()]
-    return f"pushB({pushb.component()}, {type_comp.name()}_{pushb.behavior()}, {pushb.id()})" 
+    return f"pushB({pushb.component()}, {type_comp.name()}{cap1(pushb.behavior())}, {pushb.id()})" 
 
 def __make_wait(wait: Wait):
     return f"wait({wait.component()}, {wait.behavior()})"
@@ -171,8 +177,8 @@ def smallprogram(name):
         Add("idc1", Type),
         Add("idc3", Type),
         Connect("idc1", "us1", "idc3", "pr1"),
-        PushB("idc1", "deploy", f"{name}_idb2"),
-        PushB("idc1", "deploy", f"{name}_idb3")
+        PushB("idc1", "deploy", f"{name}Idb2"),
+        PushB("idc1", "deploy", f"{name}Idb3")
     ])
     return program
 

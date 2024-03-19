@@ -18,7 +18,7 @@ def system_type():
     bhv_stop = t.add_behavior("stop")
     bhv_stop.add_transition("stop1", pl_deployed, pl_initiated)
     t.add_provide_port("service", {pl_deployed})
-    t.add_use_port("db_service", {pl_configured, pl_deployed})
+    t.add_use_port("dbService", {pl_configured, pl_deployed})
     return t
 
 
@@ -38,7 +38,7 @@ def listener_type():
     bhv_update.add_transition("update1", pl_running, pl_paused)
     bhv_destroy = t.add_behavior("destroy")
     bhv_destroy.add_transition("destroy1", pl_paused, pl_off)
-    t.add_use_port("sys_service", {pl_running, pl_configured})
+    t.add_use_port("sysService", {pl_running, pl_configured})
     t.add_provide_port("rcv", {pl_running})
     t.add_provide_port("config", {pl_running, pl_configured})
     return t
@@ -64,8 +64,8 @@ def sensor_type():
     bhv_pause.add_transition("pause1", pl_running, pl_provisioned)
     bhv_stop = t.add_behavior("stop")
     bhv_stop.add_transition("stop1", pl_provisioned, pl_off)
-    t.add_use_port("rcv_service", {pl_running, pl_configured})
-    t.add_use_port("config_service", {pl_configured, pl_installed, pl_running})
+    t.add_use_port("rcvService", {pl_running, pl_configured})
+    t.add_use_port("configService", {pl_configured, pl_installed, pl_running})
     return t
 
 
@@ -106,9 +106,9 @@ def database_type():
 #     return program
 
 def db_deploy():
-    return  Program("prog_database",[
+    return  Program("progDatabase",[
         Add("mydb0", database_type()),
-        Connect("mydb0", "service", "mysys0", "db_service"),
+        Connect("mydb0", "service", "mysys0", "dbService"),
         PushB("mydb0", "deploy", "db1"),
         # PushB("db0", "interrupt", "db2"),
         # PushB("db0", "update", "db3"),
@@ -118,28 +118,28 @@ def db_deploy():
 def sys_deploy(n):
     program = [
         Add("mysys0", system_type()),
-        Connect("mydb0", "service", "mysys0", "db_service"),
+        Connect("mydb0", "service", "mysys0", "dbService"),
     ]
     for i in range(n):
         program += [
-            Add(f"listener_{i}", listener_type()),
-            Connect("mysys0", "sys", f"listener_{i}", "sys_service"),
-            Connect(f"listener_{i}", "rcv", f"sensor_{i}", "rcv_service"),
-            Connect(f"listener_{i}", "config", f"sensor_{i}", "config_service")
+            Add(f"listener{i}", listener_type()),
+            Connect("mysys0", "sys", f"listener{i}", "sysService"),
+            Connect(f"listener{i}", "rcv", f"sensor{i}", "rcvService"),
+            Connect(f"listener{i}", "config", f"sensor{i}", "configService")
         ]
     program += [PushB("mysys0", "deploy", "sys1")]
     program += [
-        PushB(f"listener_{i}", "deploy", f"{i}lst1")
+        PushB(f"listener{i}", "deploy", f"{i}lst1")
         for i in range(n)
     ]
-    return Program("prog_system", program)
+    return Program("progSystem", program)
 
 def sensor_deploy(i):
-    return Program(f"prog_sensor_{i}", [
-        Add(f"sensor_{i}", sensor_type()),
-        Connect(f"listener_{i}", "rcv", f"sensor_{i}", "rcv_service"),
-        Connect(f"listener_{i}", "config", f"sensor_{i}", "config_service"),
-        PushB(f"sensor_{i}", "deploy", f"{i}sens1")
+    return Program(f"progSensor{i}", [
+        Add(f"sensor{i}", sensor_type()),
+        Connect(f"listener{i}", "rcv", f"sensor{i}", "rcvService"),
+        Connect(f"listener{i}", "config", f"sensor{i}", "configService"),
+        PushB(f"sensor{i}", "deploy", f"{i}sens1")
     ])
 
 def deploy_maude(nlistener):
