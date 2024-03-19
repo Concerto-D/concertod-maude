@@ -27,10 +27,12 @@ def gen_maude(programs):
     return res 
 
 def gen_maude_program(program):
+    add_instr = filter(lambda instr: instr.isAdd(), program.instructions())
+    ids = ', '.join(map(lambda add: add.component(), add_instr))
     plan = ' . '.join(map(lambda instr: __make_instruction(instr), program.instructions()))
     pushb_instr = filter(lambda instr: instr.isPushB(), program.instructions())
     identB = "ops " + ' '.join(map(lambda instr: f"{instr.id()}", pushb_instr)) + ": -> IdentB."
-    return identB + '\n' + f"eq conf_{program.id()} = <(empty, empty), {plan} . [], empty, nil, nil, empty >."
+    return identB + '\n' + f"eq conf_{program.id()} = <({ids}), (empty, empty), {plan} . [], empty, nil, nil, empty >."
 
 def gen_maude_from_type(type: ComponentType) -> str:
     name = type.name()
@@ -82,7 +84,7 @@ def gen_maude_from_type(type: ComponentType) -> str:
     transition_names = ', '.join(transitions.keys())
     behavior_names = ', '.join(eq_behaviors_tmp.keys())
 
-    comp = f"eq {name} = < ({' '.join(places)}), {init}, {', '.join(st_places)}, ({transition_names}), ({behavior_names}), {provide_ports}, {use_ports} > ."
+    comp = f"eq {name} = < ({','.join(places)}), {init}, {', '.join(st_places)}, ({transition_names}), ({behavior_names}), {provide_ports}, {use_ports} > ."
     
     content = [componentType, place, station, initPlace, proPort, usePort, ops_transitions, eq_transitions, ops_behaviors, eq_behaviors, comp]
     return '\n'.join(content)
