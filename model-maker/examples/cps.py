@@ -109,7 +109,7 @@ def sys_deploy(n):
     for i in range(n):
         program += [
             Add(f"listener{i}", listener_type()),
-            Connect("mysys0", "sys", f"listener{i}", "sysService"),
+            Connect("mysys0", "service", f"listener{i}", "sysService"),
             Connect(f"listener{i}", "rcv", f"sensor{i}", "rcvService"),
             Connect(f"listener{i}", "config", f"sensor{i}", "configService")
         ]
@@ -155,7 +155,7 @@ def sys_deploy_update(n):
     for i in range(n):
         program += [
             Add(f"listener{i}", listener_type()),
-            Connect("mysys0", "sys", f"listener{i}", "sysService"),
+            Connect("mysys0", "service", f"listener{i}", "sysService"),
             Connect(f"listener{i}", "rcv", f"sensor{i}", "rcvService"),
             Connect(f"listener{i}", "config", f"sensor{i}", "configService")
         ]
