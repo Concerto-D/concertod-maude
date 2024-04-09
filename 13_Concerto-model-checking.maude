@@ -10,7 +10,7 @@ mod Concerto-PREDS is
   protecting OPERATIONAL-SEMANTICS . 
   including SATISFACTION .
   subsort Net < State .
-  ops DeployC1 DeployS DeployC2 :  -> Prop .  --- propositions of verification
+  ops DBDeploy SysDeployed RunSensor RunListener :  -> Prop .  --- propositions of verification
 
   var Q : Prop .
 
@@ -31,109 +31,103 @@ mod Concerto-PREDS is
   var  IdsNodx : IdentCs .
 
   ------------------part concerned by the automatic generation 'Python'---------------------------
-
-
-
-ops conf_database conf_system conf_sensor_0 : ->  LocalConfiguration .
-op test : -> Net .
-op sensor : -> ComponentType .
-ops sensor_running sensor_configured sensor_installed sensor_provisioned sensor_off : -> Place .
-ops st_sensor_running st_sensor_configured st_sensor_installed st_sensor_provisioned st_sensor_off : -> Station .
-op sensor_off : -> InitPlace.  ------------------- espace entre InitPlace et le point manque
-
-ops sensor_rcv_service sensor_config_service : -> UsePort .
-ops sensor_deploy11 sensor_deploy12 sensor_deploy13 sensor_deploy2 sensor_deploy3 sensor_deploy4 sensor_pause1 sensor_stop1 : -> Transitionn .
-eq sensor_deploy11 = t(sensor_off, st_sensor_provisioned) .
-eq sensor_deploy12 = t(sensor_off, st_sensor_provisioned) .
-eq sensor_deploy13 = t(sensor_off, st_sensor_provisioned) .
-eq sensor_deploy2 = t(sensor_provisioned, st_sensor_installed) .
-eq sensor_deploy3 = t(sensor_installed, st_sensor_configured) .
-eq sensor_deploy4 = t(sensor_configured, st_sensor_running) .
-eq sensor_pause1 = t(sensor_running, st_sensor_provisioned) .
-eq sensor_stop1 = t(sensor_provisioned, st_sensor_off) .
-ops sensor_deploy sensor_pause sensor_stop : -> Behavior .
-eq sensor_deploy = b(sensor_deploy11,sensor_deploy12,sensor_deploy13,sensor_deploy2,sensor_deploy3,sensor_deploy4) .
-eq sensor_pause = b(sensor_pause1) .
-eq sensor_stop = b(sensor_stop1) .
-eq sensor = < (sensor_running,sensor_configured,sensor_installed,sensor_provisioned,sensor_off), sensor_off, sensor_running ; st_sensor_running, sensor_configured ; st_sensor_configured, sensor_installed ; st_sensor_installed, sensor_provisioned ; st_sensor_provisioned, sensor_off ; st_sensor_off, (sensor_deploy11, sensor_deploy12, sensor_deploy13, sensor_deploy2, sensor_deploy3, sensor_deploy4, sensor_pause1, sensor_stop1), (sensor_deploy, sensor_pause, sensor_stop), empty, sensor_rcv_service ? (sensor_configured, sensor_running), sensor_config_service ? (sensor_installed, sensor_configured, sensor_running) > .
-op database : -> ComponentType .
-ops database_initiated database_configured database_bootstrapped database_deployed database_registered : -> Place .
-ops st_database_initiated st_database_configured st_database_bootstrapped st_database_deployed st_database_registered : -> Station .
-op database_initiated : -> InitPlace .
-ops database_service : -> ProPort .
-
-ops database_deploy11 database_deploy12 database_deploy2 database_deploy3 database_interrupt1 database_pause1 database_update database_uninstall1 : -> Transitionn .
-eq database_deploy11 = t(database_initiated, st_database_configured) .
-eq database_deploy12 = t(database_initiated, st_database_configured) .
-eq database_deploy2 = t(database_configured, st_database_bootstrapped) .
-eq database_deploy3 = t(database_bootstrapped, st_database_deployed) .
-eq database_interrupt1 = t(database_deployed, st_database_registered) .
-eq database_pause1 = t(database_registered, st_database_bootstrapped) .
-eq database_update = t(database_registered, st_database_configured) .
-eq database_uninstall1 = t(database_registered, st_database_initiated) .
-ops database_deploy database_interrupt database_pause database_update database_uninstall : -> Behavior .
-eq database_deploy = b(database_deploy11,database_deploy12,database_deploy2,database_deploy3) .
-eq database_interrupt = b(database_interrupt1) .
-eq database_pause = b(database_pause1) .
-eq database_update = b(database_update) .
-eq database_uninstall = b(database_uninstall1) .
-eq database = < (database_initiated,database_configured,database_bootstrapped,database_deployed,database_registered), database_initiated, database_initiated ; st_database_initiated, database_configured ; st_database_configured, database_bootstrapped ; st_database_bootstrapped, database_deployed ; st_database_deployed, database_registered ; st_database_registered, (database_deploy11, database_deploy12, database_deploy2, database_deploy3, database_interrupt1, database_pause1, database_update, database_uninstall1), (database_deploy, database_interrupt, database_pause, database_update, database_uninstall), database_service ! (database_deployed), empty > .
-op listener : -> ComponentType .
-ops listener_running listener_configured listener_paused listener_off : -> Place .
-ops st_listener_running st_listener_configured st_listener_paused st_listener_off : -> Station .
-op listener_off : -> InitPlace .
-ops listener_rcv listener_config : -> ProPort .
-ops listener_sys_service : -> UsePort .
-ops listener_deploy1 listener_deploy2 listener_deploy3 listener_update1 listener_destroy1 : -> Transitionn .
-eq listener_deploy1 = t(listener_off, st_listener_paused) .
-eq listener_deploy2 = t(listener_paused, st_listener_configured) .
-eq listener_deploy3 = t(listener_configured, st_listener_running) .
-eq listener_update1 = t(listener_running, st_listener_paused) .
-eq listener_destroy1 = t(listener_paused, st_listener_off) .
-ops listener_deploy listener_update listener_destroy : -> Behavior .
-eq listener_deploy = b(listener_deploy1,listener_deploy2,listener_deploy3) .
-eq listener_update = b(listener_update1) .
-eq listener_destroy = b(listener_destroy1) .
-eq listener = < (listener_running,listener_configured,listener_paused,listener_off), listener_off, listener_running ; st_listener_running, listener_configured ; st_listener_configured, listener_paused ; st_listener_paused, listener_off ; st_listener_off, (listener_deploy1, listener_deploy2, listener_deploy3, listener_update1, listener_destroy1), (listener_deploy, listener_update, listener_destroy), listener_rcv ! (listener_running), listener_config ! (listener_configured, listener_running), listener_sys_service ? (listener_configured, listener_running) > .
-op system : -> ComponentType .
-ops system_deployed system_configured system_initiated : -> Place .
-ops st_system_deployed st_system_configured st_system_initiated : -> Station .
-op system_initiated : -> InitPlace .
-ops system_service : -> ProPort .
-ops system_db_service : -> UsePort .
-ops system_deploy11 system_deploy12 system_deploy13 system_deploy2 system_interrupt1 system_stop1 : -> Transitionn .
-eq system_deploy11 = t(system_initiated, st_system_configured) .
-eq system_deploy12 = t(system_initiated, st_system_configured) .
-eq system_deploy13 = t(system_initiated, st_system_configured) .
-eq system_deploy2 = t(system_configured, st_system_deployed) .
-eq system_interrupt1 = t(system_deployed, st_system_configured) .
-eq system_stop1 = t(system_deployed, st_system_initiated) .
-ops system_deploy system_interrupt system_stop : -> Behavior .
-eq system_deploy = b(system_deploy11,system_deploy12,system_deploy13,system_deploy2) .
-eq system_interrupt = b(system_interrupt1) .
-eq system_stop = b(system_stop1) .
---- dans l'equation système l'ordre est ! pour le use en premier puis ? pour le provider.  ! system_service est un provide port et inversement pour le deuxième
-eq system = < (system_deployed,system_configured,system_initiated), system_initiated, system_deployed ; st_system_deployed, system_configured ; st_system_configured, system_initiated ; st_system_initiated, (system_deploy11, system_deploy12, system_deploy13, system_deploy2, system_interrupt1, system_stop1), (system_deploy, system_interrupt, system_stop), system_service ! (system_deployed), system_db_service ? (system_deployed, system_configured) > .
-ops db1: -> IdentB.
-------------  add(database,database) le premier doit etre id d'une instance
----- pour con database_service est un provide port normalement c'est un use port et pareil pour system_db_service à inverser
-
-eq conf_database = <(database), (empty, empty), add(database,database) . con(database,database_service,system,system_db_service) . pushB(database, database_deploy, db1) . [], empty, nil, nil, empty >.
-ops sys1 0lst1: -> IdentB.
----------- système ne doit pas etre dans l'ensemble du premier parametre qui est un ensemble des id, le second listener_0 n'est pas déclaré 
---- pour les deux conf à la fin espace avant .
-eq conf_system = <(system, listener_0), (empty, empty), add(system,system) . con(database,database_service,system,system_db_service) . add(listener_0,listener) . con(system,system_sys,listener_0,listener_sys_service) . con(listener_0,listener_rcv,sensor_0,sensor_rcv_service) . con(listener_0,listener_config,sensor_0,sensor_config_service) . pushB(system, system_deploy, sys1) . pushB(listener_0, listener_deploy, 0lst1) . [], empty, nil, nil, empty >.
-ops 0sens1: -> IdentB.
-eq conf_sensor_0 = <(sensor_0), (empty, empty), add(sensor_0,sensor) . con(listener_0,listener_rcv,sensor_0,sensor_rcv_service) . con(listener_0,listener_config,sensor_0,sensor_config_service) . pushB(sensor_0, sensor_deploy, 0sens1) . [], empty, nil, nil, empty >.
-eq test = conf_database ; conf_system ; conf_sensor_0 .
+	ops confProgDatabase confProgSystem confProgSensor0 : ->  LocalConfiguration .
+	op test : -> Net .
+	op database : -> ComponentType .
+	ops databaseInitiated databaseConfigured databaseBootstrapped databaseDeployed databaseRegistered : -> Place .
+	ops stDatabaseInitiated stDatabaseConfigured stDatabaseBootstrapped stDatabaseDeployed stDatabaseRegistered : -> Station .
+	op databaseInitiated : -> InitPlace .
+	ops databaseService : -> ProPort .
+	
+	ops databaseDeploy11 databaseDeploy12 databaseDeploy2 databaseDeploy3 databaseInterrupt1 databasePause1 databaseUpdate databaseUninstall1 : -> Transitionn .
+	eq databaseDeploy11 = t(databaseInitiated, stDatabaseConfigured) .
+	eq databaseDeploy12 = t(databaseInitiated, stDatabaseConfigured) .
+	eq databaseDeploy2 = t(databaseConfigured, stDatabaseBootstrapped) .
+	eq databaseDeploy3 = t(databaseBootstrapped, stDatabaseDeployed) .
+	eq databaseInterrupt1 = t(databaseDeployed, stDatabaseRegistered) .
+	eq databasePause1 = t(databaseRegistered, stDatabaseBootstrapped) .
+	eq databaseUpdate = t(databaseRegistered, stDatabaseConfigured) .
+	eq databaseUninstall1 = t(databaseRegistered, stDatabaseInitiated) .
+	ops databaseDeploy databaseInterrupt databasePause databaseUpdate databaseUninstall : -> Behavior .
+	eq databaseDeploy = b(databaseDeploy11,databaseDeploy12,databaseDeploy2,databaseDeploy3) .
+	eq databaseInterrupt = b(databaseInterrupt1) .
+	eq databasePause = b(databasePause1) .
+	eq databaseUpdate = b(databaseUpdate) .
+	eq databaseUninstall = b(databaseUninstall1) .
+	eq database = < (databaseInitiated,databaseConfigured,databaseBootstrapped,databaseDeployed,databaseRegistered), databaseInitiated, stDatabaseInitiated ; databaseInitiated, stDatabaseConfigured ; databaseConfigured, stDatabaseBootstrapped ; databaseBootstrapped, stDatabaseDeployed ; databaseDeployed, stDatabaseRegistered ; databaseRegistered, (databaseDeploy11, databaseDeploy12, databaseDeploy2, databaseDeploy3, databaseInterrupt1, databasePause1, databaseUpdate, databaseUninstall1), (databaseDeploy, databaseInterrupt, databasePause, databaseUpdate, databaseUninstall), empty, databaseService ? (databaseDeployed) > .
+	op listener : -> ComponentType .
+	ops listenerRunning listenerConfigured listenerPaused listenerOff : -> Place .
+	ops stListenerRunning stListenerConfigured stListenerPaused stListenerOff : -> Station .
+	op listenerOff : -> InitPlace .
+	ops listenerRcv listenerConfig : -> ProPort .
+	ops listenerSysService : -> UsePort .
+	ops listenerDeploy1 listenerDeploy2 listenerDeploy3 listenerUpdate1 listenerDestroy1 : -> Transitionn .
+	eq listenerDeploy1 = t(listenerOff, stListenerPaused) .
+	eq listenerDeploy2 = t(listenerPaused, stListenerConfigured) .
+	eq listenerDeploy3 = t(listenerConfigured, stListenerRunning) .
+	eq listenerUpdate1 = t(listenerRunning, stListenerPaused) .
+	eq listenerDestroy1 = t(listenerPaused, stListenerOff) .
+	ops listenerDeploy listenerUpdate listenerDestroy : -> Behavior .
+	eq listenerDeploy = b(listenerDeploy1,listenerDeploy2,listenerDeploy3) .
+	eq listenerUpdate = b(listenerUpdate1) .
+	eq listenerDestroy = b(listenerDestroy1) .
+	eq listener = < (listenerRunning,listenerConfigured,listenerPaused,listenerOff), listenerOff, stListenerRunning ; listenerRunning, stListenerConfigured ; listenerConfigured, stListenerPaused ; listenerPaused, stListenerOff ; listenerOff, (listenerDeploy1, listenerDeploy2, listenerDeploy3, listenerUpdate1, listenerDestroy1), (listenerDeploy, listenerUpdate, listenerDestroy), listenerSysService ! (listenerRunning, listenerConfigured), listenerRcv ? (listenerRunning), listenerConfig ? (listenerRunning, listenerConfigured) > .
+	op sensor : -> ComponentType .
+	ops sensorRunning sensorConfigured sensorInstalled sensorProvisioned sensorOff : -> Place .
+	ops stSensorRunning stSensorConfigured stSensorInstalled stSensorProvisioned stSensorOff : -> Station .
+	op sensorOff : -> InitPlace .
+	
+	ops sensorRcvService sensorConfigService : -> UsePort .
+	ops sensorDeploy11 sensorDeploy12 sensorDeploy13 sensorDeploy2 sensorDeploy3 sensorDeploy4 sensorPause1 sensorStop1 : -> Transitionn .
+	eq sensorDeploy11 = t(sensorOff, stSensorProvisioned) .
+	eq sensorDeploy12 = t(sensorOff, stSensorProvisioned) .
+	eq sensorDeploy13 = t(sensorOff, stSensorProvisioned) .
+	eq sensorDeploy2 = t(sensorProvisioned, stSensorInstalled) .
+	eq sensorDeploy3 = t(sensorInstalled, stSensorConfigured) .
+	eq sensorDeploy4 = t(sensorConfigured, stSensorRunning) .
+	eq sensorPause1 = t(sensorRunning, stSensorProvisioned) .
+	eq sensorStop1 = t(sensorProvisioned, stSensorOff) .
+	ops sensorDeploy sensorPause sensorStop : -> Behavior .
+	eq sensorDeploy = b(sensorDeploy11,sensorDeploy12,sensorDeploy13,sensorDeploy2,sensorDeploy3,sensorDeploy4) .
+	eq sensorPause = b(sensorPause1) .
+	eq sensorStop = b(sensorStop1) .
+	eq sensor = < (sensorRunning,sensorConfigured,sensorInstalled,sensorProvisioned,sensorOff), sensorOff, stSensorRunning ; sensorRunning, stSensorConfigured ; sensorConfigured, stSensorInstalled ; sensorInstalled, stSensorProvisioned ; sensorProvisioned, stSensorOff ; sensorOff, (sensorDeploy11, sensorDeploy12, sensorDeploy13, sensorDeploy2, sensorDeploy3, sensorDeploy4, sensorPause1, sensorStop1), (sensorDeploy, sensorPause, sensorStop), sensorRcvService ! (sensorRunning, sensorConfigured), sensorConfigService ! (sensorConfigured, sensorRunning, sensorInstalled), empty > .
+	op system : -> ComponentType .
+	ops systemDeployed systemConfigured systemInitiated : -> Place .
+	ops stSystemDeployed stSystemConfigured stSystemInitiated : -> Station .
+	op systemInitiated : -> InitPlace .
+	ops systemService : -> ProPort .
+	ops systemDbService : -> UsePort .
+	ops systemDeploy11 systemDeploy12 systemDeploy13 systemDeploy2 systemInterrupt1 systemStop1 : -> Transitionn .
+	eq systemDeploy11 = t(systemInitiated, stSystemConfigured) .
+	eq systemDeploy12 = t(systemInitiated, stSystemConfigured) .
+	eq systemDeploy13 = t(systemInitiated, stSystemConfigured) .
+	eq systemDeploy2 = t(systemConfigured, stSystemDeployed) .
+	eq systemInterrupt1 = t(systemDeployed, stSystemConfigured) .
+	eq systemStop1 = t(systemDeployed, stSystemInitiated) .
+	ops systemDeploy systemInterrupt systemStop : -> Behavior .
+	eq systemDeploy = b(systemDeploy11,systemDeploy12,systemDeploy13,systemDeploy2) .
+	eq systemInterrupt = b(systemInterrupt1) .
+	eq systemStop = b(systemStop1) .
+	eq system = < (systemDeployed,systemConfigured,systemInitiated), systemInitiated, stSystemDeployed ; systemDeployed, stSystemConfigured ; systemConfigured, stSystemInitiated ; systemInitiated, (systemDeploy11, systemDeploy12, systemDeploy13, systemDeploy2, systemInterrupt1, systemStop1), (systemDeploy, systemInterrupt, systemStop), systemDbService ! (systemDeployed, systemConfigured), systemService ? (systemDeployed) > .
+	ops db1 : -> IdentB .
+	ops mydb0 : -> IdentC .
+	eq confProgDatabase = <(mydb0), (empty, empty), add(mydb0,database) . con(mysys0,systemDbService,mydb0,databaseService) . pushB(mydb0, databaseDeploy, db1) . [], empty, nil, nil, empty > .
+	ops sys1 0lst1 : -> IdentB .
+	ops mysys0 listener0 : -> IdentC .
+	eq confProgSystem = <(mysys0, listener0), (empty, empty), add(mysys0,system) . con(mysys0,systemDbService,mydb0,databaseService) . add(listener0,listener) . con(listener0,listenerSysService,mysys0,systemService) . con(sensor0,sensorRcvService,listener0,listenerRcv) . con(sensor0,sensorConfigService,listener0,listenerConfig) . pushB(mysys0, systemDeploy, sys1) . pushB(listener0, listenerDeploy, 0lst1) . [], empty, nil, nil, empty > .
+	ops 0sens1 : -> IdentB .
+	ops sensor0 : -> IdentC .
+	eq confProgSensor0 = <(sensor0), (empty, empty), add(sensor0,sensor) . con(sensor0,sensorRcvService,listener0,listenerRcv) . con(sensor0,sensorConfigService,listener0,listenerConfig) . pushB(sensor0, sensorDeploy, 0sens1) . [], empty, nil, nil, empty > .
+	eq test = confProgDatabase ; confProgSystem ; confProgSensor0 .
 -------------------------------------------- End part generation--------------------------------
 --------------------------------- When are the verification propositions true? -----
-  eq (< IdsNodx,(< idc1,ct,qb,m(p3, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= DeployC1 = true .
-  --- So Deploy Client 1 is true when instance of idc1 must in place p3
-  eq (< IdsNodx,(< idc2,ct,qb,m(p3, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= DeployC2 = true .
-  eq (< IdsNodx,(< idc3,ct,qb,m(q3, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= DeployS = true .
 
-  eq gconfig  |= Q = false [owise] .
+eq (< IdsNodx,(< mysys0,ct,qb,m(systemDeployed, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= SysDeployed = true .
+eq (< IdsNodx,(< listener0,ct,qb,m(listenerRunning, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= RunListener = true .
+eq (< IdsNodx,(< sensor0,ct,qb,m(sensorRunning, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= RunSensor = true .
+eq (< IdsNodx,(< mydb0,ct,qb,m(databaseDeployed, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= DBDeploy = true .
+eq gconfig  |= Q = false [owise] .
 
 endm
 
@@ -146,6 +140,9 @@ mod Concerto-CHECK is
 endm
 
   ------------------------------------Examples of verification over test -------------------------------------------------------
+
+---  red modelCheck(test, [] (RunListener -> SysDeployed )) .
+
 
 ---  red modelCheck(test, [] ( (DeployC1 \/ DeployC2)  -> DeployS )) .
 ---  red modelCheck(test, [] ( DeployS -> ( (<> ( DeployC2 ) )))) .
