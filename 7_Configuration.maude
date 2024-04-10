@@ -8,95 +8,95 @@ fmod CONCERTO-D-CONFIGURATION is
   inc BOOL-WITH-BOT .
   inc DECLARATION-SORTS . ------ to include the defined sorts LocalConfiguration ElementFunctionL ElementFunctionE send rec W
 
-  sorts  ExternalFunctions Ws . ---define new sorts of type set
-  sorts  Qsend Qrec  . ---define new sorts of type list
-  subsort IdFunction  < W . --- Idfunction is also an element of W 
-  subsort IdFunction  < send . ---- Idfunction is also an element of the send 
+  sorts  MsgToUses SentHistorys . ---define new sorts of type set
+  sorts  Qsend Qreceive  . ---define new sorts of type list
+  subsort Msg  < SentHistory . --- Msg is also an element of W 
+  subsort Msg  < send . ---- Msg is also an element of the send 
 
   --- define lists and sets for the included sorts
-  pr SET{ExternalFunction} .
-    subsort Set{ExternalFunction} < ExternalFunctions . 
+  pr SET{MsgToUse} .
+    subsort Set{MsgToUse} < MsgToUses . 
 
-  pr SET{W} .
-    subsort Set{W} < Ws . 
+  pr SET{SentHistory} .
+    subsort Set{SentHistory} < SentHistorys . 
 
   pr LIST{send} .
     subsort List{send} < Qsend . 
 
-  pr LIST{rec} .
-    subsort List{rec} < Qrec . 
+  pr LIST{receive} .
+    subsort List{receive} < Qreceive . 
 
-  vars  idf1 idf2 : IdFunction .
-  var eidfs : ExternalFunctions .
+  vars  idf1 idf2 : Msg .
+  var eidfs : MsgToUses .
   vars Newbwb bwb : BoolWithBot .
   var Is : Instances .
-  var idcx : IdentC .
-  var idcxs : IdentCs .
-  var idbeh : IdentB .
+  var idcx : IdentInstance .
+  var idcxs : IdentInstances .
+  var idbeh : IdentBehavior .
   var ct : ComponentType .
   var por : Port .
   var Ls : Connections .
   var pg : Program .
   var l : Connection .
-  var behL : QBehavoirId .
+  var behL : QBehaviorWithId .
   var mark : Marking .
-  var qr : Qrec .
-  var t : Transitionns  .
+  var qr : Qreceive .
+  var t : Transitions  .
 
-  op f(_;_) : IdFunction BoolWithBot ->   ExternalFunction .  ---external function with an evaluation (initially = bot) . 
-  op (_;_) :  IdFunction BoolWithBot  -> rec .  --- an element to receive
-  op < _,(_,_),_,_,_,_,_ > : IdentCs Instances Connections Program ExternalFunctions Qrec Qsend  Ws -> LocalConfiguration .   
+  op extern(_;_) : Msg BoolWithBot ->   MsgToUse .  ---external function with an evaluation (initially = bot) . 
+  op (_;_) :  Msg BoolWithBot  -> receive .  --- an element to receive
+  op < _,(_,_),_,_,_,_,_ > : IdentInstances Instances Connections Program MsgToUses Qreceive Qsend  SentHistorys -> LocalConfiguration .   
   --- definition of local configuration
 
   --- some functions on configuration
-  op LocalFunction(_,_) : IdFunction IdentCs -> Bool .  --- determine whether an Id of a function is local in a configuration
-  eq LocalFunction(idf1, idcxs) = GetIdentForIdfunction(idf1) in idcxs .
+  op LocalFunction(_,_) : Msg IdentInstances -> Bool .  --- determine whether an Id of a function is local in a configuration
+  eq LocalFunction(idf1, idcxs) = GetIdentForMsg(idf1) in idcxs .
  
- op ExternFunction(_,_) : IdFunction ExternalFunctions -> Bool . 
+ op ExternFunction(_,_) : Msg MsgToUses -> Bool . 
 --- determine whether an Id of a function is defined as extern in the set of external functions
   eq ExternFunction(idf1,empty) = false .
-  eq ExternFunction(idf1, f(idf1 ; bwb),eidfs ) = true  .
-  eq ExternFunction(idf1, f(idf2 ; bwb),eidfs ) = ExternFunction(idf1, eidfs) [owise] .
+  eq ExternFunction(idf1, extern(idf1 ; bwb),eidfs ) = true  .
+  eq ExternFunction(idf1, extern(idf2 ; bwb),eidfs ) = ExternFunction(idf1, eidfs) [owise] .
 
-  op AddFunctionExtern(_,_) : IdFunction ExternalFunctions -> ExternalFunctions .
+  op AddFunctionExtern(_,_) : Msg MsgToUses -> MsgToUses .
   --- add an external function with a bot evaluation if it is not already in the set of external functions
-  ceq AddFunctionExtern(idf1,eidfs) =  f(idf1 ; bot),eidfs if (not ExternFunction(idf1, eidfs ) ) .  
+  ceq AddFunctionExtern(idf1,eidfs) =  extern(idf1 ; bot),eidfs if (not ExternFunction(idf1, eidfs ) ) .  
   eq AddFunctionExtern(idf1,eidfs) = eidfs [owise] . 
 
-  op ExternEvaluation(_,_) : IdFunction ExternalFunctions  -> BoolWithBot .  
+  op ExternEvaluation(_,_) : Msg MsgToUses  -> BoolWithBot .  
   ---obtain the evalaution of an external function from a set of external functions
   eq ExternEvaluation(idf1, empty) = bot . 
-  eq ExternEvaluation(idf1, f(idf1 ; bwb), eidfs ) = bwb  .
-  eq ExternEvaluation(idf1, f(idf2 ; bwb), eidfs ) = ExternEvaluation(idf1, eidfs ) [owise] .
+  eq ExternEvaluation(idf1, extern(idf1 ; bwb), eidfs ) = bwb  .
+  eq ExternEvaluation(idf1, extern(idf2 ; bwb), eidfs ) = ExternEvaluation(idf1, eidfs ) [owise] .
 
-  op SubstitueEvaluationOfFunction(_,_,_) : ExternalFunctions IdFunction BoolWithBot -> ExternalFunctions .  
+  op SubstitueEvaluationOfFunction(_,_,_) : MsgToUses Msg BoolWithBot -> MsgToUses .  
   --- substitutes the evaluation of an external function from a set of external functions
   eq SubstitueEvaluationOfFunction(empty,idf1,Newbwb) = empty . 
-  eq SubstitueEvaluationOfFunction((f(idf1 ; bwb), eidfs),idf1,Newbwb) = f(idf1 ; Newbwb), eidfs  .
-  eq SubstitueEvaluationOfFunction((f(idf1 ; bwb), eidfs),idf2,Newbwb) = f(idf1 ; bwb), SubstitueEvaluationOfFunction(eidfs,idf2,Newbwb) [owise] .
+  eq SubstitueEvaluationOfFunction((extern(idf1 ; bwb), eidfs),idf1,Newbwb) = extern(idf1 ; Newbwb), eidfs  .
+  eq SubstitueEvaluationOfFunction((extern(idf1 ; bwb), eidfs),idf2,Newbwb) = extern(idf1 ; bwb), SubstitueEvaluationOfFunction(eidfs,idf2,Newbwb) [owise] .
  
-  op LocalEvaluation(_,_,_,_) : IdFunction Instances Connections Program -> BoolWithBot .  
+  op LocalEvaluation(_,_,_,_) : Msg Instances Connections Program -> BoolWithBot .  
   ---- gives the evaluation of a local function according to certain parameters of a given configuration
-  eq LocalEvaluation (idAct(idcx,por), Is,Ls,pg) =  if (not IsUsedIdentInstances(idcx,Is)) then false else active(InstanceOfIdent(Is,idcx),por) fi .   
+  eq LocalEvaluation (ExprActive(idcx,por), Is,Ls,pg) =  if (not IsUsedIdentInstances(idcx,Is)) then false else active(InstanceOfIdent(Is,idcx),por) fi .   
   ---if the instance does not yet exist, then the active function = false 
-  eq LocalEvaluation (idRef(idcx,por), Is,Ls,pg) =  if (not IsUsedIdentInstances(idcx,Is)) then true else refusing(InstanceOfIdent(Is,idcx),por) fi .
+  eq LocalEvaluation (ExprRefusing(idcx,por), Is,Ls,pg) =  if (not IsUsedIdentInstances(idcx,Is)) then true else refusing(InstanceOfIdent(Is,idcx),por) fi .
    ---if the instance does not yet exist, then the refusing function = true  
-  eq LocalEvaluation (idIsCon(idcx,l), Is,Ls,pg) = l in Ls . 
-  eq LocalEvaluation (idDiscon(idcx,l), Is,Ls,pg) = disconnect(l,pg) . 
-  eq LocalEvaluation (idComp(idcx,idbeh), (< idcx,ct,behL,mark >,Is),Ls,pg) =  (not ExistIdentBehListBeh(idbeh,behL) ) and NotPushBProg(idcx,idbeh,pg) .
+  eq LocalEvaluation (ExprIsConnected(idcx,l), Is,Ls,pg) = l in Ls . 
+  eq LocalEvaluation (ExprDisconnect(idcx,l), Is,Ls,pg) = disconnect(l,pg) . 
+  eq LocalEvaluation (ExprCompleted(idcx,idbeh), (< idcx,ct,behL,mark >,Is),Ls,pg) =  (not ExistIdentBehaviorehListBeh(idbeh,behL) ) and NotPushBProg(idcx,idbeh,pg) .
   --- the corresponding instance of a wait behavior exists. Then, the evaluation depends on whether or not push idbeh exists in the program or in the behavior list.
-  eq LocalEvaluation (idComp(idcx,idbeh), Is,Ls,pg) =  if ((not IsUsedIdentInstances(idcx,Is) ) and NotPushBProg(idcx,idbeh,pg)) then true else false fi . 
+  eq LocalEvaluation (ExprCompleted(idcx,idbeh), Is,Ls,pg) =  if ((not IsUsedIdentInstances(idcx,Is) ) and NotPushBProg(idcx,idbeh,pg)) then true else false fi . 
   --- special case the instance doesn't exist and even the push of idbeh in the program. this is the case when a program is executed and its instance is deleted.
  
-  op Evaluation(_,_,_,_,_,_) : IdentCs IdFunction ExternalFunctions Instances Connections Program -> BoolWithBot . 
+  op Evaluation(_,_,_,_,_,_) : IdentInstances Msg MsgToUses Instances Connections Program -> BoolWithBot . 
   --- gives the evaluation according to the two cases local or external
   eq Evaluation(idcxs,idf1,eidfs, Is,Ls,pg ) = if (LocalFunction(idf1,idcxs)) then LocalEvaluation(idf1,Is,Ls,pg) else ExternEvaluation(idf1,eidfs) fi .
 
-  op ExistIdFunctionInReceiveQueue(_,_) : IdFunction Qrec -> Bool .
+  op ExistMsgInReceiveQueue(_,_) : Msg Qreceive -> Bool .
   --- determine whether an id for a function is already in the queue used for receiving evaluations of functions
-  eq ExistIdFunctionInReceiveQueue(idf1,nil) = false .
-  ceq ExistIdFunctionInReceiveQueue(idf1,(idf2 ; bwb) qr) = true if (idf1 == idf2)  .
-  eq ExistIdFunctionInReceiveQueue(idf1,(idf2 ; bwb) qr) =  ExistIdFunctionInReceiveQueue(idf1, qr) [owise] .
+  eq ExistMsgInReceiveQueue(idf1,nil) = false .
+  ceq ExistMsgInReceiveQueue(idf1,(idf2 ; bwb) qr) = true if (idf1 == idf2)  .
+  eq ExistMsgInReceiveQueue(idf1,(idf2 ; bwb) qr) =  ExistMsgInReceiveQueue(idf1, qr) [owise] .
 
 endfm
 

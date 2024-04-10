@@ -19,16 +19,16 @@ mod Concerto-PREDS is
   var Rx : Program .
   var Ix  : Instances . 
   var Lx  : Connections .
-  var Fx  : ExternalFunctions .
+  var Fx  : MsgToUses .
   var QSx  : Qsend .
-  var QRx  : Qrec .
-  var Wx  : Ws .
+  var QRx  : Qreceive .
+  var Wx  : SentHistorys .
   var ct : ComponentType .
-  vars qb : QBehavoirId .
+  vars qb : QBehaviorWithId .
   var ps : Places .
-  var ts : Transitionns .
-  var tes  : TransitionnEndings .
-  var  IdsNodx : IdentCs .
+  var ts : Transitions .
+  var tes  : TransitionEndings .
+  var  IdsNodx : IdentInstances .
 
   ------------------part concerned by the automatic generation 'Python'---------------------------
 	ops confProgDatabase confProgSystem confProgSensor0 : ->  LocalConfiguration .
@@ -36,10 +36,10 @@ mod Concerto-PREDS is
 	op database : -> ComponentType .
 	ops databaseInitiated databaseConfigured databaseBootstrapped databaseDeployed databaseRegistered : -> Place .
 	ops stDatabaseInitiated stDatabaseConfigured stDatabaseBootstrapped stDatabaseDeployed stDatabaseRegistered : -> Station .
-	op databaseInitiated : -> InitPlace .
-	ops databaseService : -> ProPort .
+	op databaseInitiated : -> InitialPlace .
+	ops databaseService : -> ProvidePort .
 	
-	ops databaseDeploy11 databaseDeploy12 databaseDeploy2 databaseDeploy3 databaseInterrupt1 databasePause1 databaseUpdate databaseUninstall1 : -> Transitionn .
+	ops databaseDeploy11 databaseDeploy12 databaseDeploy2 databaseDeploy3 databaseInterrupt1 databasePause1 databaseUpdate databaseUninstall1 : -> Transition .
 	eq databaseDeploy11 = t(databaseInitiated, stDatabaseConfigured) .
 	eq databaseDeploy12 = t(databaseInitiated, stDatabaseConfigured) .
 	eq databaseDeploy2 = t(databaseConfigured, stDatabaseBootstrapped) .
@@ -58,10 +58,10 @@ mod Concerto-PREDS is
 	op listener : -> ComponentType .
 	ops listenerRunning listenerConfigured listenerPaused listenerOff : -> Place .
 	ops stListenerRunning stListenerConfigured stListenerPaused stListenerOff : -> Station .
-	op listenerOff : -> InitPlace .
-	ops listenerRcv listenerConfig : -> ProPort .
+	op listenerOff : -> InitialPlace .
+	ops listenerRcv listenerConfig : -> ProvidePort .
 	ops listenerSysService : -> UsePort .
-	ops listenerDeploy1 listenerDeploy2 listenerDeploy3 listenerUpdate1 listenerDestroy1 : -> Transitionn .
+	ops listenerDeploy1 listenerDeploy2 listenerDeploy3 listenerUpdate1 listenerDestroy1 : -> Transition .
 	eq listenerDeploy1 = t(listenerOff, stListenerPaused) .
 	eq listenerDeploy2 = t(listenerPaused, stListenerConfigured) .
 	eq listenerDeploy3 = t(listenerConfigured, stListenerRunning) .
@@ -75,10 +75,10 @@ mod Concerto-PREDS is
 	op sensor : -> ComponentType .
 	ops sensorRunning sensorConfigured sensorInstalled sensorProvisioned sensorOff : -> Place .
 	ops stSensorRunning stSensorConfigured stSensorInstalled stSensorProvisioned stSensorOff : -> Station .
-	op sensorOff : -> InitPlace .
+	op sensorOff : -> InitialPlace .
 	
 	ops sensorRcvService sensorConfigService : -> UsePort .
-	ops sensorDeploy11 sensorDeploy12 sensorDeploy13 sensorDeploy2 sensorDeploy3 sensorDeploy4 sensorPause1 sensorStop1 : -> Transitionn .
+	ops sensorDeploy11 sensorDeploy12 sensorDeploy13 sensorDeploy2 sensorDeploy3 sensorDeploy4 sensorPause1 sensorStop1 : -> Transition .
 	eq sensorDeploy11 = t(sensorOff, stSensorProvisioned) .
 	eq sensorDeploy12 = t(sensorOff, stSensorProvisioned) .
 	eq sensorDeploy13 = t(sensorOff, stSensorProvisioned) .
@@ -95,10 +95,10 @@ mod Concerto-PREDS is
 	op system : -> ComponentType .
 	ops systemDeployed systemConfigured systemInitiated : -> Place .
 	ops stSystemDeployed stSystemConfigured stSystemInitiated : -> Station .
-	op systemInitiated : -> InitPlace .
-	ops systemService : -> ProPort .
+	op systemInitiated : -> InitialPlace .
+	ops systemService : -> ProvidePort .
 	ops systemDbService : -> UsePort .
-	ops systemDeploy11 systemDeploy12 systemDeploy13 systemDeploy2 systemInterrupt1 systemStop1 : -> Transitionn .
+	ops systemDeploy11 systemDeploy12 systemDeploy13 systemDeploy2 systemInterrupt1 systemStop1 : -> Transition .
 	eq systemDeploy11 = t(systemInitiated, stSystemConfigured) .
 	eq systemDeploy12 = t(systemInitiated, stSystemConfigured) .
 	eq systemDeploy13 = t(systemInitiated, stSystemConfigured) .
@@ -110,14 +110,14 @@ mod Concerto-PREDS is
 	eq systemInterrupt = b(systemInterrupt1) .
 	eq systemStop = b(systemStop1) .
 	eq system = < (systemDeployed,systemConfigured,systemInitiated), systemInitiated, stSystemDeployed ; systemDeployed, stSystemConfigured ; systemConfigured, stSystemInitiated ; systemInitiated, (systemDeploy11, systemDeploy12, systemDeploy13, systemDeploy2, systemInterrupt1, systemStop1), (systemDeploy, systemInterrupt, systemStop), systemDbService ! (systemDeployed, systemConfigured), systemService ? (systemDeployed) > .
-	ops db1 : -> IdentB .
-	ops mydb0 : -> IdentC .
+	ops db1 : -> IdentBehavior .
+	ops mydb0 : -> IdentInstance .
 	eq confProgDatabase = <(mydb0), (empty, empty), add(mydb0,database) . con(mysys0,systemDbService,mydb0,databaseService) . pushB(mydb0, databaseDeploy, db1) . [], empty, nil, nil, empty > .
-	ops sys1 0lst1 : -> IdentB .
-	ops mysys0 listener0 : -> IdentC .
+	ops sys1 0lst1 : -> IdentBehavior .
+	ops mysys0 listener0 : -> IdentInstance .
 	eq confProgSystem = <(mysys0, listener0), (empty, empty), add(mysys0,system) . con(mysys0,systemDbService,mydb0,databaseService) . add(listener0,listener) . con(listener0,listenerSysService,mysys0,systemService) . con(sensor0,sensorRcvService,listener0,listenerRcv) . con(sensor0,sensorConfigService,listener0,listenerConfig) . pushB(mysys0, systemDeploy, sys1) . pushB(listener0, listenerDeploy, 0lst1) . [], empty, nil, nil, empty > .
-	ops 0sens1 : -> IdentB .
-	ops sensor0 : -> IdentC .
+	ops 0sens1 : -> IdentBehavior .
+	ops sensor0 : -> IdentInstance .
 	eq confProgSensor0 = <(sensor0), (empty, empty), add(sensor0,sensor) . con(sensor0,sensorRcvService,listener0,listenerRcv) . con(sensor0,sensorConfigService,listener0,listenerConfig) . pushB(sensor0, sensorDeploy, 0sens1) . [], empty, nil, nil, empty > .
 	eq test = confProgDatabase ; confProgSystem ; confProgSensor0 .
 -------------------------------------------- End part generation--------------------------------
@@ -152,19 +152,19 @@ endm
 ---  red modelCheck(test, [] ( DeployS -> ( <> ( DeployC2 ) /\  <> ( DeployC1 ) ))) .
 
 ***(
-  op p1 : -> InitPlace .
-  op q1 : -> InitPlace .
+  op p1 : -> InitialPlace .
+  op q1 : -> InitialPlace .
   ops p2 p3 : -> Place .
   ops q2 q3 : -> Place .
  
   ops s1 s2 s3   : -> Station .
   ops t1 t2 t3  : -> Station .
 
-  ops idb1 idb2 idb3  : -> IdentB .
-  ops idc1 idc2 idc3  : -> IdentC .
+  ops idb1 idb2 idb3  : -> IdentBehavior .
+  ops idc1 idc2 idc3  : -> IdentInstance .
 
   ops us1 : -> UsePort .
-  op pr1 : -> ProPort .
+  op pr1 : -> ProvidePort .
 
   ops c1 c2  : -> ComponentType .
   ops confx confy confz : -> LocalConfiguration .

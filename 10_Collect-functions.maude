@@ -8,31 +8,31 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-FIRING is
   var L : Connections .
   var bwb : BoolWithBot .
   var up : UsePort .
-  var pp : ProPort .
-  vars  id1 id2 : IdentC .
+  var pp : ProvidePort .
+  vars  id1 id2 : IdentInstance .
   var newMark : Marking .
-   var f : ExternalFunctions .
-  var ws : Ws .
+   var f : MsgToUses .
+  var ws : SentHistorys .
   var qsend : Qsend .
 
-   var idcs : IdentCs .     
+   var idcs : IdentInstances .     
 
-  op CollectFunctionFiring(_,_,_,_,_,_,_) : IdentCs Marking Instances Connections ExternalFunctions Ws Qsend -> Qsend .
+  op CollectFunctionFiring(_,_,_,_,_,_,_) : IdentInstances Marking Instances Connections MsgToUses SentHistorys Qsend -> Qsend .
   --- used to determine the information of external functions that allow to apply the rule firing transition. 
-  --- it aims to build a list of external idAct functions for use ports whose current value does not allow the rule to be applied; in other words,
+  --- it aims to build a list of external ExprActive functions for use ports whose current value does not allow the rule to be applied; in other words,
   --- its evaluation = true or bot knowing that the provide port linked to this use port wants to change the status of its provide port from active to inactive.
-  --- in this case, we add the function idAct of this use port to the list of external information, on condition that the request for this function is not currently being processed.
-  --- this last condition is verified if idAct doesn't belong to either Ws or Qsend, therefore this function also takes these two parameters into account
+  --- in this case, we add the function ExprActive of this use port to the list of external information, on condition that the request for this function is not currently being processed.
+  --- this last condition is verified if ExprActive doesn't belong to either SentHistorys or Qsend, therefore this function also takes these two parameters into account
   eq CollectFunctionFiring(idcs,newMark,Is,empty,f,ws,qsend) = nil .
   ceq CollectFunctionFiring(idcs,newMark,Is,(id1,up,id2,pp),L,f,ws,qsend) = 
-  append(idAct(id1,up),CollectFunctionFiring(idcs,newMark,Is,L,f,ws,qsend))
+  append(ExprActive(id1,up),CollectFunctionFiring(idcs,newMark,Is,L,f,ws,qsend))
   if
   (   
-  (not idAct(id1,up) in ws) and 
-  (not (occurs(idAct(id1,up),qsend)))  and
+  (not ExprActive(id1,up) in ws) and 
+  (not (occurs(ExprActive(id1,up),qsend)))  and
   (not (id1 in idcs)) and
-  ( Evaluation(idcs,idAct(id1,up),f,empty,empty,[] )   == true  or Evaluation(idcs,idAct(id1,up),f,empty,empty,[] )  == bot ) and
-  ( (LocalEvaluation(idAct(id2,pp),Is,empty,[] ) == true) and (activeMarking(InstanceOfIdent(Is,id2),pp,newMark) == false ))  
+  ( Evaluation(idcs,ExprActive(id1,up),f,empty,empty,[] )   == true  or Evaluation(idcs,ExprActive(id1,up),f,empty,empty,[] )  == bot ) and
+  ( (LocalEvaluation(ExprActive(id2,pp),Is,empty,[] ) == true) and (activeMarking(InstanceOfIdent(Is,id2),pp,newMark) == false ))  
   ) .
   eq CollectFunctionFiring(idcs,newMark,Is,(id1,up,id2,pp),L,f,ws,qsend) = CollectFunctionFiring(idcs,newMark,Is,L,f,ws,qsend) [owise] .
 
@@ -45,19 +45,19 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
 
   var pla : Place .
   var ps : Places .
-  var gu :  GUses .
+  var gu :  GroupUses .
   vars i i' : Instance .
   var Is : Instances .
   var L : Connections .
-  var f : ExternalFunctions .
+  var f : MsgToUses .
   vars poru up : UsePort .
-  var pp : ProPort .
-  vars IdentIns id1 id2 : IdentC .
-  var ws : Ws .
+  var pp : ProvidePort .
+  vars IdentIns id1 id2 : IdentInstance .
+  var ws : SentHistorys .
   var qsend : Qsend .  
-  var idcs : IdentCs .   
+  var idcs : IdentInstances .   
 
-  op CollectFunctionsEnteringPlace(_,_,_,_,_,_,_,_,_,_) : IdentCs Place GUses Instance Instance Instances Connections ExternalFunctions Ws Qsend -> Qsend .
+  op CollectFunctionsEnteringPlace(_,_,_,_,_,_,_,_,_,_) : IdentInstances Place GroupUses Instance Instance Instances Connections MsgToUses SentHistorys Qsend -> Qsend .
   --- we follow the same reasoning used to collect external functions for firing
   eq CollectFunctionsEnteringPlace(idcs,pla,empty,i,i',Is,L,f,ws,qsend) = nil .
   ceq CollectFunctionsEnteringPlace(idcs,pla,(up ! ps),gu,i,i',Is,L,f,ws,qsend) = 
@@ -65,26 +65,26 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
   if  ((pla in ps) and active(i,up) == false and active(i',up) == true  ).   
   eq CollectFunctionsEnteringPlace(idcs,pla,(up ! ps),gu,i,i',Is,L,f,ws,qsend) = CollectFunctionsEnteringPlace(idcs,pla,gu,i,i',Is,L,f,ws,qsend) [owise] .
 
-  op CollectConnected(_,_,_,_,_,_,_) : IdentCs UsePort IdentC Connections ExternalFunctions Ws Qsend -> Qsend . 
+  op CollectConnected(_,_,_,_,_,_,_) : IdentInstances UsePort IdentInstance Connections MsgToUses SentHistorys Qsend -> Qsend . 
   eq CollectConnected(idcs,up,id1,empty,f,ws,qsend) = nil .
-  ceq CollectConnected(idcs,up,id1,(id1,up,id2,pp),L,f,ws,qsend) = idIsCon(id2,(id1,up,id2,pp))
+  ceq CollectConnected(idcs,up,id1,(id1,up,id2,pp),L,f,ws,qsend) = ExprIsConnected(id2,(id1,up,id2,pp))
   if(
-    (not (idIsCon(id2,(id1,up,id2,pp)) in ws)) and 
-    (not (occurs(idIsCon(id2,(id1,up,id2,pp)),qsend)))  and
+    (not (ExprIsConnected(id2,(id1,up,id2,pp)) in ws)) and 
+    (not (occurs(ExprIsConnected(id2,(id1,up,id2,pp)),qsend)))  and
     (not (id2 in idcs)) and
-    ( Evaluation(idcs,idIsCon(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == false  or Evaluation(idcs,idIsCon(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == bot )
+    ( Evaluation(idcs,ExprIsConnected(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == false  or Evaluation(idcs,ExprIsConnected(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == bot )
     ) .
   eq CollectConnected(idcs,poru,IdentIns,(id1,up,id2,pp),L,f,ws,qsend) = CollectConnected(idcs,poru,IdentIns,L,f,ws,qsend) [owise] .
 
 
-  op CollectAllowed(_,_,_,_,_,_,_,_) : IdentCs UsePort  IdentC Instances Connections ExternalFunctions Ws Qsend -> Qsend . 
+  op CollectAllowed(_,_,_,_,_,_,_,_) : IdentInstances UsePort  IdentInstance Instances Connections MsgToUses SentHistorys Qsend -> Qsend . 
   eq CollectAllowed(idcs,up,id1,Is,empty,f,ws,qsend) = nil .
-  ceq CollectAllowed(idcs,up,id1,Is,(id1,up,id2,pp),L,f,ws,qsend) = idRef(id2,pp)
+  ceq CollectAllowed(idcs,up,id1,Is,(id1,up,id2,pp),L,f,ws,qsend) = ExprRefusing(id2,pp)
   if (
-      (not idRef(id2,pp) in ws) and 
-      (not (occurs(idRef(id2,pp),qsend)))  and
+      (not ExprRefusing(id2,pp) in ws) and 
+      (not (occurs(ExprRefusing(id2,pp),qsend)))  and
       (not (id2 in idcs)) and  
-      ( Evaluation(idcs,idRef(id2,pp),f,empty,empty,[] )   == true  or Evaluation(idcs,idRef(id2,pp),f,empty,empty,[])   == bot )   
+      ( Evaluation(idcs,ExprRefusing(id2,pp),f,empty,empty,[] )   == true  or Evaluation(idcs,ExprRefusing(id2,pp),f,empty,empty,[])   == bot )   
     ) .
   eq CollectAllowed(idcs,poru,IdentIns,Is,(id1,up,id2,pp),L,f,ws,qsend) = CollectAllowed(idcs,poru,IdentIns,Is,L,f,ws,qsend) [owise] .
 
@@ -95,21 +95,21 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-WAIT is
   inc CONCERTO-D-CONFIGURATION .
 
   var bwb : BoolWithBot .
-  var  id1 : IdentC .
-  var idbeh : IdentB .
-  var f : ExternalFunctions .
-  var ws : Ws .
+  var  id1 : IdentInstance .
+  var idbeh : IdentBehavior .
+  var f : MsgToUses .
+  var ws : SentHistorys .
   var qsend : Qsend .
-  var idf1 : IdFunction .
-  var idcs : IdentCs .   
+  var idf1 : Msg .
+  var idcs : IdentInstances .   
 
-  op CollectFunctionWait(_,_,_,_,_,_) : IdentCs IdentC IdentB ExternalFunctions Ws Qsend -> Qsend .
+  op CollectFunctionWait(_,_,_,_,_,_) : IdentInstances IdentInstance IdentBehavior MsgToUses SentHistorys Qsend -> Qsend .
   ceq CollectFunctionWait(idcs,id1,idbeh,f,ws,qsend) = nil if (id1 in idcs) .
-  ceq CollectFunctionWait(idcs,id1,idbeh,f(idf1 ; bwb),f,ws,qsend) =  CollectFunctionWait(idcs,id1,idbeh,f,ws,qsend) 
-  if ((idf1 =/= idComp(id1,idbeh))  and (not (id1 in idcs)) ) .
-  eq CollectFunctionWait(idcs,id1,idbeh,f(idComp(id1,idbeh) ; bwb),f,ws,qsend) = 
-  if (( bwb == true ) or (idComp(id1,idbeh) in ws) or (idComp(id1,idbeh) in qsend) )  then nil else idComp(id1,idbeh) fi .
-  eq CollectFunctionWait(idcs,id1,idbeh,empty,ws,qsend) = idComp(id1,idbeh) . 
+  ceq CollectFunctionWait(idcs,id1,idbeh,extern(idf1 ; bwb),f,ws,qsend) =  CollectFunctionWait(idcs,id1,idbeh,f,ws,qsend) 
+  if ((idf1 =/= ExprCompleted(id1,idbeh))  and (not (id1 in idcs)) ) .
+  eq CollectFunctionWait(idcs,id1,idbeh,extern(ExprCompleted(id1,idbeh) ; bwb),f,ws,qsend) = 
+  if (( bwb == true ) or (ExprCompleted(id1,idbeh) in ws) or (ExprCompleted(id1,idbeh) in qsend) )  then nil else ExprCompleted(id1,idbeh) fi .
+  eq CollectFunctionWait(idcs,id1,idbeh,empty,ws,qsend) = ExprCompleted(id1,idbeh) . 
 
 endfm
 
@@ -119,36 +119,36 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-DISCONNECT is
 
   var bwb : BoolWithBot .
   var up : UsePort .
-  var pp : ProPort .
-  vars  id1 id2 : IdentC .
-  var f : ExternalFunctions .
-  var ws : Ws .
+  var pp : ProvidePort .
+  vars  id1 id2 : IdentInstance .
+  var f : MsgToUses .
+  var ws : SentHistorys .
   var qsend : Qsend .
-  var idf1 : IdFunction .
-  var idcs : IdentCs . 
+  var idf1 : Msg .
+  var idcs : IdentInstances . 
   var l : Connection .  
 
-  op CollectFunctionsDiscon(_,_,_,_,_) : IdentCs Connection ExternalFunctions Ws Qsend -> Qsend .
+  op CollectFunctionsDiscon(_,_,_,_,_) : IdentInstances Connection MsgToUses SentHistorys Qsend -> Qsend .
   ceq CollectFunctionsDiscon(idcs,(id1,up,id2,pp),f,ws,qsend) = append(ActiveCollect(id1,up,f,ws,qsend),(DisconCollect(id1,(id1,up,id2,pp),f,ws,qsend))) 
   if (not (id1 in idcs) ) .
   ceq CollectFunctionsDiscon(idcs,(id1,up,id2,pp),f,ws,qsend) = DisconCollect(id2,(id1,up,id2,pp),f,ws,qsend) 
   if (not (id2 in idcs) ) .
   eq CollectFunctionsDiscon(idcs,(id1,up,id2,pp),f,ws,qsend) = nil [owise] .
 
-  op ActiveCollect(_,_,_,_,_) : IdentC UsePort ExternalFunctions Ws Qsend -> Qsend .
-  ceq ActiveCollect(id1,up,f(idf1 ; bwb),f,ws,qsend) =  ActiveCollect(id1,up,f,ws,qsend) if (idf1 =/= idAct(id1,up)) .
-  eq ActiveCollect(id1,up,f(idAct(id1,up) ; bwb),f,ws,qsend) = 
+  op ActiveCollect(_,_,_,_,_) : IdentInstance UsePort MsgToUses SentHistorys Qsend -> Qsend .
+  ceq ActiveCollect(id1,up,extern(idf1 ; bwb),f,ws,qsend) =  ActiveCollect(id1,up,f,ws,qsend) if (idf1 =/= ExprActive(id1,up)) .
+  eq ActiveCollect(id1,up,extern(ExprActive(id1,up) ; bwb),f,ws,qsend) = 
   if 
-  (( bwb == false ) or (idAct(id1,up) in ws) or (idAct(id1,up) in qsend) ) then nil else idAct(id1,up) fi .
-  eq ActiveCollect(id1,up,empty,ws,qsend) = idAct(id1,up) . 
+  (( bwb == false ) or (ExprActive(id1,up) in ws) or (ExprActive(id1,up) in qsend) ) then nil else ExprActive(id1,up) fi .
+  eq ActiveCollect(id1,up,empty,ws,qsend) = ExprActive(id1,up) . 
 
-  op DisconCollect(_,_,_,_,_) : IdentC Connection ExternalFunctions Ws Qsend -> Qsend .
+  op DisconCollect(_,_,_,_,_) : IdentInstance Connection MsgToUses SentHistorys Qsend -> Qsend .
 
-  ceq DisconCollect(id1,l,f(idf1 ; bwb),f,ws,qsend) =  DisconCollect(id1,l,f,ws,qsend) if (idf1 =/= idDiscon(id1,l)) .
-  eq DisconCollect(id1,l,f(idDiscon(id1,l) ; bwb),f,ws,qsend) = 
+  ceq DisconCollect(id1,l,extern(idf1 ; bwb),f,ws,qsend) =  DisconCollect(id1,l,f,ws,qsend) if (idf1 =/= ExprDisconnect(id1,l)) .
+  eq DisconCollect(id1,l,extern(ExprDisconnect(id1,l) ; bwb),f,ws,qsend) = 
   if 
-  (( bwb == true ) or (idDiscon(id1,l) in ws) or (idDiscon(id1,l) in qsend) ) then nil else idDiscon(id1,l) fi .
-  eq DisconCollect(id1,l,empty,ws,qsend) = idDiscon(id1,l) . 
+  (( bwb == true ) or (ExprDisconnect(id1,l) in ws) or (ExprDisconnect(id1,l) in qsend) ) then nil else ExprDisconnect(id1,l) fi .
+  eq DisconCollect(id1,l,empty,ws,qsend) = ExprDisconnect(id1,l) . 
 
 endfm
 

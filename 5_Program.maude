@@ -8,16 +8,16 @@ fmod PROGRAM is
   var Prog : Program .
   var l : Connection .
   var inst : Instruction .
-  var idcx : IdentC .
-  var idbehx : IdentB .
+  var idcx : IdentInstance .
+  var idbehx : IdentBehavior .
   var beh : Behavior .
 
-  op add(_,_) : IdentC ComponentType -> Instruction .
-  op del(_) : IdentC -> Instruction .
-  op pushB(_,_,_) : IdentC Behavior IdentB -> Instruction .
+  op add(_,_) : IdentInstance ComponentType -> Instruction .
+  op del(_) : IdentInstance -> Instruction .
+  op pushB(_,_,_) : IdentInstance Behavior IdentBehavior -> Instruction .
   op con(_) : Connection -> Instruction .
   op dcon(_) : Connection -> Instruction .
-  op wait(_,_) : IdentC IdentB -> Instruction .
+  op wait(_,_) : IdentInstance IdentBehavior -> Instruction .
   op [] : -> Program [ctor] .  ---operator is a constructor
   op _._ : Instruction Program -> Program [ctor] . ---operator is a constructor
 
@@ -35,14 +35,14 @@ fmod PROGRAM is
   eq disconnect(l,[]) = true .
   eq disconnect(l,inst . Prog) = NotDcon(l,Prog) .
   
-  op InstructionIspushB(_,_,_) : Instruction IdentC IdentB -> Bool .  
-  --- checks whether the current instruction is a push instruction for a given IdentC and IdentB
+  op InstructionIspushB(_,_,_) : Instruction IdentInstance IdentBehavior -> Bool .  
+  --- checks whether the current instruction is a push instruction for a given IdentInstance and IdentBehavior
 
   eq InstructionIspushB(pushB(idcx,beh,idbehx), idcx,idbehx ) = true .
   eq InstructionIspushB(inst, idcx,idbehx ) = false [owise] .
 
-  op NotPushBProg(_,_,_) : IdentC IdentB Program -> Bool .  
-  ---checks that in a given program there is no push behavior instruction for IdentC and IdentB
+  op NotPushBProg(_,_,_) : IdentInstance IdentBehavior Program -> Bool .  
+  ---checks that in a given program there is no push behavior instruction for IdentInstance and IdentBehavior
   
   eq NotPushBProg(idcx,idbehx, []) = true .
   ceq NotPushBProg(idcx,idbehx,inst . Prog) = NotPushBProg(idcx,idbehx,Prog) if (not InstructionIspushB(inst,idcx,idbehx)) .

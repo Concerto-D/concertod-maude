@@ -50,13 +50,13 @@ def gen_maude_program(program):
     ids = ', '.join(list_ids)
     plan = ' . '.join(map(lambda instr: __make_instruction(instr), program.instructions()))
     pushb_instr = filter(lambda instr: instr.isPushB(), program.instructions())
-    identB = "ops " + ' '.join(map(lambda instr: f"{instr.id()}", pushb_instr)) + " : -> IdentB ."
-    identC = "ops " + ' '.join(list_ids) + " : -> IdentC ."
-    return identB + '\n' + identC + '\n' + f"eq conf{cap1(program.id())} = <({ids}), (empty, empty), {plan} . [], empty, nil, nil, empty > ."
+    IdentBehavior = "ops " + ' '.join(map(lambda instr: f"{instr.id()}", pushb_instr)) + " : -> IdentBehavior ."
+    IdentInstance = "ops " + ' '.join(list_ids) + " : -> IdentInstance ."
+    return IdentBehavior + '\n' + IdentInstance + '\n' + f"eq conf{cap1(program.id())} = <({ids}), (empty, empty), {plan} . [], empty, nil, nil, empty > ."
 
 def gen_maude_from_type(type: ComponentType) -> str:
     name = type.name()
-    place, initPlace, station, proPort, usePort = "", "", "", "", ""
+    place, InitialPlace, station, ProvidePort, usePort = "", "", "", "", ""
     provide_ports = "empty"
     use_ports = "empty"
     componentType = f"op {name} : -> ComponentType ."
@@ -69,10 +69,10 @@ def gen_maude_from_type(type: ComponentType) -> str:
         init = f"{name}{cap1(type.initial_place().name())}"
         place = "ops " + ' '.join(places) + " : -> Place ."
         station = "ops " + ' '.join(stations) + " : -> Station ."
-        initPlace = f"op {init} : -> InitPlace ."
+        InitialPlace = f"op {init} : -> InitialPlace ."
         
     if type.provide_ports():
-        proPort = "ops " + ' '.join(map(lambda port: f"{name}{cap1(port.name())}", type.provide_ports())) + " : -> ProPort ."
+        ProvidePort = "ops " + ' '.join(map(lambda port: f"{name}{cap1(port.name())}", type.provide_ports())) + " : -> ProvidePort ."
         provide_ports = ', '.join(map(lambda port: __make_port(name, port, "?"), type.provide_ports()))
         
     if type.use_ports():
@@ -93,7 +93,7 @@ def gen_maude_from_type(type: ComponentType) -> str:
             behavior_transitions[behavior_name].append(transition_name)
     
     
-    ops_transitions = f"ops {' '.join(transitions.keys())} : -> Transitionn ."
+    ops_transitions = f"ops {' '.join(transitions.keys())} : -> Transition ."
     eq_transitions = '\n'.join(map(lambda tr: f"eq {tr} = {transitions[tr]} .", transitions.keys()))
     ops_behaviors = f"ops {' '.join(behavior_transitions.keys())} : -> Behavior ."
     eq_behaviors_tmp = {}
@@ -106,7 +106,7 @@ def gen_maude_from_type(type: ComponentType) -> str:
 
     comp = f"eq {name} = < ({','.join(places)}), {init}, {', '.join(st_places)}, ({transition_names}), ({behavior_names}), {use_ports}, {provide_ports} > ."
     
-    content = [componentType, place, station, initPlace, proPort, usePort, ops_transitions, eq_transitions, ops_behaviors, eq_behaviors, comp]
+    content = [componentType, place, station, InitialPlace, ProvidePort, usePort, ops_transitions, eq_transitions, ops_behaviors, eq_behaviors, comp]
     return '\n'.join(content)
 
 def __make_instruction(instruction: Instruction):

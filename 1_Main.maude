@@ -36,8 +36,8 @@
 --------------------------------------------------------------------------------------------------------------------------------
 fmod DECLARATION-SORTS is 
 
-sorts Place Station StationPlace  IdentC ExternalFunction send rec W Connection Instance LocalConfiguration .
-sorts Transitionn TransitionnEnding Behavior BehaviorId GUse GPro .
+sorts Place Station StationPlace  IdentInstance MsgToUse send receive SentHistory Connection Instance LocalConfiguration .
+sorts Transition TransitionEnding Behavior BehaviorWithId GroupUse GroupProvide .
 
 endfm
 
@@ -52,9 +52,9 @@ load 9_Operational-semantics-functions
 load 10_Collect-functions
 load 11_Communication-functions
 load 12_Operational-semantics-Concerto-D
-load model-checker  
+---load model-checker  
 --- load model-checker of Maude to be used in Concerto-model-checking
-load 13_Concerto-model-checking
+---load 13_Concerto-model-checking
 
 
 
