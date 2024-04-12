@@ -3,198 +3,205 @@ from itertools import chain
 from examples.openstack import *
 from examples.cps import *
 
-type_of_comp = {}
+type_of_comp = {} # For a component name, store its concrete type
 
-def cap1(input_string):
-    if len(input_string) == 0:
-        return input_string
-    else:
-        return input_string[0].upper() + input_string[1:]
+def get_connections(instance: ComponentInstance):
+    #  a set of (id: str, useport: str, provider: str, provideport: str)
+    connections = set()
+    for port in instance.all_connections().keys():
+        if port.is_provide_port():
+            provider = instance.id()
+            provide_port = instance.type().name() + port.name().capitalize()
+            for connection in instance.all_connections()[port]:
+                user = connection[0].name()
+                use_port = connection[0].type().name() + connection[1].name().capitalize()
+                connections.add((user, use_port, provider, provide_port))
+        if port.is_use_port():
+            user = instance.id()
+            use_port = instance.type().name() + port.name().capitalize()
+            for connection in instance.all_connections()[port]:
+                provider = connection[0].name()
+                provide_port = connection[0].type().name() + connection[1].name().capitalize()
+                connections.add((user, use_port, provider, provide_port))
+    return connections
 
-def __make_port(typename, port, sep_port_bounded="!"):
-    bounded = list(map(lambda place: f"{typename}{cap1(place.name())}", port.bound_places()))
-    return f"{typename}{cap1(port.name())} {sep_port_bounded} ({', '.join(bounded)})" 
+def get_all_ids(instances, program):
+    ids = set(map(lambda instance: instance.id(), instances))
+    add_instructions = list(filter(lambda instr: instr.isAdd(), program.instructions()))
+    return ids + set(map(lambda add: add.component(), add_instructions))
 
-def flatmap(func, iterable):
-    return list(chain.from_iterable(map(func, iterable)))
+def get_instance_names(instances):
+    if len(instances) == 0:
+        return "empty" 
+    names = set(map(lambda instance: f"inst{instance.id().capitalize()}", instances))
+    return ' '.join(names)
 
-def gen_maude(programs):
-    conf_names = list(map(lambda program: f"conf{cap1(program.id())}", programs))
-    maude = "ops " + ' '.join(conf_names) + " : ->  LocalConfiguration ."
-    adds = flatmap(lambda program: filter(lambda instr: instr.isAdd(), program.instructions()), programs) # Get all add from all programs using flatmap
-    types = set()
-    for add in adds:
-        type_of_comp[add.component()] = add.type()
-        types.add(add.type())
-    maude += "\nop test : -> Net ."
-    maude += "\n" + '\n'.join(map(lambda type: gen_maude_from_type(type), types))
-    maude += "\n" + '\n'.join(map(lambda program: gen_maude_program(program), programs))
-    maude += "\n" + f"eq test = {' ; '.join(conf_names)} ."
+def make_connections_name(node_name):
+    return f"connections{node_name.capitalize()}"
+
+def make_maude_instruction(instruction: Instruction):
+    if instruction.isAdd():
+        add = instruction
+        return f"add({add.component()},{add.type().name()})"
+    if instruction.isCon():
+        connect = instruction
+        type_pro = type_of_comp[connect.provider()].name()
+        type_use = type_of_comp[connect.user()].name()
+        return f"con({connect.user()},{type_use}{connect.using_port().capitalize()},{connect.provider()},{type_pro}{connect.providing_port().capitalize()})" 
+    if instruction.isDel():
+        delete = instruction
+        return f"del({delete.component()})"
+    if instruction.isDiscon():
+        disconnect = instruction
+        type_pro = type_of_comp[disconnect.provider()].name()
+        type_use = type_of_comp[disconnect.user()].name()
+        return f"dcon({disconnect.user()},{type_use}{disconnect.using_port().capitalize()},{disconnect.provider()},{type_pro}{disconnect.providing_port().capitalize()})" 
+    if instruction.isPushB():
+        pushb = instruction
+        type_comp = type_of_comp[pushb.component()]
+        return f"pushB({pushb.component()}, {type_comp.name()}{pushb.behavior().capitalize()}, {pushb.id()})" 
+    if instruction.isWait():
+        wait = instruction
+        return f"wait({wait.component()}, {wait.behavior()})"
     
-    lines = maude.split('\n')
-    indented_lines = ['\t' + line for line in lines]
+def make_port(typename, port, sep_port_bounded="!"):
+    bounded = list(map(lambda place: f"{typename}{place.name().capitalize()}", port.bound_places()))
+    return f"{typename}{port.name().capitalize()} {sep_port_bounded} ({', '.join(bounded)})"     
+    
+def make_conf_program(program):    
+    plan = ' '.join(map(lambda instr: make_maude_instruction(instr), program.instructions()))
+    return plan
+
+def gen_maude_type(type: ComponentType):
+    ops, eqs = set(), set()
+    ops.add(f"op {type.name()} : -> ComponentType .")
+    
+    if type.places() is not []:
+        dict_place_station = {f"{type.name()}{place.name().capitalize()}": f"st{type.name()}{place.name().capitalize()}" for place in type.places()}
+        places = list(map(lambda place: f"{type.name()}{place.name().capitalize()}", type.places()))
+        stations = list(map(lambda place: f"st{type.name()}{place.name().capitalize()}", type.places()))
+        st_places = list(map(lambda stp: f"{stp[1]} ; {stp[0]}" , zip(places, stations)))
+        init = f"{type.name()}{type.initial_place().name().capitalize()}"
+        ops.add("ops " + ' '.join(places) + " : -> Place .")
+        ops.add("ops " + ' '.join(stations) + " : -> Station .")
+        ops.add(f"op {init} : -> InitialPlace .")
+    
+    if type.provide_ports():
+        ops.add("ops " + ' '.join(map(lambda port: f"{type.name()}{port.name().capitalize()}", type.provide_ports())) + " : -> ProvidePort .")
+        provide_ports = ', '.join(map(lambda port: make_port(type.name(), port, "?"), type.provide_ports()))
+        
+    if type.use_ports():
+        ops.add("ops " + ' '.join(map(lambda port: f"{type.name()}{port.name().capitalize()}", type.use_ports())) + " : -> UsePort .")
+        use_ports = ', '.join(map(lambda port: make_port(type.name(), port, "!"), type.use_ports()))
+
+    behavior_transitions = {}
+    transitions = {}
+    for behavior in type.behaviors():
+        behavior_name = f"{type.name()}{behavior.name().capitalize()}"
+        behavior_transitions[behavior_name] = []
+        for transition in behavior.transitions_as_dict().keys():
+            act_transition = behavior.transitions_as_dict()[transition]
+            source = f"{type.name()}{act_transition.source().name().capitalize()}"
+            dest = dict_place_station[f"{type.name()}{act_transition.destination()[0].name().capitalize()}"]
+            transition_name = f"{type.name()}{transition.capitalize()}"
+            transitions[transition_name] = f"t({source}, {dest})"
+            behavior_transitions[behavior_name].append(transition_name)
+    ops.add(f"ops {' '.join(transitions.keys())} : -> Transition .")
+    for tr in transition.keys():
+        eqs.add(f"eq {tr} = {transitions[tr]} .")
+    ops.add(f"ops {' '.join(behavior_transitions.keys())} : -> Behavior .")
+    eq_behaviors_tmp = {}
+    for behavior in behavior_transitions.keys():
+        eq_behaviors_tmp[behavior] = f"{','.join(behavior_transitions[behavior])}"
+    for bhv in eq_behaviors_tmp.keys():
+        eqs.add(f"eq {bhv} = b({eq_behaviors_tmp[bhv]}) .")
+    transition_names = ', '.join(transitions.keys())
+    behavior_names = ', '.join(eq_behaviors_tmp.keys())
+    eqs.add(f"eq {type.name()} = < places:{','.join(places)}, initial:{init}, stationPlaces:{', '.join(st_places)}, transitions:({transition_names}), behaviors:({behavior_names}), groupUses:{use_ports}, groupProvides:{provide_ports} > .")    
+    return ops, eqs
+
+def gen_maude_instance(instance: ComponentInstance, active: str):
+    ops, eqs = set(), set()
+    instance_name = f"inst{instance.id().capitalize()}"
+    instance_id = instance.id()
+    instance_type = instance.type().name()
+    ops.add(f"op {instance_name} : -> Instance .")
+    eqs.add(f"eq {instance_name} = <id: {instance_id}, type: {instance_type}, queueBehavior: [], marking: m({active}, empty, empty)>")
+    return ops, eqs
+
+def gen_maude_connections(name_of_connections_set, connections):
+    ops, eqs = set(), set()
+    ops.add(f"op {name_of_connections_set}: -> Connections ." )
+    str_connections = list(map(lambda tuple: f"{(tuple[0], tuple[1], tuple[2], tuple[3])}", connections))
+    eqs.add(f"eq {name_of_connections_set}: " + ' '.join(str_connections) +"-> Connections ." )
+    return ops, eqs
+
+def fill_type_of_comp_from_adds(add_instructions: list[Add]):
+    for add in add_instructions:
+        comp = add.component().name()
+        type = add.type()
+        type_of_comp[comp] = type
+
+def fill_type_of_comp(instances: list[ComponentInstance]):
+    for instance in instances:
+        comp = instance.id()
+        type = instance.type()
+        type_of_comp[comp] = type
+
+def gen_maude(inventory):
+    # inventory: str -> ({instance: states}, program)
+    # For a node name, inventory stores: (i) the current instances and their state and (ii) a concerto-d program
+    all_types = set()
+    all_instances = set()
+    connections = {}
+    ops = set()
+    eqs = set()
+    eq_confs = {}
+    id_instance_place = {}
+    for node in inventory.key():
+        instances = inventory[node][0]
+        fill_type_of_comp(instances)
+        program = inventory[node][1]
+        add_instructions = list(filter(lambda instr: instr.isAdd(), program.instructions()))
+        fill_type_of_comp_from_adds(add_instructions)
+        # Get types
+        instantiated_types = set(map(lambda instance: instance.type(), instances))
+        added_types = set(map(lambda add: add.type(), add_instructions))
+        all_types = all_types + instantiated_types + added_types
+        # Instances
+        for instance in inventory[node].keys():
+            id_instance_place[instance.id()] = inventory[node][instance]
+        all_instances = all_instances + instances
+        connections[make_connections_name(node)] = set(map(lambda instance: get_connections(instance), instances))
+        # Conf
+        conf_name = f"conf{node.capitalize()}"
+        conf_ids = get_all_ids(instances, program)
+        for id in conf_ids:
+            ops.add(f"op {id} : -> IdentInstance .")
+        conf_instances = get_instance_names(instances)
+        conf_connections = make_connections_name(node)
+        conf_program = make_conf_program(program)
+        eq_confs[conf_name] = f"eq {conf_name} = < ids: {conf_ids}, instances: {conf_instances}, connections: {conf_connections}, program: {conf_program}, msgs: [], receive: nil, send: nil, history: empty >"
+    for type in all_types:
+        _ops, _eqs = gen_maude_type(type)
+        ops = ops + _ops
+        eqs = eqs + _eqs
+    for instance in all_instances:
+        _ops, _eqs = gen_maude_instance(instance, id_instance_place[instance.id()])
+        ops = ops + _ops
+        eqs = eqs + _eqs
+    for connection in connections.keys():
+        _ops, _eqs = gen_maude_connections(connection, connections[connection])
+        ops = ops + _ops
+        eqs = eqs + _eqs
+    all_lines = ops + eqs
+    indented_lines = ['\t' + line for line in all_lines]
     indented_maude = '\n'.join(indented_lines)
-    res = f"""mod Concerto-PREDS is 
+    maude = f"""mod Concerto-PREDS is 
 \tprotecting OPERATIONAL-SEMANTICS . 
 \tincluding SATISFACTION .
 
 {indented_maude}
 endm 
     """
-    
-    return res
-
-def gen_maude_program(program):
-    add_instr = filter(lambda instr: instr.isAdd(), program.instructions())
-    list_ids = list(map(lambda add: add.component(), add_instr))
-    ids = ', '.join(list_ids)
-    plan = ' . '.join(map(lambda instr: __make_instruction(instr), program.instructions()))
-    pushb_instr = filter(lambda instr: instr.isPushB(), program.instructions())
-    IdentBehavior = "ops " + ' '.join(map(lambda instr: f"{instr.id()}", pushb_instr)) + " : -> IdentBehavior ."
-    IdentInstance = "ops " + ' '.join(list_ids) + " : -> IdentInstance ."
-    return IdentBehavior + '\n' + IdentInstance + '\n' + f"eq conf{cap1(program.id())} = <({ids}), (empty, empty), {plan} . [], empty, nil, nil, empty > ."
-
-def gen_maude_from_type(type: ComponentType) -> str:
-    name = type.name()
-    place, InitialPlace, station, ProvidePort, usePort = "", "", "", "", ""
-    provide_ports = "empty"
-    use_ports = "empty"
-    componentType = f"op {name} : -> ComponentType ."
-    
-    if type.places() is not []:
-        dict_place_station = {f"{name}{cap1(place.name())}": f"st{cap1(name)}{cap1(place.name())}" for place in type.places()}
-        places = list(map(lambda place: f"{name}{cap1(place.name())}", type.places()))
-        stations = list(map(lambda place: f"st{cap1(name)}{cap1(place.name())}", type.places()))
-        st_places = list(map(lambda stp: f"{stp[1]} ; {stp[0]}" , zip(places, stations)))
-        init = f"{name}{cap1(type.initial_place().name())}"
-        place = "ops " + ' '.join(places) + " : -> Place ."
-        station = "ops " + ' '.join(stations) + " : -> Station ."
-        InitialPlace = f"op {init} : -> InitialPlace ."
-        
-    if type.provide_ports():
-        ProvidePort = "ops " + ' '.join(map(lambda port: f"{name}{cap1(port.name())}", type.provide_ports())) + " : -> ProvidePort ."
-        provide_ports = ', '.join(map(lambda port: __make_port(name, port, "?"), type.provide_ports()))
-        
-    if type.use_ports():
-        usePort = "ops " + ' '.join(map(lambda port: f"{name}{cap1(port.name())}", type.use_ports())) + " : -> UsePort ."
-        use_ports = ', '.join(map(lambda port: __make_port(name, port, "!"), type.use_ports()))
-        
-    behavior_transitions = {}
-    transitions = {}
-    for behavior in type.behaviors():
-        behavior_name = f"{name}{cap1(behavior.name())}"
-        behavior_transitions[behavior_name] = []
-        for transition in behavior.transitions_as_dict().keys():
-            act_transition = behavior.transitions_as_dict()[transition]
-            source = f"{name}{cap1(act_transition.source().name())}"
-            dest = dict_place_station[f"{name}{cap1(act_transition.destination()[0].name())}"]
-            transition_name = f"{name}{cap1(transition)}"
-            transitions[transition_name] = f"t({source}, {dest})"
-            behavior_transitions[behavior_name].append(transition_name)
-    
-    
-    ops_transitions = f"ops {' '.join(transitions.keys())} : -> Transition ."
-    eq_transitions = '\n'.join(map(lambda tr: f"eq {tr} = {transitions[tr]} .", transitions.keys()))
-    ops_behaviors = f"ops {' '.join(behavior_transitions.keys())} : -> Behavior ."
-    eq_behaviors_tmp = {}
-    for behavior in behavior_transitions.keys():
-        eq_behaviors_tmp[behavior] = f"{','.join(behavior_transitions[behavior])}"
-    eq_behaviors = '\n'.join(map(lambda bhv: f"eq {bhv} = b({eq_behaviors_tmp[bhv]}) .", eq_behaviors_tmp.keys()))
-        
-    transition_names = ', '.join(transitions.keys())
-    behavior_names = ', '.join(eq_behaviors_tmp.keys())
-
-    comp = f"eq {name} = < ({','.join(places)}), {init}, {', '.join(st_places)}, ({transition_names}), ({behavior_names}), {use_ports}, {provide_ports} > ."
-    
-    content = [componentType, place, station, InitialPlace, ProvidePort, usePort, ops_transitions, eq_transitions, ops_behaviors, eq_behaviors, comp]
-    return '\n'.join(content)
-
-def __make_instruction(instruction: Instruction):
-    if instruction.isAdd():
-        return __make_add(instruction)
-    if instruction.isCon():
-        return __make_con(instruction)
-    if instruction.isDel():
-        return __make_del(instruction)
-    if instruction.isDiscon():
-        return __make_dcon(instruction)
-    if instruction.isPushB():
-        return __make_pushb(instruction)
-    if instruction.isWait():
-        return __make_wait(instruction)
-
-def __make_add(add: Add):
-    return f"add({add.component()},{add.type().name()})"
-
-def __make_del(delete: Delete):
-    return f"del({delete.component()})" 
-
-def __make_con(connect: Connect):    
-    type_pro = type_of_comp[connect.provider()].name()
-    type_use = type_of_comp[connect.user()].name()
-    return f"con({connect.user()},{type_use}{cap1(connect.using_port())},{connect.provider()},{type_pro}{cap1(connect.providing_port())})" 
-    
-def __make_dcon(disconnect: Disconnect):
-    type_pro = type_of_comp[disconnect.provider()].name()
-    type_use = type_of_comp[disconnect.user()].name()
-    return f"dcon({disconnect.user()},{type_use}{cap1(disconnect.using_port())},{disconnect.provider()},{type_pro}{cap1(disconnect.providing_port())})" 
-
-def __make_pushb(pushb: PushB):
-    type_comp = type_of_comp[pushb.component()]
-    return f"pushB({pushb.component()}, {type_comp.name()}{cap1(pushb.behavior())}, {pushb.id()})" 
-
-def __make_wait(wait: Wait):
-    return f"wait({wait.component()}, {wait.behavior()})"
-    
-def write_maude(filename, content):
-    file = filename
-    if not filename.endswith(".maude"):
-        file = file + ".maude"
-    with open(file, 'w') as file:
-        file.write(content)
-    
-# ------------------- 
-# Example: Basic
-# ------------------- 
-    
-def smalltype():
-    t = ComponentType("cc22")
-    p1 = t.add_place("p1")
-    p2 = t.add_place("p2")
-    p3 = t.add_place("p3")
-    t.set_initial_place(p1)
-    t.set_running_place(p3)
-    bhv_deploy = t.add_behavior("deploy")
-    bhv_deploy.add_transition("deploy1", p1, p2)
-    bhv_deploy.add_transition("deploy2", p2, p3)
-    t.add_use_port("us1", {p3})
-    t.add_provide_port("pr1", {p3})
-    return t
-
-def smallprogram(name):
-    Type = smalltype()
-    program = Program(name, [
-        Add("idc1", Type),
-        Add("idc3", Type),
-        Connect("idc1", "us1", "idc3", "pr1"),
-        PushB("idc1", "deploy", f"{name}Idb2"),
-        PushB("idc1", "deploy", f"{name}Idb3")
-    ])
-    return program
-
-
-# ------------------- 
-# Example: CPS
-# ------------------- 
-
-def cps(n):
-    programs = cps_deploy_maude(n)
-    maude = gen_maude(programs)
-    write_maude("example_deploy_cps.maude", maude)
-    programs = cps_deploy_update_maude(n)
-    maude = gen_maude(programs)
-    write_maude("example_deploy_update_cps.maude", maude)
-
-if __name__ == "__main__":
-    cps(1)
-   
+    return maude
