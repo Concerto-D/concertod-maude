@@ -78,82 +78,82 @@ mod OPERATIONAL-SEMANTICS is
   if (id == id1 and (not InConnectionIdent(id,Lx)) ) . 
 
   crl [ConnectPorts] : < ids: IdsNodx,instances: Ix,connections: Lx,program: con(id,use,id1,pro) Rx,msgs: Fx,receive: QRx,send: QSx,history: Wx >    =>   
-  < ids: IdsNodx,instances: Ix,(id,use,id1,pro),connections: Lx,program: Rx,msgs: Fx,receive: QRx,send: QSx,history: Wx > 
+  < ids: IdsNodx,instances: Ix,connections: (id,use,id1,pro), Lx,program: Rx,msgs: Fx,receive: QRx,send: QSx,history: Wx > 
   if (id =/= id1 and ((InstanceOfIdent(Ix,id) in Ix) or (InstanceOfIdent(Ix,id1) in Ix)) and (not InConnectionIdentUsePort(id,use,Lx)) ) . 
-***(
-  crl [DisconnectPorts] : < IdsNodx,(Ix,Lx), dcon(id,use,id1,pro) . Rx,Fx, QRx, QSx, Wx >     =>  
-  < IdsNodx,(Ix,delete((id,use,id1,pro),Lx)), Rx,Fx, QRx, QSx, Wx >  
+
+  crl [DisconnectPorts] : < ids: IdsNodx,instances: Ix,connections: Lx, program: dcon(id,use,id1,pro) Rx,msgs: Fx,receive: QRx,send: QSx,history: Wx >     =>  
+  < ids: IdsNodx,instances: Ix,connections: delete((id,use,id1,pro),Lx),program: Rx,msgs: Fx,receive: QRx,send: QSx,history: Wx >  
   if
   (  
   (id,use,id1,pro) in Lx
   and
-  Evaluation(IdsNodx,ExprDisconnect(id,(id,use,id1,pro)),Fx,Ix,Lx,dcon(id,use,id1,pro) . Rx) == true
+  Evaluation(IdsNodx,ExprDisconnect(id,(id,use,id1,pro)),Fx,Ix,Lx,dcon(id,use,id1,pro) Rx) == true
   and
-  Evaluation(IdsNodx,ExprDisconnect(id1,(id,use,id1,pro)),Fx,Ix,Lx,dcon(id,use,id1,pro) . Rx) == true
+  Evaluation(IdsNodx,ExprDisconnect(id1,(id,use,id1,pro)),Fx,Ix,Lx,dcon(id,use,id1,pro) Rx) == true
   and
-  Evaluation(IdsNodx,ExprActive(id,use),Fx,Ix,Lx,dcon(id,use,id1,pro) . Rx) == false
+  Evaluation(IdsNodx,ExprActive(id,use),Fx,Ix,Lx,dcon(id,use,id1,pro) Rx) == false
   ) .
 
-  crl [PushingBehavior] : < IdsNodx,(< id1,ct,qb,mrk >,Ix,Lx), pushB(id, behx, idbeh) . Rx,Fx, QRx, QSx, Wx > 
-  =>   < IdsNodx,(< id1,ct,append(qb,(idbeh ; behx)),mrk >,Ix,Lx),  Rx,Fx, QRx, QSx, Wx >  
+  crl [PushingBehavior] : < ids: IdsNodx,instances: < id: id1,type: ct,queueBehavior: qb,marking: mrk >,Ix,connections: Lx, program: pushB(id, behx, idbeh) Rx,msgs: Fx,receive: QRx,send: QSx,history: Wx > 
+  =>   < ids: IdsNodx,instances: < id: id1,type: ct,queueBehavior: append(qb,(idbeh ; behx)),marking: mrk >,Ix,connections: Lx,program: Rx,msgs: Fx,receive: QRx,send: QSx,history: Wx >  
   if (id == id1 and IsBehaviorOfComponent(behx,ct)) .
     
-  crl [Waiting] : < IdsNodx,( < id1,ct,qb,mrk > ,Ix,Lx), wait(id,idbeh) . Rx,Fx, QRx, QSx, Wx > 
-  =>   < IdsNodx,( < id1,ct,qb,mrk > ,Ix,Lx), Rx,Fx, QRx, QSx, Wx > 
+  crl [Waiting] : < ids: IdsNodx,instances: < id: id1,type: ct,queueBehavior: qb,marking: mrk > ,Ix,connections: Lx, program: wait(id,idbeh) Rx,msgs: Fx,receive: QRx,send: QSx,history: Wx > 
+  =>   < ids: IdsNodx,instances: < id: id1,type: ct,queueBehavior: qb,marking: mrk > ,Ix,connections: Lx,program: Rx,msgs: Fx,receive: QRx,send: QSx,history: Wx > 
   if (Evaluation(IdsNodx,ExprCompleted(id,idbeh),Fx,Ix,Lx, Rx) == true ) .
 
   -----------------------------------------------Rules  for collecting the evaluation of external functions----------------------------------------
   -------------------------------------------------------------------------------------------------------------------------------------------------
 
-  crl [MsgToUsesForFiringTransitions] : < IdsNodx,(< id1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx >  =>
-  < IdsNodx,(  < id1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix , Lx),Rx,Fx, QRx, append(QSx,CollectFunctionFiring(IdsNodx,m(ps,union(ts, RestrictTransitionsToPlace(b,p) ),tes),< id1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,ConnectionProIdent(id1,Lx),Fx,Wx,QSx)), Wx >  
-  if (RestrictTransitionsToPlace(b,p) =/= empty and CollectFunctionFiring(IdsNodx,m(ps,union(ts, RestrictTransitionsToPlace(b,p) ),tes),< id1,ct,(idbeh ; b(b)) qb,m(p, ps,ts,tes) > , Ix,ConnectionProIdent(id1,Lx ),Fx,Wx,QSx) =/= nil) . 
+  crl [MsgToUsesForFiringTransitions] : < ids: IdsNodx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(b)) qb,marking: m(p, ps,ts,tes) > , Ix,connections: Lx,program: Rx,msgs: Fx,receive: QRx,send: QSx,history: Wx >  =>
+  < ids: IdsNodx, instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(b)) qb,marking: m(p, ps,ts,tes) > , Ix ,connections: Lx,program: Rx,msgs: Fx,receive: QRx,send: append(QSx,CollectFunctionFiring(IdsNodx,m(ps,union(ts, RestrictTransitionsToPlace(b,p) ),tes),< id: id1,type: ct,queueBehavior: (idbeh ; b(b)) qb,marking: m(p, ps,ts,tes) > , Ix,ConnectionProIdent(id1,Lx),Fx,Wx,QSx)),history: Wx >  
+  if (RestrictTransitionsToPlace(b,p) =/= empty and CollectFunctionFiring(IdsNodx,m(ps,union(ts, RestrictTransitionsToPlace(b,p) ),tes),< id: id1,type: ct,queueBehavior: (idbeh ; b(b)) qb,marking: m(p, ps,ts,tes) > , Ix,ConnectionProIdent(id1,Lx ),Fx,Wx,QSx) =/= nil) . 
 
-  crl [MsgToUsesForEnteringPlace] : < IdsNodx,(< id1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,Lx),Rx,Fx, QRx, QSx, Wx > =>
-  < IdsNodx,(< id1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,Lx),Rx,Fx, QRx, append(QSx,CollectFunctionsEnteringPlace(IdsNodx,Pi(s,GetStationPlaces(ct)), GetUsePorts(ct), < id1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >,
-  < id1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionEndingStation(tes,s) ) >,Ix, Lx,Fx,Wx,QSx)), Wx > 
+  crl [MsgToUsesForEnteringPlace] : < ids: IdsNodx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(b)) qb,marking: m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,connections: Lx,program: Rx,msgs: Fx,receive: QRx,send: QSx,history: Wx > =>
+  < ids: IdsNodx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(b)) qb,marking: m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,connections: Lx,program: Rx,msgs: Fx,receive: QRx,send: append(QSx,CollectFunctionsEnteringPlace(IdsNodx,Pi(s,GetStationPlaces(ct)), GetUsePorts(ct), < id: id1,type: ct,queueBehavior: (idbeh ; b(b)) qb,marking: m(ps, ts, te(t(q,s,S),s), tes  ) >,
+  < id: id1,type: ct,queueBehavior: (idbeh ; b(b)) qb,marking: m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionEndingStation(tes,s) ) >,Ix,Lx,Fx,Wx,QSx)), history: Wx > 
   if 
   (
     IsSatisfiedTransitionEndingStation(s,b,te(t(q,s,S),s), tes) 
     and
-    (CollectFunctionsEnteringPlace(IdsNodx,Pi(s,GetStationPlaces(ct)), GetUsePorts(ct), < id1,ct,(idbeh ; b(b)) qb,m(ps, ts, te(t(q,s,S),s), tes  ) >,
-    < id1,ct,(idbeh ; b(b)) qb,m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionEndingStation(tes,s) ) >,Ix, Lx,Fx,Wx,QSx) =/= nil )
+    (CollectFunctionsEnteringPlace(IdsNodx,Pi(s,GetStationPlaces(ct)), GetUsePorts(ct), < id: id1,type: ct,queueBehavior: (idbeh ; b(b)) qb,marking: m(ps, ts, te(t(q,s,S),s), tes  ) >,
+    < id: id1,type: ct,queueBehavior: (idbeh ; b(b)) qb,marking: m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionEndingStation(tes,s) ) >,Ix, Lx,Fx,Wx,QSx) =/= nil )
   ) .
 
   crl [MsgToUsesForDisconnectPorts] : 
-  < IdsNodx,(Ix,Lx), dcon(id1,use,id2,pro) . Rx,Fx, QRx, QSx, Wx >    =>  
-  < IdsNodx,(Ix,Lx), dcon(id1,use,id2,pro) . Rx,Fx, QRx, append(QSx,CollectFunctionsDiscon(IdsNodx,(id1,use,id2,pro),Fx,Wx,QSx)), Wx >   
+  < ids: IdsNodx,instances: Ix,connections: Lx,program: dcon(id1,use,id2,pro) Rx,msgs: Fx,receive: QRx,send: QSx,history: Wx >    =>  
+  < ids: IdsNodx,instances: Ix,connections: Lx,program: dcon(id1,use,id2,pro) Rx,msgs: Fx,receive: QRx,send: append(QSx,CollectFunctionsDiscon(IdsNodx,(id1,use,id2,pro),Fx,Wx,QSx)),history: Wx >   
   if (((id1,use,id2,pro) in Lx)  and (CollectFunctionsDiscon(IdsNodx,(id1,use,id2,pro),Fx,Wx,QSx) =/= nil) ) .
 
   crl [MsgToUsesForWait] :
-  < IdsNodx,(Ix,Lx), wait(id1,idbeh) . Rx,Fx, QRx, QSx, Wx >     =>  
-  < IdsNodx,(Ix,Lx), wait(id1,idbeh) . Rx,Fx, QRx, append(QSx,CollectFunctionWait(IdsNodx,id1,idbeh,Fx,Wx,QSx)), Wx >    
+  < ids: IdsNodx,instances: Ix,connections: Lx,program: wait(id1,idbeh) Rx,msgs: Fx,receive: QRx,send: QSx,history: Wx >     =>  
+  < ids: IdsNodx,instances: Ix,connections: Lx,program: wait(id1,idbeh) Rx,msgs: Fx,receive: QRx,send: append(QSx,CollectFunctionWait(IdsNodx,id1,idbeh,Fx,Wx,QSx)),history: Wx >    
   if (CollectFunctionWait(IdsNodx,id1,idbeh,Fx,Wx,QSx) =/= nil ) .
 
   --------------------------------------------------------------Rules for communication---------------------------------------------------------------------
   ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
   crl [SendRequest] : 
-  < IdsNodx,(Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > , < IdsNody,(Iy,Ly),Ry,Fy,QRy,QSy,Wy >  =>
-  < IdsNodx,(Ix,Lx),Rx,AddFunctionExtern(idf,Fx),QRx,QSx, (Wx, idf) >  ,  < IdsNody,(Iy,Ly),Ry,Fy,append(QRy, (idf ; bot) ),QSy,Wy > 
+  < ids: IdsNodx,instances: Ix,connections: Lx,program: Rx,msgs: Fx,receive: QRx,send: idf QSx,history: Wx > , < ids: IdsNody,instances: Iy,connections: Ly,program: Ry,msgs: Fy,receive: QRy,send: QSy,history: Wy >  =>
+  < ids: IdsNodx,instances: Ix,connections: Lx,program: Rx,msgs: AddFunctionExtern(idf,Fx),receive: QRx,send: QSx, history: (Wx, idf) >  ,  < ids: IdsNody,instances: Iy,connections: Ly,program: Ry,msgs: Fy,receive: append(QRy, (idf ; bot) ),send: QSy,history: Wy > 
   if ( (not LocalFunction(idf,IdsNodx)) and LocalFunction(idf,IdsNody) ) .
 
   crl [SendEvaluationFunction] : 
-  < IdsNodx,(Ix,Lx),Rx,Fx, QRx, idf QSx, Wx > , < IdsNody,(Iy,Ly),Ry,Fy,QRy,QSy,Wy >   =>
-  < IdsNodx,(Ix,Lx),Rx,UpDateMsgToUsesSend(Fx,IdentInstanceonnectionWhenSendActive(Lx,idf,LocalEvaluation(idf,Ix,Lx,Rx))),QRx,QSx, Wx > , 
-  < IdsNody,(Iy,Ly),Ry,Fy,append(QRy, (idf ; LocalEvaluation(idf,Ix,Lx,Rx)) ),QSy,Wy >  
+  < ids: IdsNodx,instances: Ix,connections: Lx,program: Rx,msgs: Fx,receive: QRx,send: idf QSx,history: Wx > , < ids: IdsNody,instances: Iy,connections: Ly,program: Ry,msgs: Fy,receive: QRy,send: QSy,history: Wy >   =>
+  < ids: IdsNodx,instances: Ix,connections: Lx,program: Rx,msgs: UpDateMsgToUsesSend(Fx,IdentInstanceonnectionWhenSendActive(Lx,idf,LocalEvaluation(idf,Ix,Lx,Rx))),receive: QRx,send: QSx,history: Wx > , 
+  < ids: IdsNody,instances: Iy,connections: Ly,program: Ry,msgs: Fy,receive: append(QRy, (idf ; LocalEvaluation(idf,Ix,Lx,Rx)) ),send: QSy,history: Wy >  
   if ( LocalFunction(idf,IdsNodx) and ((idf in Wy) and (not ExistMsgInReceiveQueue(idf,QRy) )  ) ) .
 
   crl [ReceivesRequest] : 
-  < IdsNodx,(Ix,Lx),Rx,Fx, (idf ; valf ) QRx,  QSx, Wx >   =>
-  < IdsNodx,(Ix,Lx),Rx,Fx,QRx,append(QSx, idf  ), Wx > 
+  < ids: IdsNodx,instances: Ix,connections: Lx,program: Rx,msgs: Fx,receive: (idf ; valf ) QRx,send: QSx,history: Wx >   =>
+  < ids: IdsNodx,instances: Ix,connections: Lx,program: Rx,msgs: Fx,receive: QRx,send: append(QSx, idf  ),history: Wx > 
   if ( LocalFunction(idf,IdsNodx) ) .  
 
   crl [ReceivesEvaluationFunction] : 
-  < IdsNodx,(Ix,Lx),Rx,Fx, (idf ; valf ) QRx,  QSx, Wx >   =>
-  < IdsNodx,(Ix,Lx),Rx,SubstitueEvaluationOfFunction(Fx,idf,valf),QRx,QSx, delete(idf,Wx) >  
+  < ids: IdsNodx,instances: Ix,connections: Lx,program: Rx,msgs: Fx,receive: (idf ; valf ) QRx,send: QSx,history: Wx >   =>
+  < ids: IdsNodx,instances: Ix,connections: Lx,program: Rx,msgs: SubstitueEvaluationOfFunction(Fx,idf,valf),receive: QRx,send: QSx,history: delete(idf,Wx) >  
   if ( not LocalFunction(idf,IdsNodx) ) .  
-)
+
 endm
 
   
