@@ -142,7 +142,7 @@ def db_deploy_update(n):
     for i in range(n):
         progr.append(Wait(f"listener{i}", f"{i}lst1"))
         progr.append(Wait(f"sensor{i}", f"{i}sens1"))
-    return  Program("progDatabase", progr)
+    return  Program(progr)
     
     
 def sys_deploy_update(n):
@@ -182,7 +182,7 @@ def sys_deploy_update(n):
     # ----- Wait
     for i in range(n): 
         program += [Wait(f"listener{i}", f"{i}lst3")]
-    return Program("progSystem", program)
+    return Program(program)
 
 
 def sensor_deploy_update(i):
@@ -205,7 +205,7 @@ def sensor_deploy_update(i):
     ]
     # ----- Wait
     progr += [Wait(f"sensor{i}", f"{i}sens3")]
-    return Program(f"progSensor{i}", progr)
+    return Program(progr)
 
 
 

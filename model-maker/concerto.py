@@ -318,6 +318,9 @@ class ComponentInstance(CInstance):
     def connections(self, p: Port) -> Iterable[Tuple[ComponentInstance, Port]]:
         assert p in self._connections
         return self._connections[p]
+    
+    def all_connections(self):
+        return self._connections
 
     def is_connected(self, p: Port) -> bool:
         assert p in self._type.ports()
@@ -641,12 +644,8 @@ class PushB(Instruction):
 
 class Program:
     
-    def __init__(self, id, instructions) -> None:
-        self.__id = id
+    def __init__(self, instructions) -> None:
         self.__instructions = instructions
         
     def instructions(self):
         return self.__instructions
-        
-    def id(self):
-        return self.__id
