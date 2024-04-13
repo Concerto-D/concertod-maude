@@ -45,7 +45,7 @@ fmod CONCERTO-D-CONFIGURATION is
 
   op extern(_;_) : Msg BoolWithBot ->   MsgToUse .  ---external function with an evaluation (initially = bot) . 
   op (_;_) :  Msg BoolWithBot  -> receive .  --- an element to receive
-  op < _,(_,_),_,_,_,_,_ > : IdentInstances Instances Connections Program MsgToUses Qreceive Qsend  SentHistorys -> LocalConfiguration .   
+  op < ids: _,instances: _,connections: _,program: _,msgs: _,receive: _,send: _,history: _ > : IdentInstances Instances Connections Program MsgToUses Qreceive Qsend  SentHistorys -> LocalConfiguration .   
   --- definition of local configuration
 
   --- some functions on configuration
@@ -83,11 +83,11 @@ fmod CONCERTO-D-CONFIGURATION is
    ---if the instance does not yet exist, then the refusing function = true  
   eq LocalEvaluation (ExprIsConnected(idcx,l), Is,Ls,pg) = l in Ls . 
   eq LocalEvaluation (ExprDisconnect(idcx,l), Is,Ls,pg) = disconnect(l,pg) . 
-  eq LocalEvaluation (ExprCompleted(idcx,idbeh), (< idcx,ct,behL,mark >,Is),Ls,pg) =  (not ExistIdentBehaviorehListBeh(idbeh,behL) ) and NotPushBProg(idcx,idbeh,pg) .
+  eq LocalEvaluation (ExprCompleted(idcx,idbeh), (< id: idcx,type: ct,queueBehavior: behL,marking: mark >,Is),Ls,pg) =  (not ExistIdentBehaviorehListBeh(idbeh,behL) ) and NotPushBProg(idcx,idbeh,pg) .
   --- the corresponding instance of a wait behavior exists. Then, the evaluation depends on whether or not push idbeh exists in the program or in the behavior list.
   eq LocalEvaluation (ExprCompleted(idcx,idbeh), Is,Ls,pg) =  if ((not IsUsedIdentInstances(idcx,Is) ) and NotPushBProg(idcx,idbeh,pg)) then true else false fi . 
   --- special case the instance doesn't exist and even the push of idbeh in the program. this is the case when a program is executed and its instance is deleted.
- 
+
   op Evaluation(_,_,_,_,_,_) : IdentInstances Msg MsgToUses Instances Connections Program -> BoolWithBot . 
   --- gives the evaluation according to the two cases local or external
   eq Evaluation(idcxs,idf1,eidfs, Is,Ls,pg ) = if (LocalFunction(idf1,idcxs)) then LocalEvaluation(idf1,Is,Ls,pg) else ExternEvaluation(idf1,eidfs) fi .

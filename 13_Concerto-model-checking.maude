@@ -1,11 +1,6 @@
----    Verification of system
----    Example: 2 clients and one server
----    each component is on a separate site
----    each component contains 3 states with a single transition between two states.
----    the last state is a use port for the client, while the last state is a provide port for the server.
 
 mod Concerto-PREDS is 
---- define system and the propositions of system used in verification
+
 
   protecting OPERATIONAL-SEMANTICS . 
   including SATISFACTION .
@@ -31,6 +26,7 @@ mod Concerto-PREDS is
   var  IdsNodx : IdentInstances .
 
   ------------------part concerned by the automatic generation 'Python'---------------------------
+***(
 	ops confProgDatabase confProgSystem confProgSensor0 : ->  LocalConfiguration .
 	op test : -> Net .
 	op database : -> ComponentType .
@@ -119,15 +115,16 @@ mod Concerto-PREDS is
 	ops 0sens1 : -> IdentBehavior .
 	ops sensor0 : -> IdentInstance .
 	eq confProgSensor0 = <(sensor0), (empty, empty), add(sensor0,sensor) . con(sensor0,sensorRcvService,listener0,listenerRcv) . con(sensor0,sensorConfigService,listener0,listenerConfig) . pushB(sensor0, sensorDeploy, 0sens1) . [], empty, nil, nil, empty > .
-	eq test = confProgDatabase ; confProgSystem ; confProgSensor0 .
+	eq test = confProgDatabase , confProgSystem , confProgSensor0 .
+)
 -------------------------------------------- End part generation--------------------------------
 --------------------------------- When are the verification propositions true? -----
 
-eq (< IdsNodx,(< mysys0,ct,qb,m(systemDeployed, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= SysDeployed = true .
-eq (< IdsNodx,(< listener0,ct,qb,m(listenerRunning, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= RunListener = true .
-eq (< IdsNodx,(< sensor0,ct,qb,m(sensorRunning, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= RunSensor = true .
-eq (< IdsNodx,(< mydb0,ct,qb,m(databaseDeployed, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= DBDeploy = true .
-eq gconfig  |= Q = false [owise] .
+----eq (< IdsNodx,(< mysys0,ct,qb,m(systemDeployed, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= SysDeployed = true .
+---eq (< IdsNodx,(< listener0,ct,qb,m(listenerRunning, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= RunListener = true .
+---eq (< IdsNodx,(< sensor0,ct,qb,m(sensorRunning, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= RunSensor = true .
+---eq (< IdsNodx,(< mydb0,ct,qb,m(databaseDeployed, ps,ts,tes) > , Ix,Lx),Rx,Fx, QRx,  QSx, Wx > ; gconfig)  |= DBDeploy = true .
+---eq gconfig  |= Q = false [owise] .
 
 endm
 
@@ -141,43 +138,5 @@ endm
 
   ------------------------------------Examples of verification over test -------------------------------------------------------
 
----  red modelCheck(test, [] (RunListener -> SysDeployed )) .
-
-
----  red modelCheck(test, [] ( (DeployC1 \/ DeployC2)  -> DeployS )) .
----  red modelCheck(test, [] ( DeployS -> ( (<> ( DeployC2 ) )))) .
----  red modelCheck(test, [] ( DeployS -> ( (<> ( DeployC2 ) /\ <> ( DeployC1 ) )))) .
----  red modelCheck(test, [] ( DeployS -> ( (<> ( DeployC2 ) )))) .
----  red modelCheck(test, [] ~ DeployC1  ) .
----  red modelCheck(test, [] ( DeployS -> ( <> ( DeployC2 ) /\  <> ( DeployC1 ) ))) .
-
-***(
-  op p1 : -> InitialPlace .
-  op q1 : -> InitialPlace .
-  ops p2 p3 : -> Place .
-  ops q2 q3 : -> Place .
+---search [1] test =>* < IdsNodx:IdentInstances,(< mysys0,ct:ComponentType,qb:QBehaviorWithId ,m(systemDeployed, ps:Places,ts:Transitions,tes:TransitionEndings) >,Ix:Instances,Lx:Connections),Rx:Program,Fx:MsgToUses, QRx:Qreceive, QSx:Qsend, Wx:SentHistorys > , n:Net  .
  
-  ops s1 s2 s3   : -> Station .
-  ops t1 t2 t3  : -> Station .
-
-  ops idb1 idb2 idb3  : -> IdentBehavior .
-  ops idc1 idc2 idc3  : -> IdentInstance .
-
-  ops us1 : -> UsePort .
-  op pr1 : -> ProvidePort .
-
-  ops c1 c2  : -> ComponentType .
-  ops confx confy confz : -> LocalConfiguration .
-  op test : -> Net .
-
-  eq c1 =  < (p1, p2, p3) , p1 , (s1 ; p1, s2 ; p2 , s3 ; p3), (t(p1, s2), t(p2, s3) ), (b(t(p1, s2),t(p2, s3))) , (us1 ! (p3)) , empty     > .
-  eq c2 =  < (q1, q2 , q3) , q1 , (t1 ; q1, t2 ; q2 , t3 ; q3), (t(q1, t2), t(q2, t3)  ), (b(t(q1, t2),t(q2, t3))) , empty , (pr1 ? (q3))   > .
-
-  eq confx = < (idc1),(empty, empty) , add(idc1,c1)   . con(idc1,us1,idc3,pr1) . pushB(idc1,b(t(p1, s2),t(p2, s3)),idb1) .  [] , empty , nil , nil  , empty >  .
-  eq confy = < (idc2),(empty, empty) , add(idc2,c1)  . con(idc2,us1,idc3,pr1) .  pushB(idc2,b(t(p1, s2),t(p2, s3)),idb2) . [] , empty , nil , nil  , empty >  .
-  eq confz = < (idc3),(empty, empty) , add(idc3,c2)  .  con(idc1,us1,idc3,pr1) . con(idc2,us1,idc3,pr1) . pushB(idc3,b(t(q1, t2),t(q2, t3)),idb3) . [] , empty , nil , nil , empty >  .
- 
-  eq test =  confx ; confy ; confz  .
-
-
-)

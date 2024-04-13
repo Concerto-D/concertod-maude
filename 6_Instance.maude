@@ -22,23 +22,23 @@ fmod INSTANCE is
   var ct : ComponentType .
   var Is : Instances .
 
-  op <_,_,_,_> : IdentInstance ComponentType QBehaviorWithId Marking -> Instance . ---Instance definition
+  op < id: _,type: _,queueBehavior: _,marking: _ > : IdentInstance ComponentType QBehaviorWithId Marking -> Instance . ---Instance definition
 
   op IdentOfInstance(_) : Instance -> IdentInstance .  --- gives the id of an instance
 
-  eq IdentOfInstance(< idcx,ct,bl,mark > ) = idcx .
+  eq IdentOfInstance(< id: idcx,type: ct,queueBehavior: bl,marking: mark > ) = idcx .
 
   op IsUsedIdentInstances(_,_) : IdentInstance Instances -> Bool . ---to check if an id of instance is used in the set of instances
 
   eq IsUsedIdentInstances(idcx, empty) = false .
-  eq IsUsedIdentInstances(idcx, (< idcx,ct,bl,mark >, Is)) = true  .
-  eq IsUsedIdentInstances(idcx, (< idcy,ct,bl,mark >, Is)) = IsUsedIdentInstances(idcx, Is) [owise] .
+  eq IsUsedIdentInstances(idcx, (< id: idcx,type: ct,queueBehavior: bl,marking: mark >, Is)) = true  .
+  eq IsUsedIdentInstances(idcx, (< id: idcx,type: ct,queueBehavior: bl,marking: mark >, Is)) = IsUsedIdentInstances(idcx, Is) [owise] .
 
   op InstanceOfIdent(_,_) : Instances IdentInstance -> Instance . ---gives the instance identified by a given Id
   --- applied only when we are sure that the instance exists. 
   --- So the problem of empty instances doesn't occur.
-  eq  InstanceOfIdent((< idcx,ct,bl,mark >  ,Is) , idcx ) = < idcx,ct,bl,mark >  .
-  eq  InstanceOfIdent((< idcy,ct,bl,mark > ,Is) , idcx ) =  InstanceOfIdent(Is,idcx) [owise] .
+  eq  InstanceOfIdent((< id: idcx,type: ct,queueBehavior: bl,marking: mark >  ,Is) , idcx ) = <  id: idcx,type: ct,queueBehavior: bl,marking: mark  >  .
+  eq  InstanceOfIdent((< id: idcx,type: ct,queueBehavior: bl,marking: mark > ,Is) , idcx ) =  InstanceOfIdent(Is,idcx) [owise] .
 
   op AllTranOfPlaceQuitGroup(_,_,_) : Place Transitions Stations -> Bool .  
   --- check that for a given place and for all its transitions, the stations of its transitions are different from the stations given as parameters
@@ -66,24 +66,24 @@ fmod INSTANCE is
 
   op active(_,_) : Instance Port -> Bool .   --- active function
   ---valid when at least the places, tansitions or transition endings marking is non-empty for a given port
-  eq active(< idcx,ct,bl,m(ps,t,tre) >,por) = NotEmptyMarking(IntersectionMarkings(MarkingWithRespectToPlaces( GroupPlacesofPort(por,ct),ct),m(ps,t,tre))) .
+  eq active(< id: idcx,type: ct,queueBehavior: bl,marking: m(ps,t,tre) >,por) = NotEmptyMarking(IntersectionMarkings(MarkingWithRespectToPlaces( GroupPlacesofPort(por,ct),ct),m(ps,t,tre))) .
 
   op activeMarking(_,_,_) : Instance Port Marking -> Bool . --- special case of active with 3 parameters
 
-  eq activeMarking(< idcx,ct,bl,m(ps,t,tre) >,por,mark) = NotEmptyMarking(IntersectionMarkings(MarkingWithRespectToPlaces(GroupPlacesofPort(por,ct),ct),mark)) .
+  eq activeMarking(< id: idcx,type: ct,queueBehavior: bl,marking: m(ps,t,tre) >,por,mark) = NotEmptyMarking(IntersectionMarkings(MarkingWithRespectToPlaces(GroupPlacesofPort(por,ct),ct),mark)) .
 
   op refusing(_,_) : Instance Port -> Bool .  --- refusing function
   --- a port is refused when only places are marked, 
   ---and all marked places are ready to leave the group of places of the port according to the current behavior.
   
   
-  ceq refusing(< idcx,ct,bl,m(ps,t,tre) >,por) = true if  
+  ceq refusing(< id: idcx,type: ct,queueBehavior: bl,marking: m(ps,t,tre) >,por) = true if  
   (AllPlacesExitGroup(PlacesOfMarking(IntersectionMarkings(MarkingWithRespectToPlaces(GroupPlacesofPort(por, ct),ct),m(ps,t,tre))),bl,StationsGroupPlaces(GroupPlacesofPort(por,ct),GetStationPlaces(ct))) and
   TransitionsOfMarking(IntersectionMarkings(MarkingWithRespectToPlaces(GroupPlacesofPort(por,ct),ct),m(ps,t,tre))) == empty and 
   TransitionEndingsOfMarking(IntersectionMarkings(MarkingWithRespectToPlaces(GroupPlacesofPort(por,ct),ct),m(ps,t,tre))) == empty 
    )  .
 
-  eq refusing(< idcx,ct,bl,m(ps,t,tre) >,por) = false [owise] .
+  eq refusing(< id: idcx,type: ct,queueBehavior: bl,marking: m(ps,t,tre) >,por) = false [owise] .
 
 
 

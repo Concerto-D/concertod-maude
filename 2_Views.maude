@@ -66,3 +66,11 @@ endv
 view GroupProvide from TRIV to DECLARATION-SORTS is
  sort Elt to GroupProvide .
 endv
+
+view LocalConfiguration from TRIV to DECLARATION-SORTS is
+ sort Elt to LocalConfiguration .
+endv
+
+view Instruction from TRIV to DECLARATION-SORTS is
+ sort Elt to Instruction .
+endv

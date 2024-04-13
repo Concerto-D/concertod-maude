@@ -31,8 +31,8 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-FIRING is
   (not ExprActive(id1,up) in ws) and 
   (not (occurs(ExprActive(id1,up),qsend)))  and
   (not (id1 in idcs)) and
-  ( Evaluation(idcs,ExprActive(id1,up),f,empty,empty,[] )   == true  or Evaluation(idcs,ExprActive(id1,up),f,empty,empty,[] )  == bot ) and
-  ( (LocalEvaluation(ExprActive(id2,pp),Is,empty,[] ) == true) and (activeMarking(InstanceOfIdent(Is,id2),pp,newMark) == false ))  
+  ( Evaluation(idcs,ExprActive(id1,up),f,empty,empty,nil )   == true  or Evaluation(idcs,ExprActive(id1,up),f,empty,empty,nil )  == bot ) and
+  ( (LocalEvaluation(ExprActive(id2,pp),Is,empty,nil ) == true) and (activeMarking(InstanceOfIdent(Is,id2),pp,newMark) == false ))  
   ) .
   eq CollectFunctionFiring(idcs,newMark,Is,(id1,up,id2,pp),L,f,ws,qsend) = CollectFunctionFiring(idcs,newMark,Is,L,f,ws,qsend) [owise] .
 
@@ -72,7 +72,7 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
     (not (ExprIsConnected(id2,(id1,up,id2,pp)) in ws)) and 
     (not (occurs(ExprIsConnected(id2,(id1,up,id2,pp)),qsend)))  and
     (not (id2 in idcs)) and
-    ( Evaluation(idcs,ExprIsConnected(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == false  or Evaluation(idcs,ExprIsConnected(id2,(id1,up,id2,pp)),f,empty,empty,[] )   == bot )
+    ( Evaluation(idcs,ExprIsConnected(id2,(id1,up,id2,pp)),f,empty,empty,nil )   == false  or Evaluation(idcs,ExprIsConnected(id2,(id1,up,id2,pp)),f,empty,empty,nil )   == bot )
     ) .
   eq CollectConnected(idcs,poru,IdentIns,(id1,up,id2,pp),L,f,ws,qsend) = CollectConnected(idcs,poru,IdentIns,L,f,ws,qsend) [owise] .
 
@@ -84,7 +84,7 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
       (not ExprRefusing(id2,pp) in ws) and 
       (not (occurs(ExprRefusing(id2,pp),qsend)))  and
       (not (id2 in idcs)) and  
-      ( Evaluation(idcs,ExprRefusing(id2,pp),f,empty,empty,[] )   == true  or Evaluation(idcs,ExprRefusing(id2,pp),f,empty,empty,[])   == bot )   
+      ( Evaluation(idcs,ExprRefusing(id2,pp),f,empty,empty,nil )   == true  or Evaluation(idcs,ExprRefusing(id2,pp),f,empty,empty,nil)   == bot )   
     ) .
   eq CollectAllowed(idcs,poru,IdentIns,Is,(id1,up,id2,pp),L,f,ws,qsend) = CollectAllowed(idcs,poru,IdentIns,Is,L,f,ws,qsend) [owise] .
 

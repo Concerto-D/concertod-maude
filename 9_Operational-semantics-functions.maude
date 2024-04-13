@@ -24,9 +24,9 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
 
   eq NotActUseWhenLeavinGroupProvide(idcs,newMark,I,f,(id1,up,id2,pp),L) = NotActUseWhenLeavinGroupProvide(idcs,newMark,I,f,L) and 
   (
-    ( (Evaluation(idcs,ExprActive(id2,pp),f, I,empty,[] ) == true) and 
+    ( (Evaluation(idcs,ExprActive(id2,pp),f, I,empty,nil ) == true) and 
     (activeMarking(InstanceOfIdent(I,id2),pp,newMark) == false )) 
-    implies  (Evaluation(idcs,ExprActive(id1,up),f, I,empty,[] ) == false) 
+    implies  (Evaluation(idcs,ExprActive(id1,up),f, I,empty,nil ) == false) 
   ) .
   eq NotActUseWhenLeavinGroupProvide(idcs,newMark,I,f,empty) = true .
 
@@ -77,13 +77,13 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   ---  connection must be verified on both user and provider instances
   eq Connected(idcs,up,id1,empty,f) = false .
   ceq Connected(idcs,up,id1,(id1,up,id2,pp),L,f) = true 
-  if(Evaluation(idcs,ExprIsConnected(id2,(id1,up,id2,pp)),f,empty,(id1,up,id2,pp),L,[] )   == true ) .
+  if(Evaluation(idcs,ExprIsConnected(id2,(id1,up,id2,pp)),f,empty,(id1,up,id2,pp),L,nil )   == true ) .
   eq Connected(idcs,poru,IdentIns,(id1,up,id2,pp),L,f) = Connected(idcs,poru,IdentIns,L,f) [owise] .
 
   op Allowed(_,_,_,_,_,_) : IdentInstances UsePort  IdentInstance Instances Connections MsgToUses -> Bool . 
   --- also theprovide port connected to this use port of the instance must not be refused
   eq Allowed(idcs,up,id1,Is,empty,f) = false .
-  eq Allowed(idcs,up,id1,Is,(id1,up,id2,pp),L,f) = (Evaluation(idcs,ExprRefusing(id2,pp),f,Is,empty,[] ) == false) . 
+  eq Allowed(idcs,up,id1,Is,(id1,up,id2,pp),L,f) = (Evaluation(idcs,ExprRefusing(id2,pp),f,Is,empty,nil ) == false) . 
   eq Allowed(idcs,poru,IdentIns,Is,(id1,up,id2,pp),L,f) = Allowed(idcs,poru,IdentIns,Is,L,f) [owise] .
 
 endfm
