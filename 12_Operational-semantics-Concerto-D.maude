@@ -23,7 +23,6 @@ mod OPERATIONAL-SEMANTICS is
   var  m : Msg .
   var val : BoolWithBot .
   var ct : ComponentType .
-  var inst : Instance .
   var use : UsePort .
   var pro : ProvidePort .
 
@@ -32,7 +31,6 @@ mod OPERATIONAL-SEMANTICS is
   var beh : Behavior .
   var mrk : Marking .
   var idbeh : IdentBehavior .
-  ---var b : Transitions .
 
   vars p q : Place .
   var ps : Places .

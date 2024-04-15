@@ -1,6 +1,6 @@
 
 fmod NET-D-CONFIGURATION is 
---- a Net of local configurations
+
 inc CONCERTO-D-CONFIGURATION .
 sorts Net .
 pr SET{LocalConfiguration} .
@@ -8,15 +8,3 @@ subsort Set{LocalConfiguration} < Net .
 endfm
 
 
-***(
-
-    fmod NET-D-CONFIGURATION is 
---- a Net of local configurations
-inc CONCERTO-D-CONFIGURATION .
-sorts Net .
-subsort LocalConfiguration < Net .
-op emptyNet : -> Net [ctor] .
-op _;_ : Net Net -> Net [ctor assoc comm id: emptyNet] .
-
-endfm
-)

@@ -9,11 +9,11 @@ fmod PROGRAM is
   subsort List{Instruction} < Program . 
 
 
-  var Prog : Program .
+  var Rx : Program .
   var l : Connection .
   var inst : Instruction .
-  var idcx : IdentInstance .
-  var idbehx : IdentBehavior .
+  var id1 : IdentInstance .
+  var idbeh : IdentBehavior .
   var beh : Behavior .
 
   op add(_,_) : IdentInstance ComponentType -> Instruction .
@@ -22,34 +22,33 @@ fmod PROGRAM is
   op con(_) : Connection -> Instruction .
   op dcon(_) : Connection -> Instruction .
   op wait(_,_) : IdentInstance IdentBehavior -> Instruction .
-  ---op [] : -> Program [ctor] .  ---operator is a constructor
-  ---op _._ : Instruction Program -> Program [ctor] . ---operator is a constructor
 
- --- some operations related to Program used later
+
+ --- some operations related to Rxram used later
   op NotDcon(_,_) :  Connection Program -> Bool .  
   ---check for a given connection, there is no dcon instrcution in a given program
  
   eq NotDcon(l,nil) = true .
-  eq NotDcon(l,inst  Prog) = (inst =/= dcon(l) and NotDcon(l,Prog)) .
+  eq NotDcon(l,inst  Rx) = (inst =/= dcon(l) and NotDcon(l,Rx)) .
 
   op disconnect(_,_) : Connection Program -> Bool .  
   --- used to check that the dcon instruction is the current instruction or has already been executed
   ---then it is the same as checking that the remaining program does not contain dcon after the current instruction
   --- this reasoning is correct if we assume that Concerto programs are well constructed.
   eq disconnect(l,nil) = true .
-  eq disconnect(l,inst Prog) = NotDcon(l,Prog) .
+  eq disconnect(l,inst Rx) = NotDcon(l,Rx) .
   
   op InstructionIspushB(_,_,_) : Instruction IdentInstance IdentBehavior -> Bool .  
   --- checks whether the current instruction is a push instruction for a given IdentInstance and IdentBehavior
 
-  eq InstructionIspushB(pushB(idcx,beh,idbehx), idcx,idbehx ) = true .
-  eq InstructionIspushB(inst, idcx,idbehx ) = false [owise] .
+  eq InstructionIspushB(pushB(id1,beh,idbeh), id1,idbeh ) = true .
+  eq InstructionIspushB(inst, id1,idbeh ) = false [owise] .
 
   op NotPushBProg(_,_,_) : IdentInstance IdentBehavior Program -> Bool .  
   ---checks that in a given program there is no push behavior instruction for IdentInstance and IdentBehavior
   
-  eq NotPushBProg(idcx,idbehx, nil) = true .
-  ceq NotPushBProg(idcx,idbehx,inst Prog) = NotPushBProg(idcx,idbehx,Prog) if (not InstructionIspushB(inst,idcx,idbehx)) .
-  ceq NotPushBProg(idcx,idbehx,inst Prog) = false if (InstructionIspushB(inst,idcx,idbehx)) .
+  eq NotPushBProg(id1,idbeh, nil) = true .
+  ceq NotPushBProg(id1,idbeh,inst Rx) = NotPushBProg(id1,idbeh,Rx) if (not InstructionIspushB(inst,id1,idbeh)) .
+  ceq NotPushBProg(id1,idbeh,inst Rx) = false if (InstructionIspushB(inst,id1,idbeh)) .
   
 endfm
