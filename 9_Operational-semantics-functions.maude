@@ -1,5 +1,5 @@
---------------------------------------some principal functions used in the operating rules ------------------------------------------------
----------------------------------------------------------modeled separately  ------------------------------------------------
+--------------------------------------------some ops used in the operating rules ------------------------------------------------
+-------------------------------------- rules firing transition and entering place  --------------------------------------------------
 
 fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
 
@@ -17,11 +17,13 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
   op NotActUseWhenLeavinGroupProvide(_,_,_,_,_) : IdentInstances Marking Instances MsgToUses Connections ->  Bool .
   ---   is used to ensure consistency when firing transitions
   ---   it takes as parameters when used in the firing transition rule: 
-  ----  the new marking after firing, the instances of the concerned local configuration,
-  ---   F for the evaluation of functions and a subset of Connections relted to the local configuration where the instance concerned by firing is a provider.
+  ---   the set of identifiers for all instances of the concerned configuration (concerned by the firing of one of its instances)
+  ---   the new marking after firing, 
+  ---   the instances of the concerned configuration,
+  ---   MsgToUses of messages to use of external functions 
+  ---   finally, a subset of Connections related to the configuration, where the instance concerned by firing is a provider.
   ---   so for each connection it checks that the firing of the concerned instance (provider) does not affect the corresponding user
   ---   i.e., if the provider for each connection after a firing goes from active to inactive, this implies that the user must be inactive.
-
   eq NotActUseWhenLeavinGroupProvide(IdIx,newMark,Ix,Mx,(id1,use,id2,pro),Lx) = NotActUseWhenLeavinGroupProvide(IdIx,newMark,Ix,Mx,Lx) and 
   (
     ( (Evaluation(IdIx,ExprActive(id2,pro),Mx, Ix,empty,nil ) == true) and 
@@ -31,7 +33,6 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
   eq NotActUseWhenLeavinGroupProvide(IdIx,newMark,Ix,Mx,empty) = true .
 
 endfm
-
 
 fmod CONSISTENCY-PORTS-ENTERING-PLACE is
 
@@ -44,33 +45,32 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   var Is : Instances .
   var Lx : Connections .
   var Mx : MsgToUses .
- 
   vars use1 use : UsePort .
   var pro : ProvidePort .
   vars IdentIns id1 id2 : IdentInstance .
-
-  
-   var IdIx : IdentInstances .
+  var IdIx : IdentInstances .
 
   op ConnectedAndAllowed(_,_,_,_,_,_,_,_) : IdentInstances Place GroupUses Instance Instance Instances Connections MsgToUses -> Bool . 
-  ---  for the entreing place rule, in addition to the IsSatisfiedTransitionEndingStation condition modeled earlier on 
-  ---  the choice of a station as an ending for a transition, we need the satifaction of ConnectedProvidedAllowed
-
-  ---  this function takes as parameters: the place concerned by the station chosen for the rule, 
-  ---  the uses ports of the instance concerned by the rule, the instance itself before the rule is fired and after the rule is fired, 
-  ---  the other instances of the configuration as well as its connections and the tuple F of communication functions.
-
+  ---  for the entreing place rule, in addition to the IsSatisfiedTransitionEndingStation condition on the choice of a station as an ending for a transition,
+  ---  we need the satifaction of ConnectedProvidedAllowed
+  ---  this function takes as parameters:
+  ---  the set of identifiers for all instances of the concerned configuration (concerned by the firing of one of its instances)
+  ---  the place concerned by the station chosen for the rule, 
+  ---  the uses ports of the instance concerned by the rule, 
+  ---  the instance itself before the rule is fired
+  ---  the instance after the rule is fired 
+  ---  the other instances of the configuration as well as its connections and the tuple MsgToUses of communication messages.
   ---  so for each use port of the instance concerned by the rule, we perform the following check:
   ---  if, by applying the rule, the status of this port is changed from inactive to active, 
   ---  knowing that the place of the function belongs to this use port, then
-  ---  three conditions must be met Connected, provided and allowed
+  ---  two conditions must be met Connected and allowed of of its provider ports.
   eq ConnectedAndAllowed(IdIx,p,empty,i,i',Is,Lx,Mx) = true .
   ceq ConnectedAndAllowed(IdIx,p,(use ! ps),GUx,i,i',Is,Lx,Mx) = 
   Connected(IdIx,use,IdentOfInstance(i),Lx,Mx)  and 
   Allowed(IdIx,use,IdentOfInstance(i),i,Is,Lx,Mx)   and 
   ConnectedAndAllowed(IdIx,p,GUx,i,i',Is,Lx,Mx) 
   if  ((p in ps) and active(i,use) == false and active(i',use) == true  ).     
-  ----------in the previous condition we use active directly since it's a local treatment for the concerned configuration
+  --- in the previous condition we use active directly since it's a local treatment for the concerned configuration
   eq ConnectedAndAllowed(IdIx,p,(use ! ps),GUx,i,i',Is,Lx,Mx) = ConnectedAndAllowed(IdIx,p,GUx,i,i',Is,Lx,Mx) [owise] .
 
   op Connected(_,_,_,_,_) : IdentInstances UsePort IdentInstance Connections MsgToUses -> Bool . 
@@ -81,7 +81,7 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   eq Connected(IdIx,use1,IdentIns,(id1,use,id2,pro),Lx,Mx) = Connected(IdIx,use1,IdentIns,Lx,Mx) [owise] .
 
   op Allowed(_,_,_,_,_,_) : IdentInstances UsePort  IdentInstance Instances Connections MsgToUses -> Bool . 
-  --- also theprovide port connected to this use port of the instance must not be refused
+  --- also the provide port connected to this use port of the instance must not be refused
   eq Allowed(IdIx,use,id1,Is,empty,Mx) = false .
   eq Allowed(IdIx,use,id1,Is,(id1,use,id2,pro),Lx,Mx) = (Evaluation(IdIx,ExprRefusing(id2,pro),Mx,Is,empty,nil ) == false) . 
   eq Allowed(IdIx,use1,IdentIns,Is,(id1,use,id2,pro),Lx,Mx) = Allowed(IdIx,use1,IdentIns,Is,Lx,Mx) [owise] .

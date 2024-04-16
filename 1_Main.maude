@@ -21,11 +21,14 @@
                       endv
               
             * we can then import pr SET{Place} .  
-            which allows you to parameterize the predefined module SET{X :: TRIV} by Place and thus define a set structure on Place
+            which allows us to parameterize the predefined module SET{X :: TRIV} by Place and thus define a set structure on Place
     
       Module DECLARATION-SORTS is followed by a view declarations to use (file_2: Views)
     () Basic data are defined in (file_3: 3_Basic-data-type-Concerto) and so on until we end up in file_13 for model-checking.
     )
+
+
+
 
 -------------------------------------------------- Main -------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------
@@ -44,12 +47,13 @@ load 6_Instance
 load 7_Configuration
 load 8_NetConcerto
 load 9_Operational-semantics-functions
-load 10_Collect-functions
+load 10_Collect-messages
 load 11_Communication-functions
 load 12_Operational-semantics-Concerto-D
-load model-checker  
-load model-checker of Maude to be used in Concerto-model-checking
-load 13_Concerto-model-checking
+---load example_deploy_update_cps
+---load model-checker  
+---load model-checker of Maude to be used in Concerto-model-checking
+---load 13_Concerto-model-checking
 
 
 

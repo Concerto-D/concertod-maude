@@ -1,6 +1,7 @@
+-----------------------------------------------------some ops used in the operating rules -----------------------------------------------------------
+--------------------------------------to determine messages related to external functions used locally ----------------------------------------------
 
-
-fmod COLLECT-EXTERNAL-FUNCTIONS-FIRING is
+fmod COLLECT-EXTERNAL-MESSAGES-FIRING is
 
   inc CONCERTO-D-CONFIGURATION .
 
@@ -16,14 +17,14 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-FIRING is
   var Hx : SentHistorys .
   var QSx : Qsend .
 
-      
-
   op CollectFunctionFiring(_,_,_,_,_,_,_) : IdentInstances Marking Instances Connections MsgToUses SentHistorys Qsend -> Qsend .
-  --- used to determine the information of external functions that allow to apply the rule firing transition. 
-  --- it aims to build a list of external ExprActive functions for use ports whose current value does not allow the rule to be applied; in other words,
-  --- its evaluation = true or bot knowing that the provide port linked to this use port wants to change the status of its provide port from active to inactive.
-  --- in this case, we add the function ExprActive of this use port to the list of external information, on condition that the request for this function is not currently being processed.
-  --- this last condition is verified if ExprActive doesn't belong to either SentHistorys or Qsend, therefore this function also takes these two parameters into account
+  --- used to determine msg related to external functions that allow to apply the rule firing transition. 
+  --- it aims to build a queue of external ExprActive messages for use ports whose current valuation in MsgToUses does not allow the rule to be applied; 
+  --- in other words, the evaluation of these messages is true or bot 
+  --- knowing that the provide port linked to thier use port wants to change the status of its provide port from active to inactive.
+  --- in this case, we add the message ExprActive of each use port to the queue of external information, 
+  --- on condition that the request for this message is not currently being processed.
+  --- this last condition is verified if ExprActive doesn't belong to either SentHistorys or Qsend.
   eq CollectFunctionFiring(IdIx,newMark,Ix,empty,Mx,Hx,QSx) = nil .
   ceq CollectFunctionFiring(IdIx,newMark,Ix,(id1,use,id2,pro),L,Mx,Hx,QSx) = 
   append(ExprActive(id1,use),CollectFunctionFiring(IdIx,newMark,Ix,L,Mx,Hx,QSx))
@@ -40,7 +41,9 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-FIRING is
 endfm
 
 
-fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
+--- we follow a similar reasoning to construct the messages for the external functions 
+--- needed to apply the rules: entering place, wait and disconnect.
+fmod COLLECT-EXTERNAL-MESSAGES-ENTERING-PLACE is
 
   inc CONCERTO-D-CONFIGURATION .
 
@@ -58,8 +61,8 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
   var QSx : Qsend .  
   var IdIx : IdentInstances .   
 
-  op CollectFunctionsEnteringPlace(_,_,_,_,_,_,_,_,_,_) : IdentInstances Place GroupUses Instance Instance Instances Connections MsgToUses SentHistorys Qsend -> Qsend .
-  --- we follow the same reasoning used to collect external functions for firing
+  op CollectFunctionsEnteringPlace(_,_,_,_,_,_,_,_,_,_) : 
+  IdentInstances Place GroupUses Instance Instance Instances Connections MsgToUses SentHistorys Qsend -> Qsend .
   eq CollectFunctionsEnteringPlace(IdIx,p,empty,i,i',Ix,L,Mx,Hx,QSx) = nil .
   ceq CollectFunctionsEnteringPlace(IdIx,p,(use ! ps),GUx,i,i',Ix,L,Mx,Hx,QSx) = 
   append(CollectConnected(IdIx,use,IdentOfInstance(i),L,Mx,Hx,QSx),append(CollectAllowed(IdIx,use,IdentOfInstance(i),i,Ix,L,Mx,Hx,QSx), CollectFunctionsEnteringPlace(IdIx,p,GUx,i,i',Ix,L,Mx,Hx,QSx))) 
@@ -77,7 +80,6 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
     ) .
   eq CollectConnected(IdIx,use1,IdentIns,(id1,use,id2,pro),L,Mx,Hx,QSx) = CollectConnected(IdIx,use1,IdentIns,L,Mx,Hx,QSx) [owise] .
 
-
   op CollectAllowed(_,_,_,_,_,_,_,_) : IdentInstances UsePort  IdentInstance Instances Connections MsgToUses SentHistorys Qsend -> Qsend . 
   eq CollectAllowed(IdIx,use,id1,Ix,empty,Mx,Hx,QSx) = nil .
   ceq CollectAllowed(IdIx,use,id1,Ix,(id1,use,id2,pro),L,Mx,Hx,QSx) = ExprRefusing(id2,pro)
@@ -91,7 +93,7 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-ENTERING-PLACE is
 
 endfm
 
-fmod COLLECT-EXTERNAL-FUNCTIONS-WAIT is
+fmod COLLECT-EXTERNAL-MESSAGES-WAIT is
 
   inc CONCERTO-D-CONFIGURATION .
 
@@ -114,7 +116,7 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-WAIT is
 
 endfm
 
-fmod COLLECT-EXTERNAL-FUNCTIONS-DISCONNECT is
+fmod COLLECT-EXTERNAL-MESSAGES-DISCONNECT is
 
   inc CONCERTO-D-CONFIGURATION .
 
@@ -144,7 +146,6 @@ fmod COLLECT-EXTERNAL-FUNCTIONS-DISCONNECT is
   eq ActiveCollect(id1,use,empty,Hx,QSx) = ExprActive(id1,use) . 
 
   op DisconCollect(_,_,_,_,_) : IdentInstance Connection MsgToUses SentHistorys Qsend -> Qsend .
-
   ceq DisconCollect(id1,L,extern(m ; val),Mx,Hx,QSx) =  DisconCollect(id1,L,Mx,Hx,QSx) if (m =/= ExprDisconnect(id1,L)) .
   eq DisconCollect(id1,L,extern(ExprDisconnect(id1,L) ; val),Mx,Hx,QSx) = 
   if 

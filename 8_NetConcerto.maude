@@ -1,10 +1,13 @@
 
 fmod NET-D-CONFIGURATION is 
 
-inc CONCERTO-D-CONFIGURATION .
-sorts Net .
-pr SET{LocalConfiguration} .
-subsort Set{LocalConfiguration} < Net .
+    --- formalizes a distributed system of several nodes as a set on its local configurations.
+    inc CONCERTO-D-CONFIGURATION .
+
+    sorts Net .
+    pr SET{LocalConfiguration} .
+    subsort Set{LocalConfiguration} < Net .
+
 endfm
 
 
