@@ -50,7 +50,7 @@ load 9_Operational-semantics-functions
 load 10_Collect-messages
 load 11_Communication-functions
 load 12_Operational-semantics-Concerto-D
----load example_deploy_update_cps
+load example_deploy_cps
 ---load model-checker  
 ---load model-checker of Maude to be used in Concerto-model-checking
 ---load 13_Concerto-model-checking
