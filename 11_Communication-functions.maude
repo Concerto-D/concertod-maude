@@ -3,13 +3,14 @@ fmod COMMUNICATION-FUNCTIONS is
 
     inc CONCERTO-D-CONFIGURATION .
 
-    var idcs : IdentInstances . 
-    var f : MsgToUses .
-    var bwb : BoolWithBot .
+    var IdIx : IdentInstances . 
     var L : Connections .
-    var up : UsePort .
-    var pp : ProvidePort .
-    var idf1 : Msg .
+    var Mx : MsgToUses .
+    var val : BoolWithBot .
+
+    var use : UsePort .
+    var pro : ProvidePort .
+    var m : Msg .
     vars id1 id2 : IdentInstance .
 
    op IdentInstanceonnectionWhenSendActive(_,_,_) : Connections Msg BoolWithBot -> IdentInstances .
@@ -20,16 +21,16 @@ fmod COMMUNICATION-FUNCTIONS is
    --- Note that the expected result of this function is id2 if it exists, otherwise empty, 
    --- so the result of the function is a set that can contain either an empty element or a single identifier.
  
-    eq IdentInstanceonnectionWhenSendActive(((id1,up,id2,pp),L),ExprActive(id1,up),false) = id2 . 
-    eq IdentInstanceonnectionWhenSendActive(empty,idf1,bwb) = empty . 
-    eq IdentInstanceonnectionWhenSendActive(((id1,up,id2,pp),L),idf1,bwb) = IdentInstanceonnectionWhenSendActive(L,idf1,bwb) [owise] . 
+    eq IdentInstanceonnectionWhenSendActive(((id1,use,id2,pro),L),ExprActive(id1,use),false) = id2 . 
+    eq IdentInstanceonnectionWhenSendActive(empty,m,val) = empty . 
+    eq IdentInstanceonnectionWhenSendActive(((id1,use,id2,pro),L),m,val) = IdentInstanceonnectionWhenSendActive(L,m,val) [owise] . 
 
     op  UpDateMsgToUsesSend(_,_) : MsgToUses IdentInstances -> MsgToUses .  
     --- The update is related only to the refusing function who we know its identifier if exist.
-    eq  UpDateMsgToUsesSend(f,empty) = f .
-    eq  UpDateMsgToUsesSend(empty,idcs) = empty .
-    ceq UpDateMsgToUsesSend((extern(ExprRefusing(id1,pp) ; bwb),f),idcs) = extern(ExprRefusing(id1,pp) ; bot), f if (id1 in idcs ) .
-    eq  UpDateMsgToUsesSend((extern(idf1 ; bwb),f),idcs) = extern(idf1 ; bwb), UpDateMsgToUsesSend(f,idcs) [owise] .
+    eq  UpDateMsgToUsesSend(Mx,empty) = Mx .
+    eq  UpDateMsgToUsesSend(empty,IdIx) = empty .
+    ceq UpDateMsgToUsesSend((extern(ExprRefusing(id1,pro) ; val),Mx),IdIx) = extern(ExprRefusing(id1,pro) ; bot), Mx if (id1 in IdIx ) .
+    eq  UpDateMsgToUsesSend((extern(m ; val),Mx),IdIx) = extern(m ; val), UpDateMsgToUsesSend(Mx,IdIx) [owise] .
     
 endfm
 

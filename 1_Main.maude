@@ -1,11 +1,6 @@
 
 ***(
 
-  Note for optimization
-  some optimization by eliminating redundant computing in the refusing function, for example
-  see if we can avoid duplicating Componenttype several times on the same type of instances
-  -----------------------------------------------------------------------------------------
-
   This file contains the Maude program for Concerto-D
     content: 
     A - several functional modules to describe mainly data types and operations on these types
@@ -37,7 +32,7 @@
 fmod DECLARATION-SORTS is 
 
 sorts Place Station StationPlace  IdentInstance MsgToUse send receive SentHistory Connection Instance LocalConfiguration .
-sorts Transition TransitionEnding Behavior BehaviorWithId GroupUse GroupProvide .
+sorts Transition TransitionEnding Behavior BehaviorWithId GroupUse GroupProvide Instruction .
 
 endfm
 
@@ -52,9 +47,9 @@ load 9_Operational-semantics-functions
 load 10_Collect-functions
 load 11_Communication-functions
 load 12_Operational-semantics-Concerto-D
----load model-checker  
---- load model-checker of Maude to be used in Concerto-model-checking
----load 13_Concerto-model-checking
+load model-checker  
+load model-checker of Maude to be used in Concerto-model-checking
+load 13_Concerto-model-checking
 
 
 
