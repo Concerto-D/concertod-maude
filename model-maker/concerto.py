@@ -647,5 +647,8 @@ class Program:
     def __init__(self, instructions) -> None:
         self.__instructions = instructions
         
+    def __str__(self):
+        return f"[{' '.join(str(self.__instructions))}]"
+        
     def instructions(self):
         return self.__instructions
