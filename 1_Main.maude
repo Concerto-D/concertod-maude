@@ -1,41 +1,36 @@
 
 ***(
-
-  This file contains the Maude program for Concerto-D
+  This file contains a global description of the Maude program which formalizes Concerto-D language.
     content: 
-    A - several functional modules to describe mainly data types and operations on these types
-    B - a system module to describe operational rules.
-
-    A - Functional modules (FM) :
-    
-    () FM-1- a functional module called DECLARATION-SORTS that defines only a few sorts. 
-        Defining these sorts first enables us to create views on them, which allows us to use the views to 
+    A - Several functional modules define mainly data types used to formalize the CONCERTO-D concepts:
+    *  A functional module (described below in this file: file1_Main) which defines only a few sorts. 
+        Defining these sorts first enables us to create views on them, which allows to use the views to 
         create predefined Maude structures for our sorts. 
         Example: we need to create a set on our sort Place, so we start with the following steps:
-            * declare Place in the first module.
-            * build a view `Place` which is mapping from the module `TRIV` to the module `DECLARATION-SORTS`.
+            * Declare Place in the first functional module.
+            * Build a view `Place` which is mapping from the module `TRIV` to the module `DECLARATION-SORTS`.
               The `TRIV` module is a trivial module which has a single sort Elt. the view will be:
-
                       view Place from TRIV to DECLARATION-SORTS is
                         sort Elt to Place .
                       endv
-              
-            * we can then import pr SET{Place} .  
-            which allows us to parameterize the predefined module SET{X :: TRIV} by Place and thus define a set structure on Place
+            * we can then import pr SET{Place} which allows us to parameterize the predefined module SET{X :: TRIV} 
+              by Place and thus define a set structure on Place.
     
-      Module DECLARATION-SORTS is followed by a view declarations to use (file_2: Views)
-    () Basic data are defined in (file_3: 3_Basic-data-type-Concerto) and so on until we end up in file_13 for model-checking.
+    * Module DECLARATION-SORTS is followed by a view declarations to use (file_2: Views)
+    * Basic data of Concerto-D are defined in files 3 until 8.
+    * Some of the operators used for the rewriting rules are defined separately in the files 9, 10 and 11 
+    B - A functional module given in file_12 to describe a particular application which must respect the formalization of CONCERTO-D concepts 
+       described in A. This module is automated by applying a Python script that we have implemented.
+    
+    C- A system module gives the dynamic aspect of CONCERTO-D applications through rewriting rules given in file_13 
+    
     )
-
-
-
-
 -------------------------------------------------- Main -------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------
 fmod DECLARATION-SORTS is 
 
-sorts Place Station StationPlace  IdentInstance MsgToUse send receive SentHistory Connection Instance LocalConfiguration .
-sorts Transition TransitionEnding Behavior BehaviorWithId GroupUse GroupProvide Instruction .
+  sorts Place Station StationPlace  IdentInstance MsgToUse send receive SentHistory Connection Instance LocalConfiguration .
+  sorts Transition TransitionEnding Behavior BehaviorWithId GroupUse GroupProvide Instruction .
 
 endfm
 
@@ -49,11 +44,9 @@ load 8_NetConcerto
 load 9_Operational-semantics-functions
 load 10_Collect-messages
 load 11_Communication-functions
-load 12_Operational-semantics-Concerto-D
-load example_deploy_cps
----load model-checker  
----load model-checker of Maude to be used in Concerto-model-checking
----load 13_Concerto-model-checking
+load 12_example_deploy_cps
+load 13_Operational-semantics-Concerto-D
+
 
 
 
