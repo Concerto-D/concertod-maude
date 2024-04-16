@@ -1,9 +1,11 @@
 from concerto import *
-from itertools import chain
 from examples.openstack import *
 from examples.cps import *
 
 type_of_comp = {} # For a component name, store its concrete type
+
+def flatmap(func, iterable):
+    return list(chain.from_iterable(map(func, iterable)))
 
 def get_connections(instance: ComponentInstance):
     #  a set of (id: str, useport: str, provider: str, provideport: str)
@@ -28,7 +30,7 @@ def get_connections(instance: ComponentInstance):
 def get_all_ids(instances, program):
     ids = set(map(lambda instance: instance.id(), instances))
     add_instructions = list(filter(lambda instr: instr.isAdd(), program.instructions()))
-    return ids + set(map(lambda add: add.component(), add_instructions))
+    return ids.union(set(map(lambda add: add.component(), add_instructions)))
 
 def get_instance_names(instances):
     if len(instances) == 0:
@@ -75,6 +77,8 @@ def make_conf_program(program):
 def gen_maude_type(type: ComponentType):
     ops, eqs = set(), set()
     ops.add(f"op {type.name()} : -> ComponentType .")
+    use_ports = "empty"
+    provide_ports = "empty"
     
     if type.places() is not []:
         dict_place_station = {f"{type.name()}{place.name().capitalize()}": f"st{type.name()}{place.name().capitalize()}" for place in type.places()}
@@ -107,7 +111,7 @@ def gen_maude_type(type: ComponentType):
             transitions[transition_name] = f"t({source}, {dest})"
             behavior_transitions[behavior_name].append(transition_name)
     ops.add(f"ops {' '.join(transitions.keys())} : -> Transition .")
-    for tr in transition.keys():
+    for tr in transitions.keys():
         eqs.add(f"eq {tr} = {transitions[tr]} .")
     ops.add(f"ops {' '.join(behavior_transitions.keys())} : -> Behavior .")
     eq_behaviors_tmp = {}
@@ -132,13 +136,16 @@ def gen_maude_instance(instance: ComponentInstance, active: str):
 def gen_maude_connections(name_of_connections_set, connections):
     ops, eqs = set(), set()
     ops.add(f"op {name_of_connections_set}: -> Connections ." )
-    str_connections = list(map(lambda tuple: f"{(tuple[0], tuple[1], tuple[2], tuple[3])}", connections))
-    eqs.add(f"eq {name_of_connections_set}: " + ' '.join(str_connections) +"-> Connections ." )
+    if len(connections) == 0:
+        str_connections = ["empty"]
+    else:
+        str_connections = list(map(lambda tuple: f"{(tuple[0], tuple[1], tuple[2], tuple[3])}", connections))
+    eqs.add(f"eq {name_of_connections_set}: " + ' '.join(str_connections) +" -> Connections ." )
     return ops, eqs
 
 def fill_type_of_comp_from_adds(add_instructions: list[Add]):
     for add in add_instructions:
-        comp = add.component().name()
+        comp = add.component()
         type = add.type()
         type_of_comp[comp] = type
 
@@ -158,21 +165,24 @@ def gen_maude(inventory):
     eqs = set()
     eq_confs = {}
     id_instance_place = {}
-    for node in inventory.key():
-        instances = inventory[node][0]
-        fill_type_of_comp(instances)
+    for node in inventory.keys():
+        fill_type_of_comp(inventory[node][0])
         program = inventory[node][1]
         add_instructions = list(filter(lambda instr: instr.isAdd(), program.instructions()))
         fill_type_of_comp_from_adds(add_instructions)
+    for node in inventory.keys():
+        instances = inventory[node][0]
+        program = inventory[node][1]
+        add_instructions = list(filter(lambda instr: instr.isAdd(), program.instructions()))
         # Get types
         instantiated_types = set(map(lambda instance: instance.type(), instances))
         added_types = set(map(lambda add: add.type(), add_instructions))
-        all_types = all_types + instantiated_types + added_types
+        all_types = all_types.union(instantiated_types).union(added_types)
         # Instances
-        for instance in inventory[node].keys():
-            id_instance_place[instance.id()] = inventory[node][instance]
-        all_instances = all_instances + instances
-        connections[make_connections_name(node)] = set(map(lambda instance: get_connections(instance), instances))
+        for instance in inventory[node][0].keys():
+            id_instance_place[instance.id()] = inventory[node][0][instance]
+        all_instances = all_instances.union(instances)
+        connections[make_connections_name(node)] = set(flatmap(lambda instance: get_connections(instance), instances)) # TODO somewhere consider it empty
         # Conf
         conf_name = f"conf{node.capitalize()}"
         conf_ids = get_all_ids(instances, program)
@@ -181,20 +191,26 @@ def gen_maude(inventory):
         conf_instances = get_instance_names(instances)
         conf_connections = make_connections_name(node)
         conf_program = make_conf_program(program)
-        eq_confs[conf_name] = f"eq {conf_name} = < ids: {conf_ids}, instances: {conf_instances}, connections: {conf_connections}, program: {conf_program}, msgs: [], receive: nil, send: nil, history: empty >"
+        eq_confs[conf_name] = f"eq {conf_name} = < ids: {', '.join(conf_ids)}, instances: {conf_instances}, connections: {conf_connections}, program: {conf_program}, msgs: [], receive: nil, send: nil, history: empty > ."
     for type in all_types:
         _ops, _eqs = gen_maude_type(type)
-        ops = ops + _ops
-        eqs = eqs + _eqs
+        ops = ops.union(_ops)
+        eqs = eqs.union(_eqs)
     for instance in all_instances:
         _ops, _eqs = gen_maude_instance(instance, id_instance_place[instance.id()])
-        ops = ops + _ops
-        eqs = eqs + _eqs
+        ops = ops.union(_ops)
+        eqs = eqs.union(_eqs)
     for connection in connections.keys():
         _ops, _eqs = gen_maude_connections(connection, connections[connection])
-        ops = ops + _ops
-        eqs = eqs + _eqs
-    all_lines = ops + eqs
+        ops = ops.union(_ops)
+        eqs = eqs.union(_eqs)
+    all_lines = list(ops) + list(eqs)
+    eq_confs_lines = []
+    for eq_conf_name in eq_confs.keys():
+        eq_conf_line = eq_confs[eq_conf_name]
+        eq_confs_lines.append(f"op {eq_conf_name}: ->  LocalConfiguration .")
+        eq_confs_lines.append(eq_conf_line)
+    all_lines = all_lines + eq_confs_lines
     indented_lines = ['\t' + line for line in all_lines]
     indented_maude = '\n'.join(indented_lines)
     maude = f"""mod Concerto-PREDS is 
@@ -205,3 +221,57 @@ def gen_maude(inventory):
 endm 
     """
     return maude
+
+
+def deploy_cps(n):
+    inventory = {}
+    inventory["node1"] = ({}, db_deploy())
+    inventory["node2"] = ({}, sys_deploy(n))
+    for i in range(1, n+1):
+        inventory[f"node{2+i}"] = ({}, sensor_deploy(i))
+    return gen_maude(inventory)
+
+
+def update_cps(n):
+    # -------------------------
+    # Component definitions
+    # -------------------------
+    database = ComponentInstance("mydb0", database_type())
+    system = ComponentInstance("mysys0", system_type())
+    listeners, sensors = {}, {}
+    for i in range(1, n+1):
+        listeners[i] = ComponentInstance(f"listener{i}", listener_type())
+        sensors[i] = ComponentInstance(f"sensor{i}", sensor_type())
+    inventory = {}
+    # -------------------------
+    # Node definitions
+    # -------------------------
+    inventory["node1"] = (
+        {database: "deployed"}, 
+        db_update_listeners())
+    # -------------------------
+    node2_components = {system: "deployed"}
+    for i in range(1, n+1):
+        node2_components[listeners[i]] = "running"
+    inventory["node2"] = (node2_components, sys_update_listeners(n))
+    # -------------------------
+    for i in range(1, n+1):
+        node2i_components = {sensors[i]: "running"}
+        inventory[f"node{2+i}"] = (node2i_components, sensor_update_listeners(i))
+    return gen_maude(inventory)
+
+
+if __name__ == "__main__":
+    maude = update_cps(1)
+    # maude = deploy_cps(1)
+    print(maude)
+
+
+
+# def cps(n):
+#     programs = cps_deploy_maude(n)
+#     maude = gen_maude(programs)
+#     write_maude("example_deploy_cps.maude", maude)
+#     programs = cps_deploy_update_maude(n)
+#     maude = gen_maude(programs)
+#     write_maude("example_deploy_update_cps.maude", maude)
