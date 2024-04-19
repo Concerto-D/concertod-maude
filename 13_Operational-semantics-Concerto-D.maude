@@ -39,7 +39,6 @@ crl [FiringTransitions] :
     < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(p, ps,ts,tes) > ,Ix,connections: Lx,program: Rx,msgs: Mx,receive: QRx,send: QSx,history: Hx > 
     =>
     < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(ps,union(ts, RestrictTransitionsToPlace(tsb,p) ),tes) >, Ix , connections: Lx,program: Rx,msgs: Mx,receive: QRx,send: QSx,history: Hx > 
-----if ( RestrictTransitionsToPlace(tsb,p)  ) . 
   if ( RestrictTransitionsToPlace(tsb,p) =/= empty and
    NotActUseWhenLeavinGroupProvide(IdIx,m(ps,union(ts, RestrictTransitionsToPlace(tsb,p) ),tes) ,< id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(p, ps,ts,tes) > ,Ix,Mx,ConnectionProIdent(id1, Lx))) . 
 
