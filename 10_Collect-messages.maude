@@ -106,14 +106,31 @@ fmod COLLECT-EXTERNAL-MESSAGES-WAIT is
   var m : Msg .
   var IdIx : IdentInstances .   
 
+
   op CollectFunctionWait(_,_,_,_,_,_) : IdentInstances IdentInstance IdentBehavior MsgToUses SentHistorys Qsend -> Qsend .
   ceq CollectFunctionWait(IdIx,id1,idbeh,Mx,Hx,QSx) = nil if (id1 in IdIx) .
   ceq CollectFunctionWait(IdIx,id1,idbeh,extern(m ; val),Mx,Hx,QSx) =  CollectFunctionWait(IdIx,id1,idbeh,Mx,Hx,QSx) 
   if ((m =/= ExprCompleted(id1,idbeh))  and (not (id1 in IdIx)) ) .
+ 
   eq CollectFunctionWait(IdIx,id1,idbeh,extern(ExprCompleted(id1,idbeh) ; val),Mx,Hx,QSx) = 
-  if (( val == true ) or (ExprCompleted(id1,idbeh) in Hx) or (ExprCompleted(id1,idbeh) in QSx) )  then nil else ExprCompleted(id1,idbeh) fi .
-  eq CollectFunctionWait(IdIx,id1,idbeh,empty,Hx,QSx) = ExprCompleted(id1,idbeh) . 
+  if (( val == true ) or (ExprCompleted(id1,idbeh) in Hx) or (occurs(ExprCompleted(id1,idbeh),QSx) ) )  then nil else ExprCompleted(id1,idbeh) fi .
+  
+  eq CollectFunctionWait(IdIx,id1,idbeh,empty,Hx,QSx) =  
+  if ((not (ExprCompleted(id1,idbeh) in Hx)) and  (not (occurs(ExprCompleted(id1,idbeh),QSx)))) then ExprCompleted(id1,idbeh) else nil fi . 
 
+
+***(
+  op CollectFunctionWait(_,_,_,_,_,_) : IdentInstances IdentInstance IdentBehavior MsgToUses SentHistorys Qsend -> Qsend .
+  ceq CollectFunctionWait(IdIx,id1,idbeh,Mx,Hx,QSx) = nil if ((id1 in IdIx) or (ExprCompleted(id1,idbeh) in QSx) or ()) .
+  ceq CollectFunctionWait(IdIx,id1,idbeh,empty,Hx,QSx) = ExprCompleted(id1,idbeh) if (not (id1 in IdIx)) . 
+  ceq CollectFunctionWait(IdIx,id1,idbeh,extern(m ; val),Mx,Hx,QSx) =  CollectFunctionWait(IdIx,id1,idbeh,Mx,Hx,QSx) 
+  if ((m =/= ExprCompleted(id1,idbeh))  and (not (id1 in IdIx)) ) .
+  ceq CollectFunctionWait(IdIx,id1,idbeh,extern(ExprCompleted(id1,idbeh) ; val),Mx,Hx,QSx) = nil 
+ if  ( (( val == true ) or (ExprCompleted(id1,idbeh) in Hx) or (ExprCompleted(id1,idbeh) in QSx) ))  .
+ceq CollectFunctionWait(IdIx,id1,idbeh,extern(ExprCompleted(id1,idbeh) ; val),Mx,Hx,QSx) = ExprCompleted(id1,idbeh) 
+if  (not (( val == true ) or (ExprCompleted(id1,idbeh) in Hx) or (ExprCompleted(id1,idbeh) in QSx) ))  .
+
+)
 endfm
 
 fmod COLLECT-EXTERNAL-MESSAGES-DISCONNECT is
@@ -130,7 +147,7 @@ fmod COLLECT-EXTERNAL-MESSAGES-DISCONNECT is
   var m : Msg .
   var IdIx : IdentInstances . 
   var L : Connection .  
-
+  ---revoir disconnect comme wait
   op CollectFunctionsDiscon(_,_,_,_,_) : IdentInstances Connection MsgToUses SentHistorys Qsend -> Qsend .
   ceq CollectFunctionsDiscon(IdIx,(id1,use,id2,pro),Mx,Hx,QSx) = append(ActiveCollect(id1,use,Mx,Hx,QSx),(DisconCollect(id1,(id1,use,id2,pro),Mx,Hx,QSx))) 
   if (not (id1 in IdIx) ) .

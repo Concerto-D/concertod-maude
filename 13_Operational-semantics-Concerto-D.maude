@@ -20,29 +20,29 @@ mod OPERATIONAL-SEMANTICS is
   var pro : ProvidePort .
 
   vars id1 id2  : IdentInstance .
-  vars qb : QBehaviorWithId .
+  vars qb qb1 : QBehaviorWithId .
   var beh : Behavior .
   var mrk : Marking .
   var idbeh : IdentBehavior .
 
   vars p q : Place .
   var ps : Places .
-  var ts : Transitions .
+  vars ts : Transitions .
+  var tsb : Transitions .
   var tes : TransitionEndings .
   var S : Stations .
   var s : Station .
 
   -------------------------------------------------Rules for component evolution------------------------------------------------------
   ------------------------------------------------------------------------------------------------------------------------------------
-  crl [FiringTransitions] : 
-    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(ts)) qb,marking: m(p, ps,ts,tes) > , 
-    Ix,connections: Lx,program: Rx,msgs: Mx,receive: QRx,send: QSx,history: Hx > 
+crl [FiringTransitions] : 
+    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(p, ps,ts,tes) > ,Ix,connections: Lx,program: Rx,msgs: Mx,receive: QRx,send: QSx,history: Hx > 
     =>
-    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(ts)) qb,marking: m(ps,union(ts, RestrictTransitionsToPlace(ts,p) ),tes) >, 
-    Ix , connections: Lx,program: Rx,msgs: Mx,receive: QRx,send: QSx,history: Hx > 
-    if (RestrictTransitionsToPlace(ts,p) =/= empty and 
-    NotActUseWhenLeavinGroupProvide(IdIx,m(ps,union(ts, RestrictTransitionsToPlace(ts,p) ),tes) ,< id: id1,type: ct,queueBehavior: (idbeh ; b(ts)) qb,
-    marking: m(p, ps,ts,tes) > ,Ix,Mx,ConnectionProIdent(id1, Lx))) . 
+    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(ps,union(ts, RestrictTransitionsToPlace(tsb,p) ),tes) >, Ix , connections: Lx,program: Rx,msgs: Mx,receive: QRx,send: QSx,history: Hx > 
+----if ( RestrictTransitionsToPlace(tsb,p)  ) . 
+  if ( RestrictTransitionsToPlace(tsb,p) =/= empty and
+   NotActUseWhenLeavinGroupProvide(IdIx,m(ps,union(ts, RestrictTransitionsToPlace(tsb,p) ),tes) ,< id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(p, ps,ts,tes) > ,Ix,Mx,ConnectionProIdent(id1, Lx))) . 
+
 
   rl [EndingTransition] : 
     < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: qb,marking: m(ps, t(q,s,S), ts,tes) > , Ix,connections: Lx,program: Rx,msgs: Mx,
@@ -52,24 +52,25 @@ mod OPERATIONAL-SEMANTICS is
     msgs: Mx,receive: QRx,send: QSx,history: Hx >  .
 
   crl [EnteringPlace] : 
-    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(ts)) qb,marking: m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,connections: Lx,
+    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,connections: Lx,
     program: Rx,msgs: Mx,receive: QRx,send: QSx,history: Hx >  
     =>
-    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(ts)) qb,marking: m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionEndingStation(tes,s) ) > , 
+    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionEndingStation(tes,s) ) > , 
     Ix,connections: Lx,program: Rx,msgs: Mx,receive: QRx,send: QSx,history: Hx > 
     if 
-    (IsSatisfiedTransitionEndingStation(s,ts,te(t(q,s,S),s), tes) 
-    and 
-    ConnectedAndAllowed(IdIx,Pi(s,GetStationPlaces(ct)), GetUsePorts(ct), < id: id1,type: ct,queueBehavior: (idbeh ; b(ts)) qb,marking: m(ps, ts, te(t(q,s,S),s), tes  ) >,
-    < id: id1,type: ct,queueBehavior: (idbeh ; b(ts)) qb,marking: m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionEndingStation(tes,s) ) >,Ix, Lx,Mx)
-    ) .  
+      (IsSatisfiedTransitionEndingStation(s,tsb,te(t(q,s,S),s), tes) 
+      and 
+      ConnectedAndAllowed(IdIx,Pi(s,GetStationPlaces(ct)), GetUsePorts(ct), < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(ps, ts, te(t(q,s,S),s), tes  ) >,
+      < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionEndingStation(tes,s) ) >,Ix, Lx,Mx)
+      ) .  
+
 
   crl [FinishingBehavior] : 
-    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(ts)) qb,marking: m(ps,empty,empty) > , Ix,connections: Lx,program: Rx,msgs: Mx,
+    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(ps,empty,empty) > , Ix,connections: Lx,program: Rx,msgs: Mx,
     receive: QRx,send: QSx,history: Hx >   
     =>
     < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: qb,marking: m(ps,empty,empty) > , Ix,connections: Lx,program: Rx,msgs: Mx,receive: QRx,send: QSx,history: Hx >  
-    if (intersection(ps,PlacesSourceOfTransitions(ts)) == empty) .
+    if (intersection(ps,PlacesSourceOfTransitions(tsb)) == empty) .
 
   -------------------------------------------------- Rules for program instructions------------------------------------------------------------
   ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -106,13 +107,13 @@ mod OPERATIONAL-SEMANTICS is
     and
     Evaluation(IdIx,ExprActive(id1,use),Mx,Ix,Lx,dcon(id1,use,id2,pro) Rx) == false
     ) .
-
+  
   crl [PushingBehavior] : 
-    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: qb,marking: mrk >,Ix,connections: Lx, program: pushB(id1, beh, idbeh) Rx,msgs: Mx,receive: QRx,send: QSx,history: Hx > 
+   < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: qb,marking: mrk >,Ix,connections: Lx, program: pushB(id1, beh, idbeh) Rx,msgs: Mx,receive: QRx,send: QSx,history: Hx > 
     =>   
-    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: append(qb,(idbeh ; beh)),marking: mrk >,Ix,connections: Lx,program: Rx,msgs: Mx,receive: QRx,send: QSx,history: Hx >  
+   < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: append(qb,(idbeh ; beh)),marking: mrk >,Ix,connections: Lx,program: Rx,msgs: Mx,receive: QRx,send: QSx,history: Hx >  
     if (IsBehaviorOfComponent(beh,ct)) .
-    
+
   crl [Waiting] : 
     < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: qb,marking: mrk > ,Ix,connections: Lx, program: wait(id2,idbeh) Rx,msgs: Mx,receive: QRx,send: QSx,history: Hx > 
     =>   
@@ -123,29 +124,29 @@ mod OPERATIONAL-SEMANTICS is
   ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
   crl [MsgToUsesForFiringTransitions] : 
-    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(ts)) qb,marking: m(p, ps,ts,tes) > , Ix,connections: Lx,program: Rx,msgs: Mx,
+    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(p, ps,ts,tes) > , Ix,connections: Lx,program: Rx,msgs: Mx,
     receive: QRx,send: QSx,history: Hx >  
     =>
-    < ids: IdIx, instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(ts)) qb,marking: m(p, ps,ts,tes) > , Ix ,connections: Lx,program: Rx,msgs: Mx,
-    receive: QRx,send: append(QSx,CollectFunctionFiring(IdIx,m(ps,union(ts, RestrictTransitionsToPlace(ts,p) ),tes),< id: id1,type: ct,
-    queueBehavior: (idbeh ; b(ts)) qb,marking: m(p, ps,ts,tes) > , Ix,ConnectionProIdent(id1,Lx),Mx,Hx,QSx)),history: Hx >  
-    if (RestrictTransitionsToPlace(ts,p) =/= empty and CollectFunctionFiring(IdIx,m(ps,union(ts, RestrictTransitionsToPlace(ts,p) ),tes),
-    < id: id1,type: ct,queueBehavior: (idbeh ; b(ts)) qb,marking: m(p, ps,ts,tes) > , Ix,ConnectionProIdent(id1,Lx ),Mx,Hx,QSx) =/= nil) . 
+    < ids: IdIx, instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(p, ps,ts,tes) > , Ix ,connections: Lx,program: Rx,msgs: Mx,
+    receive: QRx,send: append(QSx,CollectFunctionFiring(IdIx,m(ps,union(ts, RestrictTransitionsToPlace(tsb,p) ),tes),< id: id1,type: ct,
+    queueBehavior: (idbeh ; b(tsb)) qb,marking: m(p, ps,ts,tes) > , Ix,ConnectionProIdent(id1,Lx),Mx,Hx,QSx)),history: Hx >  
+    if (RestrictTransitionsToPlace(tsb,p) =/= empty and CollectFunctionFiring(IdIx,m(ps,union(ts, RestrictTransitionsToPlace(tsb,p) ),tes),
+    < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(p, ps,ts,tes) > , Ix,ConnectionProIdent(id1,Lx ),Mx,Hx,QSx) =/= nil) . 
 
   crl [MsgToUsesForEnteringPlace] : 
-    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(ts)) qb,marking: m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,connections: Lx,program: Rx,
+    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,connections: Lx,program: Rx,
     msgs: Mx,receive: QRx,send: QSx,history: Hx > 
     =>
-    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(ts)) qb,marking: m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,connections: Lx,program: Rx,
+    < ids: IdIx,instances: < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(ps, ts, te(t(q,s,S),s), tes  ) >  , Ix,connections: Lx,program: Rx,
     msgs: Mx,receive: QRx,send: append(QSx,CollectFunctionsEnteringPlace(IdIx,Pi(s,GetStationPlaces(ct)), GetUsePorts(ct), < id: id1,type: ct,
-    queueBehavior: (idbeh ; b(ts)) qb,marking: m(ps, ts, te(t(q,s,S),s), tes  ) >,
-    < id: id1,type: ct,queueBehavior: (idbeh ; b(ts)) qb,marking: m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionEndingStation(tes,s) ) >,Ix,Lx,Mx,Hx,QSx)), history: Hx > 
+    queueBehavior: (idbeh ; b(tsb)) qb,marking: m(ps, ts, te(t(q,s,S),s), tes  ) >,
+    < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionEndingStation(tes,s) ) >,Ix,Lx,Mx,Hx,QSx)), history: Hx > 
     if 
     (
-      IsSatisfiedTransitionEndingStation(s,ts,te(t(q,s,S),s), tes) 
+      IsSatisfiedTransitionEndingStation(s,tsb,te(t(q,s,S),s), tes) 
       and
-      (CollectFunctionsEnteringPlace(IdIx,Pi(s,GetStationPlaces(ct)), GetUsePorts(ct), < id: id1,type: ct,queueBehavior: (idbeh ; b(ts)) qb,marking: m(ps, ts, te(t(q,s,S),s), tes) >,
-      < id: id1,type: ct,queueBehavior: (idbeh ; b(ts)) qb,marking: m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionEndingStation(tes,s) ) >,Ix, Lx,Mx,Hx,QSx) =/= nil )
+      (CollectFunctionsEnteringPlace(IdIx,Pi(s,GetStationPlaces(ct)), GetUsePorts(ct), < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(ps, ts, te(t(q,s,S),s), tes) >,
+      < id: id1,type: ct,queueBehavior: (idbeh ; b(tsb)) qb,marking: m(Pi(s,GetStationPlaces(ct)),ps, ts, RemoveTransitionEndingStation(tes,s) ) >,Ix, Lx,Mx,Hx,QSx) =/= nil )
     ) .
 
   crl [MsgToUsesForDisconnectPorts] : 

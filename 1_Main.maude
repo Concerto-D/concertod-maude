@@ -19,11 +19,11 @@
     * Module DECLARATION-SORTS is followed by a view declarations to use (file_2: Views)
     * Basic data of Concerto-D are defined in files 3 until 8.
     * Some of the operators used for the rewriting rules are defined separately in the files 9, 10 and 11 
-    B - A functional module given in file_12 to describe a particular application which must respect the formalization of CONCERTO-D concepts 
+    B - A functional module given in 12_example_update_cps to describe a particular application which must respect the formalization of CONCERTO-D concepts 
        described in A. This module is automated by applying a Python script that we have implemented.
     
-    C- A system module gives the dynamic aspect of CONCERTO-D applications through rewriting rules given in file_13 
-    
+    C- A system module gives the dynamic aspect of CONCERTO-D applications through rewriting rules given in 13_Operational-semantics-Concerto-D 
+    Finally, some verification results on the example of 12_example_update_cps are given in the additional file 14_Results-search. 
     )
 -------------------------------------------------- Main -------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------
@@ -44,9 +44,8 @@ load 8_NetConcerto
 load 9_Operational-semantics-functions
 load 10_Collect-messages
 load 11_Communication-functions
-load 12_example_deploy_cps
+load 12_example_update_cps
 load 13_Operational-semantics-Concerto-D
-
-
+load 14_Results-search
 
 

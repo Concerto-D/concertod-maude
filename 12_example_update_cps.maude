@@ -52,7 +52,7 @@ fmod LISTENER-SENSOR-EXAMPLE is
         eq systemDeploy12 = t(systemInitiated, stsystemConfigured) .
         eq databaseUpdate = b(databaseUpdate) .
         eq database = { places: databaseInitiated,databaseConfigured,databaseBootstrapped,databaseDeployed,databaseRegistered, 
-initial: databaseInitiated, stationPlaces: stdatabaseInitiated ; databaseInitiated, stdatabaseConfigured ; databaseConfigured, stdatabaseBootstrapped ; databaseBootstrapped, stdatabaseDeployed ; databaseDeployed, stdatabaseRegistered ; databaseRegistered, transitions: (databaseDeploy11, databaseDeploy12, databaseDeploy2, databaseDeploy3, databaseInterrupt1, databasePause1, databaseUpdate, databaseUninstall1), behaviors: (databaseDeploy, databaseInterrupt, databasePause, databaseUpdate, databaseUninstall), groupUses: empty, groupProvides: databaseService ? (databaseDeployed) } .
+        initial: databaseInitiated, stationPlaces: stdatabaseInitiated ; databaseInitiated, stdatabaseConfigured ; databaseConfigured, stdatabaseBootstrapped ; databaseBootstrapped, stdatabaseDeployed ; databaseDeployed, stdatabaseRegistered ; databaseRegistered, transitions: (databaseDeploy11, databaseDeploy12, databaseDeploy2, databaseDeploy3, databaseInterrupt1, databasePause1, databaseUpdate, databaseUninstall1), behaviors: (databaseDeploy, databaseInterrupt, databasePause, databaseUpdate, databaseUninstall), groupUses: empty, groupProvides: databaseService ? (databaseDeployed) } .
         eq databasePause1 = t(databaseRegistered, stdatabaseBootstrapped) .
         eq instListener1 = < id: listener1, type: listener, queueBehavior: nil, marking: m(listenerRunning, empty, empty) > .
         eq listenerDeploy = b(listenerDeploy1,listenerDeploy2,listenerDeploy3) .
@@ -66,12 +66,12 @@ initial: databaseInitiated, stationPlaces: stdatabaseInitiated ; databaseInitiat
         eq systemDeploy13 = t(systemInitiated, stsystemConfigured) .
         eq sensorDeploy2 = t(sensorProvisioned, stsensorInstalled) .
         eq sensorPause1 = t(sensorRunning, stsensorProvisioned) .
-        eq connectionsNode1 = empty .
+        eq connectionsNode1 = (mysys0,systemDbservice,mydb0,databaseService) .
         eq systemDeploy11 = t(systemInitiated, stsystemConfigured) .
         eq databasePause = b(databasePause1) .
         eq databaseDeploy = b(databaseDeploy11,databaseDeploy12,databaseDeploy2,databaseDeploy3) .
         eq sensorPause = b(sensorPause1) .
-        eq connectionsNode2 = empty  .
+        eq connectionsNode2 = (mysys0,systemDbservice,mydb0,databaseService), (listener1,listenerSysservice,mysys0,systemService), (sensor1,sensorRcvservice,listener1,listenerRcv), (sensor1,sensorConfigservice,listener1,listenerConfig )  .
         eq instMysys0 = < id: mysys0, type: system, queueBehavior: nil, marking: m(systemDeployed, empty, empty) > .
         eq sensor = { places: sensorRunning,sensorConfigured,sensorInstalled,sensorProvisioned,sensorOff, initial: sensorOff, stationPlaces: stsensorRunning ; sensorRunning, stsensorConfigured ; sensorConfigured, stsensorInstalled ; sensorInstalled, stsensorProvisioned ; sensorProvisioned, stsensorOff ; sensorOff, transitions: (sensorDeploy11, sensorDeploy12, sensorDeploy13, sensorDeploy2, sensorDeploy3, sensorDeploy4, sensorPause1, sensorStop1), behaviors: (sensorDeploy, sensorPause, sensorStop), groupUses: sensorRcvservice ! (sensorRunning, sensorConfigured), sensorConfigservice ! (sensorConfigured, sensorRunning, sensorInstalled), groupProvides: empty } .
         eq listenerDeploy2 = t(listenerPaused, stlistenerConfigured) .
@@ -79,12 +79,12 @@ initial: databaseInitiated, stationPlaces: stdatabaseInitiated ; databaseInitiat
         eq sensorDeploy11 = t(sensorOff, stsensorProvisioned) .
         eq systemInterrupt1 = t(systemDeployed, stsystemConfigured) .
         eq system = { places: systemDeployed,systemConfigured,systemInitiated, initial: systemInitiated, stationPlaces: stsystemDeployed ; systemDeployed, stsystemConfigured ; systemConfigured, stsystemInitiated ; systemInitiated, transitions: (systemDeploy11, systemDeploy12, systemDeploy13, systemDeploy2, systemInterrupt1, systemStop1), behaviors: (systemDeploy, systemInterrupt, 
-systemStop), groupUses: systemDbservice ! (systemConfigured, systemDeployed), groupProvides: systemService ? (systemDeployed) } .
+        systemStop), groupUses: systemDbservice ! (systemConfigured, systemDeployed), groupProvides: systemService ? (systemDeployed) } .
         eq systemInterrupt = b(systemInterrupt1) .
         eq listener = { places: listenerRunning,listenerConfigured,listenerPaused,listenerOff, initial: listenerOff, stationPlaces: stlistenerRunning ; listenerRunning, stlistenerConfigured ; listenerConfigured, stlistenerPaused ; listenerPaused, stlistenerOff ; listenerOff, transitions: (listenerDeploy1, listenerDeploy2, listenerDeploy3, listenerUpdate1, listenerDestroy1), behaviors: (listenerDeploy, listenerUpdate, listenerDestroy), groupUses: listenerSysservice ! (listenerConfigured, listenerRunning), 
-groupProvides: listenerRcv ? (listenerRunning), listenerConfig ? (listenerConfigured, listenerRunning) } .
+        groupProvides: listenerRcv ? (listenerRunning), listenerConfig ? (listenerConfigured, listenerRunning) } .
         eq listenerDestroy1 = t(listenerPaused, stlistenerOff) .
-        eq connectionsNode3 = empty  .
+        eq connectionsNode3 = (sensor1,sensorRcvservice,listener1,listenerRcv), (sensor1,sensorConfigservice,listener1,listenerConfig )  .
         eq listenerDeploy3 = t(listenerConfigured, stlistenerRunning) .
         eq listenerDestroy = b(listenerDestroy1) .
         eq databaseDeploy11 = t(databaseInitiated, stdatabaseConfigured) .
@@ -97,7 +97,7 @@ groupProvides: listenerRcv ? (listenerRunning), listenerConfig ? (listenerConfig
         eq systemDeploy = b(systemDeploy11,systemDeploy12,systemDeploy13,systemDeploy2) .
         eq sensorDeploy12 = t(sensorOff, stsensorProvisioned) .
         eq sensorDeploy13 = t(sensorOff, stsensorProvisioned) .
-        eq listenerUpdate1 = t(listenerRunning, stlistenerPaused) .
+        eq listenerUpdate1 = t(listenerRunning,stlistenerPaused) .
         eq sensorDeploy = b(sensorDeploy11,sensorDeploy12,sensorDeploy13,sensorDeploy2,sensorDeploy3,sensorDeploy4) .
         eq databaseDeploy12 = t(databaseInitiated, stdatabaseConfigured) .
         eq databaseDeploy2 = t(databaseConfigured, stdatabaseBootstrapped) .
@@ -105,16 +105,18 @@ groupProvides: listenerRcv ? (listenerRunning), listenerConfig ? (listenerConfig
         eq listenerUpdate = b(listenerUpdate1) .
         eq databaseInterrupt = b(databaseInterrupt1) .
         op confNode1 : ->  LocalConfiguration .
-        --- a voir pg nil et 1 2 3
-        ops 1 2 3 4 5 : -> IdentBehavior .
-        eq confNode1 = < ids: mydb0, instances: instMydb0, connections: connectionsNode1, program: nil , msgs: empty, receive: nil, send: nil, history: empty > .
+        ops msgsNode1 msgsNode2 msgsNode3 : ->  MsgToUses .
+        eq msgsNode1 = empty .
+        eq msgsNode2 = extern(ExprIsConnected(mydb0,(mysys0,systemDbservice,mydb0,databaseService)) ; true), extern(ExprRefusing(mydb0,databaseService) ; false) .
+        eq msgsNode3 = extern(ExprIsConnected(listener1,(sensor1,sensorRcvservice,listener1,listenerRcv)) ; true), extern(ExprRefusing(listener1,listenerRcv) ; false), extern(ExprIsConnected(listener1,(sensor1,sensorConfigservice,listener1,listenerConfig )) ; true), extern(ExprRefusing(listener1,listenerConfig) ; false) .
+        ops idb0 idb1 idb2 idb3 idb4 idb5 : -> IdentBehavior .
+        eq confNode1 = < ids: mydb0, instances: instMydb0, connections: connectionsNode1, program: nil , msgs: msgsNode1, receive: nil, send: nil, history: empty > .
         op confNode2 : ->  LocalConfiguration .
         eq confNode2 = < ids: listener1, mysys0, instances: instMysys0, instListener1, connections: connectionsNode2, program: 
-pushB(listener1, listenerUpdate, 4) pushB(listener1, listenerDeploy, 5), msgs: empty, receive: nil, send: nil, history: empty > .      
+        pushB(listener1, listenerUpdate, idb4) pushB(listener1, listenerDeploy, idb5), msgs: msgsNode2, receive: nil, send: nil, history: empty > .      
         op confNode3 : ->  LocalConfiguration .
-        eq confNode3 = < ids: sensor1, instances: instSensor1, connections: connectionsNode3, program: pushB(sensor1, sensorPause, 0) wait(listener1, 4) pushB(sensor1, sensorStart, 1), msgs: empty, receive: nil, send: nil, history: empty > .
-        
-        --- ajoute
+        eq confNode3 = < ids: sensor1, instances: instSensor1, connections: connectionsNode3, program: pushB(sensor1, sensorPause, idb0) wait(listener1, idb4) pushB(sensor1, sensorDeploy, idb1), msgs: msgsNode3, receive: nil, send: nil, history: empty > .
         op globalsystem : -> Net .
         eq globalsystem = confNode1, confNode2, confNode3 .
+
 endfm
