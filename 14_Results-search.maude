@@ -4,10 +4,9 @@
 --- this part focuses on a simpler, yet very useful, model-checking capability, 
 --- namely, the model checking of invariants, which can be accomplished just by using
 --- the search command.
---- we take the case study of reconfiguration program of listener-sensor
---- and we simplify the case study to one listener and one sensor.
+--- we take the case study of reconfiguration program of one listener and one sensor (file: 12_example_update_cps)
 --- we can verify some properties on the reconfiguration step of this example. 
---- two examples are given below:
+--- two examples of properties are given below:
 
 ---     we can reach the reconfiguration state of the aasembly, i.e., execute update and deploy for the listener, and pasue and start for the sensor. 
 ---     this reconfiguration state can be specified on the markings of listener and sensor as well as the content of certain of their queues 
