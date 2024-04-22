@@ -121,7 +121,7 @@ def gen_maude_type(type: ComponentType):
         eqs.add(f"eq {bhv} = b({eq_behaviors_tmp[bhv]}) .")
     transition_names = ', '.join(transitions.keys())
     behavior_names = ', '.join(eq_behaviors_tmp.keys())
-    eqs.add(f"eq {type.name()} = < places:{','.join(places)}, initial:{init}, stationPlaces:{', '.join(st_places)}, transitions:({transition_names}), behaviors:({behavior_names}), groupUses:{use_ports}, groupProvides:{provide_ports} > .")    
+    eqs.add(f"eq {type.name()} = {{ places: {','.join(places)}, initial: {init}, stationPlaces: {', '.join(st_places)}, transitions: ({transition_names}), behaviors: ({behavior_names}), groupUses: {use_ports}, groupProvides: {provide_ports} }} .")    
     return ops, eqs
 
 def gen_maude_instance(instance: ComponentInstance, active: str):
@@ -130,7 +130,7 @@ def gen_maude_instance(instance: ComponentInstance, active: str):
     instance_id = instance.id()
     instance_type = instance.type().name()
     ops.add(f"op {instance_name} : -> Instance .")
-    eqs.add(f"eq {instance_name} = <id: {instance_id}, type: {instance_type}, queueBehavior: [], marking: m({active}, empty, empty)>")
+    eqs.add(f"eq {instance_name} = < id: {instance_id}, type: {instance_type}, queueBehavior: [], marking: m({active}, empty, empty) > .")
     return ops, eqs
 
 def gen_maude_connections(name_of_connections_set, connections):
@@ -155,7 +155,7 @@ def fill_type_of_comp(instances: list[ComponentInstance]):
         type = instance.type()
         type_of_comp[comp] = type
 
-def gen_maude(inventory):
+def gen_maude(example_name, inventory):
     # inventory: str -> ({instance: states}, program)
     # For a node name, inventory stores: (i) the current instances and their state and (ii) a concerto-d program
     all_types = set()
@@ -213,9 +213,15 @@ def gen_maude(inventory):
     all_lines = all_lines + eq_confs_lines
     indented_lines = ['\t' + line for line in all_lines]
     indented_maude = '\n'.join(indented_lines)
-    maude = f"""mod Concerto-PREDS is 
-\tprotecting OPERATIONAL-SEMANTICS . 
-\tincluding SATISFACTION .
+    maude = f"""fmod {example_name.upper()} is 
+\tinc NET-D-CONFIGURATION .
+\tinc CONSISTENCY-PORTS-FIRING-TRANSITION .
+\tinc CONSISTENCY-PORTS-ENTERING-PLACE .
+\tinc COLLECT-EXTERNAL-MESSAGES-FIRING .
+\tinc COLLECT-EXTERNAL-MESSAGES-WAIT .
+\tinc COLLECT-EXTERNAL-MESSAGES-DISCONNECT .
+\tinc COLLECT-EXTERNAL-MESSAGES-ENTERING-PLACE .
+\tinc UPDATE-COMMUNICATION-MESSAGES .
 
 {indented_maude}
 endm 
@@ -258,7 +264,7 @@ def update_cps(n):
     for i in range(1, n+1):
         node2i_components = {sensors[i]: "running"}
         inventory[f"node{2+i}"] = (node2i_components, sensor_update_listeners(i))
-    return gen_maude(inventory)
+    return gen_maude("listener-sensor-example", inventory)
 
 
 if __name__ == "__main__":
