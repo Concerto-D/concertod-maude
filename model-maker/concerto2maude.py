@@ -1,6 +1,4 @@
 from concerto import *
-from examples.openstack import *
-from examples.cps import *
 
 type_of_comp = {} # For a component name, store its concrete type
 
@@ -15,14 +13,14 @@ def get_connections(instance: ComponentInstance):
             provider = instance.id()
             provide_port = instance.type().name() + port.name().capitalize()
             for connection in instance.all_connections()[port]:
-                user = connection[0].name()
+                user = connection[0].id()
                 use_port = connection[0].type().name() + connection[1].name().capitalize()
                 connections.add((user, use_port, provider, provide_port))
         if port.is_use_port():
             user = instance.id()
             use_port = instance.type().name() + port.name().capitalize()
             for connection in instance.all_connections()[port]:
-                provider = connection[0].name()
+                provider = connection[0].id()
                 provide_port = connection[0].type().name() + connection[1].name().capitalize()
                 connections.add((user, use_port, provider, provide_port))
     return connections
@@ -227,57 +225,3 @@ def gen_maude(example_name, inventory):
 endm 
     """
     return maude
-
-
-def deploy_cps(n):
-    inventory = {}
-    inventory["node1"] = ({}, db_deploy())
-    inventory["node2"] = ({}, sys_deploy(n))
-    for i in range(1, n+1):
-        inventory[f"node{2+i}"] = ({}, sensor_deploy(i))
-    return gen_maude(inventory)
-
-
-def update_cps(n):
-    # -------------------------
-    # Component definitions
-    # -------------------------
-    database = ComponentInstance("mydb0", database_type())
-    system = ComponentInstance("mysys0", system_type())
-    listeners, sensors = {}, {}
-    for i in range(1, n+1):
-        listeners[i] = ComponentInstance(f"listener{i}", listener_type())
-        sensors[i] = ComponentInstance(f"sensor{i}", sensor_type())
-    inventory = {}
-    # -------------------------
-    # Node definitions
-    # -------------------------
-    inventory["node1"] = (
-        {database: "deployed"}, 
-        db_update_listeners())
-    # -------------------------
-    node2_components = {system: "deployed"}
-    for i in range(1, n+1):
-        node2_components[listeners[i]] = "running"
-    inventory["node2"] = (node2_components, sys_update_listeners(n))
-    # -------------------------
-    for i in range(1, n+1):
-        node2i_components = {sensors[i]: "running"}
-        inventory[f"node{2+i}"] = (node2i_components, sensor_update_listeners(i))
-    return gen_maude("listener-sensor-example", inventory)
-
-
-if __name__ == "__main__":
-    maude = update_cps(1)
-    # maude = deploy_cps(1)
-    print(maude)
-
-
-
-# def cps(n):
-#     programs = cps_deploy_maude(n)
-#     maude = gen_maude(programs)
-#     write_maude("example_deploy_cps.maude", maude)
-#     programs = cps_deploy_update_maude(n)
-#     maude = gen_maude(programs)
-#     write_maude("example_deploy_update_cps.maude", maude)
