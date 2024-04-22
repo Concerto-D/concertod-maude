@@ -15,11 +15,12 @@
 ---     the behavior queues for the sensor and listener instances are nil, as are the queues for the programs associated with their nodes. 
 
 ---  The Maude search command is: 
+***(
 search [1] globalsystem =>*  < ids: sensor1, instances: < id: sensor1, type: sensortype:ComponentType, queueBehavior: nil, marking: m(sensorRunning, empty, empty) > , 
 connections: connectNode3:Connections, program: nil, msgs: msgsNode3:MsgToUses, receive: rec3:Qreceive, send: send3:Qsend, history: hist3:SentHistorys >,
 < ids: listener1, idInst:IdentInstances,instances: < id: listener1,type: listenertype:ComponentType,queueBehavior: nil,marking: m(listenerRunning,empty,empty) >, Is:Instances ,
 connections: connectNode2:Connections,program: nil,msgs: msgsNode2:MsgToUses, receive: rec2:Qreceive, send: send2:Qsend, history: hist2:SentHistorys >, n:Net .
-
+)
 ---there is a proposed solution for this commend given as follows:
 
 ***(

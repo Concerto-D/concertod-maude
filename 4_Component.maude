@@ -13,62 +13,62 @@ fmod COMPENENT-TYPE is
   pr SET{GroupProvide} .
   subsort Set{GroupProvide} < GroupProvides . 
 
-  vars ps ps1 : Places .
-  var q : InitialPlace .
+  vars Ps Ps1 : Places .
+  var Q : InitialPlace .
   var SPs : StationPlaces .
-  var ts  : Transitions . 
-  var behs : Behaviors .
+  var Ts  : Transitions . 
+  var Behs : Behaviors .
   var GUx : GroupUses .
   var GPx : GroupProvides .
-  vars use use1 : UsePort .
-  vars pro pro1 : ProvidePort .
-  var beh  : Behavior .
+  vars Use Use1 : UsePort .
+  vars Pro Pro1 : ProvidePort .
+  var Beh  : Behavior .
 
   op (_!_) : UsePort Places -> GroupUse . 
   --- GroupUse is defined as tuple : the use port and a group (set) of places
   op (_?_) : ProvidePort Places -> GroupProvide . 
-  --- GroupProvide is defined as tuple : the provide port and a group (set) of places
+  --- GroupProvide is defined as tuple : the Provide port and a group (set) of places
   op { places: _,initial: _,stationPlaces: _,transitions: _,behaviors: _,groupUses: _,groupProvides: _ } : 
   Places InitialPlace StationPlaces Transitions Behaviors GroupUses GroupProvides -> ComponentType . 
 
   --- some operations related to ComponentType used later
   op InitialPlace(_) : ComponentType -> Place .  
   --- to get the initial place of component type
-  eq InitialPlace ({ places: ps,initial: q,stationPlaces: SPs,transitions: ts,behaviors: behs,groupUses: GUx,groupProvides: GPx }) = q .
+  eq InitialPlace ({ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Behs,groupUses: GUx,groupProvides: GPx }) = Q .
 
   op GetStationPlaces(_) : ComponentType -> StationPlaces . 
   --- to get the set of tuples (station; place)
-  eq GetStationPlaces ({ places: ps,initial: q,stationPlaces: SPs,transitions: ts,behaviors: behs,groupUses: GUx,groupProvides: GPx }) = SPs .
+  eq GetStationPlaces ({ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Behs,groupUses: GUx,groupProvides: GPx }) = SPs .
 
   op GetUsePorts(_) : ComponentType -> GroupUses . 
   --- to get the set of the use ports of the component
-  eq GetUsePorts ({ places: ps,initial: q,stationPlaces: SPs,transitions: ts,behaviors: behs,groupUses: GUx,groupProvides: GPx }) = GUx .
+  eq GetUsePorts ({ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Behs,groupUses: GUx,groupProvides: GPx }) = GUx .
 
   op PlacesOfUsePort(_,_) : UsePort GroupUses -> Places . 
   --- to get places of a use port from a set of use ports
-  eq PlacesOfUsePort(use,empty) = empty .
-  eq PlacesOfUsePort(use,(use ! ps),GUx) = ps . 
-  eq PlacesOfUsePort(use,(use1 ! ps),GUx) = PlacesOfUsePort(use,GUx) [owise] . 
+  eq PlacesOfUsePort(Use,empty) = empty .
+  eq PlacesOfUsePort(Use,(Use ! Ps),GUx) = Ps . 
+  eq PlacesOfUsePort(Use,(Use1 ! Ps),GUx) = PlacesOfUsePort(Use,GUx) [owise] . 
    
   op PlacesOfProvidePort(_,_) : ProvidePort GroupProvides -> Places . 
   --- to get places of a provide port from a set of use ports
-  eq PlacesOfProvidePort(pro,empty) = empty .
-  eq PlacesOfProvidePort(pro,((pro ? ps),GPx)) = ps  . 
-  eq PlacesOfProvidePort(pro,((pro1 ? ps),GPx)) = PlacesOfProvidePort(pro,GPx) [owise] . 
+  eq PlacesOfProvidePort(Pro,empty) = empty .
+  eq PlacesOfProvidePort(Pro,((Pro ? Ps),GPx)) = Ps  . 
+  eq PlacesOfProvidePort(Pro,((Pro1 ? Ps),GPx)) = PlacesOfProvidePort(Pro,GPx) [owise] . 
    
   op GroupPlacesofPort(_,_) : Port ComponentType -> Places . 
   --- to get places of a port use or provide
-  eq GroupPlacesofPort(use,{ places: ps,initial: q,stationPlaces: SPs,transitions: ts,behaviors: behs,groupUses: GUx,groupProvides: GPx }) = PlacesOfUsePort(use,GUx)  .
-  eq GroupPlacesofPort(pro,{ places: ps,initial: q,stationPlaces: SPs,transitions: ts,behaviors: behs,groupUses: GUx,groupProvides: GPx } ) = PlacesOfProvidePort(pro,GPx)  .
+  eq GroupPlacesofPort(Use,{ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Behs,groupUses: GUx,groupProvides: GPx }) = PlacesOfUsePort(Use,GUx)  .
+  eq GroupPlacesofPort(Pro,{ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Behs,groupUses: GUx,groupProvides: GPx } ) = PlacesOfProvidePort(Pro,GPx)  .
 
   op IsBehaviorOfComponent(_,_) : Behavior ComponentType -> Bool . 
   --- to check whether a behavior is used in ComponentType, in particular in its behaviors
-  eq IsBehaviorOfComponent(beh,{ places: ps,initial: q,stationPlaces: SPs,transitions: ts,behaviors: behs,groupUses: GUx,groupProvides: GPx }) = beh in behs .
+  eq IsBehaviorOfComponent(Beh,{ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Behs,groupUses: GUx,groupProvides: GPx }) = Beh in Behs .
   
   op MarkingWithRespectToPlaces(_,_) : Places ComponentType -> Marking .   
   --- gives the elements of Marking (places, transitions, TransitionEndings) of group of places depending a ComponentType
-  eq MarkingWithRespectToPlaces(ps1,{ places: ps,initial: q,stationPlaces: SPs,transitions: ts,behaviors: behs,groupUses: GUx,groupProvides: GPx }) = 
-  m(ps1, TransitionsOfPlacesWithRespectToStations(ps1,ts,StationsGroupPlaces(ps1,SPs)), TransitionEndingsOfTransitions(TransitionsOfPlacesWithRespectToStations(ps1,ts,StationsGroupPlaces(ps1,SPs)))) .
+  eq MarkingWithRespectToPlaces(Ps1,{ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Behs,groupUses: GUx,groupProvides: GPx }) = 
+  m(Ps1, TransitionsOfPlacesWithRespectToStations(Ps1,Ts,StationsGroupPlaces(Ps1,SPs)), TransitionEndingsOfTransitions(TransitionsOfPlacesWithRespectToStations(Ps1,Ts,StationsGroupPlaces(Ps1,SPs)))) .
 
 endfm
 
