@@ -130,17 +130,17 @@ def gen_maude_instance(instance: ComponentInstance, active: str):
     instance_id = instance.id()
     instance_type = instance.type().name()
     ops.add(f"op {instance_name} : -> Instance .")
-    eqs.add(f"eq {instance_name} = < id: {instance_id}, type: {instance_type}, queueBehavior: [], marking: m({active}, empty, empty) > .")
+    eqs.add(f"eq {instance_name} = < id: {instance_id}, type: {instance_type}, queueBehavior: nil, marking: m({active}, empty, empty) > .")
     return ops, eqs
 
 def gen_maude_connections(name_of_connections_set, connections):
     ops, eqs = set(), set()
-    ops.add(f"op {name_of_connections_set}: -> Connections ." )
+    ops.add(f"op {name_of_connections_set} : -> Connections ." )
     if len(connections) == 0:
         str_connections = ["empty"]
     else:
         str_connections = list(map(lambda tuple: f"{(tuple[0], tuple[1], tuple[2], tuple[3])}", connections))
-    eqs.add(f"eq {name_of_connections_set}: " + ' '.join(str_connections) +" -> Connections ." )
+    eqs.add(f"eq {name_of_connections_set} : " + ' '.join(str_connections) +" ." )
     return ops, eqs
 
 def fill_type_of_comp_from_adds(add_instructions: list[Add]):
