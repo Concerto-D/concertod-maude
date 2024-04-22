@@ -1,6 +1,4 @@
 from concerto import *
-from examples.openstack import *
-from examples.cps import *
 
 type_of_comp = {} # For a component name, store its concrete type
 
@@ -15,14 +13,14 @@ def get_connections(instance: ComponentInstance):
             provider = instance.id()
             provide_port = instance.type().name() + port.name().capitalize()
             for connection in instance.all_connections()[port]:
-                user = connection[0].name()
+                user = connection[0].id()
                 use_port = connection[0].type().name() + connection[1].name().capitalize()
                 connections.add((user, use_port, provider, provide_port))
         if port.is_use_port():
             user = instance.id()
             use_port = instance.type().name() + port.name().capitalize()
             for connection in instance.all_connections()[port]:
-                provider = connection[0].name()
+                provider = connection[0].id()
                 provide_port = connection[0].type().name() + connection[1].name().capitalize()
                 connections.add((user, use_port, provider, provide_port))
     return connections
@@ -121,7 +119,7 @@ def gen_maude_type(type: ComponentType):
         eqs.add(f"eq {bhv} = b({eq_behaviors_tmp[bhv]}) .")
     transition_names = ', '.join(transitions.keys())
     behavior_names = ', '.join(eq_behaviors_tmp.keys())
-    eqs.add(f"eq {type.name()} = < places:{','.join(places)}, initial:{init}, stationPlaces:{', '.join(st_places)}, transitions:({transition_names}), behaviors:({behavior_names}), groupUses:{use_ports}, groupProvides:{provide_ports} > .")    
+    eqs.add(f"eq {type.name()} = {{ places: {','.join(places)}, initial: {init}, stationPlaces: {', '.join(st_places)}, transitions: ({transition_names}), behaviors: ({behavior_names}), groupUses: {use_ports}, groupProvides: {provide_ports} }} .")    
     return ops, eqs
 
 def gen_maude_instance(instance: ComponentInstance, active: str):
@@ -130,17 +128,17 @@ def gen_maude_instance(instance: ComponentInstance, active: str):
     instance_id = instance.id()
     instance_type = instance.type().name()
     ops.add(f"op {instance_name} : -> Instance .")
-    eqs.add(f"eq {instance_name} = <id: {instance_id}, type: {instance_type}, queueBehavior: [], marking: m({active}, empty, empty)>")
+    eqs.add(f"eq {instance_name} = < id: {instance_id}, type: {instance_type}, queueBehavior: nil, marking: m({active}, empty, empty) > .")
     return ops, eqs
 
 def gen_maude_connections(name_of_connections_set, connections):
     ops, eqs = set(), set()
-    ops.add(f"op {name_of_connections_set}: -> Connections ." )
+    ops.add(f"op {name_of_connections_set} : -> Connections ." )
     if len(connections) == 0:
         str_connections = ["empty"]
     else:
         str_connections = list(map(lambda tuple: f"{(tuple[0], tuple[1], tuple[2], tuple[3])}", connections))
-    eqs.add(f"eq {name_of_connections_set}: " + ' '.join(str_connections) +" -> Connections ." )
+    eqs.add(f"eq {name_of_connections_set} : " + ' '.join(str_connections) +" ." )
     return ops, eqs
 
 def fill_type_of_comp_from_adds(add_instructions: list[Add]):
@@ -155,7 +153,7 @@ def fill_type_of_comp(instances: list[ComponentInstance]):
         type = instance.type()
         type_of_comp[comp] = type
 
-def gen_maude(inventory):
+def gen_maude(example_name, inventory):
     # inventory: str -> ({instance: states}, program)
     # For a node name, inventory stores: (i) the current instances and their state and (ii) a concerto-d program
     all_types = set()
@@ -213,65 +211,17 @@ def gen_maude(inventory):
     all_lines = all_lines + eq_confs_lines
     indented_lines = ['\t' + line for line in all_lines]
     indented_maude = '\n'.join(indented_lines)
-    maude = f"""mod Concerto-PREDS is 
-\tprotecting OPERATIONAL-SEMANTICS . 
-\tincluding SATISFACTION .
+    maude = f"""fmod {example_name.upper()} is 
+\tinc NET-D-CONFIGURATION .
+\tinc CONSISTENCY-PORTS-FIRING-TRANSITION .
+\tinc CONSISTENCY-PORTS-ENTERING-PLACE .
+\tinc COLLECT-EXTERNAL-MESSAGES-FIRING .
+\tinc COLLECT-EXTERNAL-MESSAGES-WAIT .
+\tinc COLLECT-EXTERNAL-MESSAGES-DISCONNECT .
+\tinc COLLECT-EXTERNAL-MESSAGES-ENTERING-PLACE .
+\tinc UPDATE-COMMUNICATION-MESSAGES .
 
 {indented_maude}
 endm 
     """
     return maude
-
-
-def deploy_cps(n):
-    inventory = {}
-    inventory["node1"] = ({}, db_deploy())
-    inventory["node2"] = ({}, sys_deploy(n))
-    for i in range(1, n+1):
-        inventory[f"node{2+i}"] = ({}, sensor_deploy(i))
-    return gen_maude(inventory)
-
-
-def update_cps(n):
-    # -------------------------
-    # Component definitions
-    # -------------------------
-    database = ComponentInstance("mydb0", database_type())
-    system = ComponentInstance("mysys0", system_type())
-    listeners, sensors = {}, {}
-    for i in range(1, n+1):
-        listeners[i] = ComponentInstance(f"listener{i}", listener_type())
-        sensors[i] = ComponentInstance(f"sensor{i}", sensor_type())
-    inventory = {}
-    # -------------------------
-    # Node definitions
-    # -------------------------
-    inventory["node1"] = (
-        {database: "deployed"}, 
-        db_update_listeners())
-    # -------------------------
-    node2_components = {system: "deployed"}
-    for i in range(1, n+1):
-        node2_components[listeners[i]] = "running"
-    inventory["node2"] = (node2_components, sys_update_listeners(n))
-    # -------------------------
-    for i in range(1, n+1):
-        node2i_components = {sensors[i]: "running"}
-        inventory[f"node{2+i}"] = (node2i_components, sensor_update_listeners(i))
-    return gen_maude(inventory)
-
-
-if __name__ == "__main__":
-    maude = update_cps(1)
-    # maude = deploy_cps(1)
-    print(maude)
-
-
-
-# def cps(n):
-#     programs = cps_deploy_maude(n)
-#     maude = gen_maude(programs)
-#     write_maude("example_deploy_cps.maude", maude)
-#     programs = cps_deploy_update_maude(n)
-#     maude = gen_maude(programs)
-#     write_maude("example_deploy_update_cps.maude", maude)
