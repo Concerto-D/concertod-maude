@@ -4,7 +4,7 @@ fmod LISTENER-SENSOR-EXAMPLE is
         inc CONSISTENCY-PORTS-ENTERING-PLACE .
         inc COLLECT-EXTERNAL-MESSAGES-FIRING .
         inc COLLECT-EXTERNAL-MESSAGES-WAIT .
-        inc COLLECT-EXTERNAL-MESSAGES-DISCONNECT .
+        inc COLLECT-EXTERNAL-MESSAGES-disconnect .
         inc COLLECT-EXTERNAL-MESSAGES-ENTERING-PLACE .
         inc UPDATE-COMMUNICATION-MESSAGES .
  
@@ -107,8 +107,8 @@ fmod LISTENER-SENSOR-EXAMPLE is
         op confNode1 : ->  LocalConfiguration .
         ops msgsNode1 msgsNode2 msgsNode3 : ->  MsgToUses .
         eq msgsNode1 = empty .
-        eq msgsNode2 = extern(ExprIsConnected(mydb0,(mysys0,systemDbservice,mydb0,databaseService)) ; true), extern(ExprRefusing(mydb0,databaseService) ; false) .
-        eq msgsNode3 = extern(ExprIsConnected(listener1,(sensor1,sensorRcvservice,listener1,listenerRcv)) ; true), extern(ExprRefusing(listener1,listenerRcv) ; false), extern(ExprIsConnected(listener1,(sensor1,sensorConfigservice,listener1,listenerConfig )) ; true), extern(ExprRefusing(listener1,listenerConfig) ; false) .
+        eq msgsNode2 = extern(exprIsConnected(mydb0,(mysys0,systemDbservice,mydb0,databaseService)) ; true), extern(exprRefusing(mydb0,databaseService) ; false) .
+        eq msgsNode3 = extern(exprIsConnected(listener1,(sensor1,sensorRcvservice,listener1,listenerRcv)) ; true), extern(exprRefusing(listener1,listenerRcv) ; false), extern(exprIsConnected(listener1,(sensor1,sensorConfigservice,listener1,listenerConfig )) ; true), extern(exprRefusing(listener1,listenerConfig) ; false) .
         ops idb0 idb1 idb2 idb3 idb4 idb5 : -> IdentBehavior .
         eq confNode1 = < ids: mydb0, instances: instMydb0, connections: connectionsNode1, program: nil , msgs: msgsNode1, receive: nil, send: nil, history: empty > .
         op confNode2 : ->  LocalConfiguration .

@@ -538,7 +538,7 @@ class Connect(Instruction):
                + hash(self._using_port) + hash(self._user)
 
 
-class Disconnect(Instruction):
+class disconnect(Instruction):
 
     def __init__(self, provider: str, providing_port: str, user: str, using_port: str):
         self._provider = provider
@@ -568,7 +568,7 @@ class Disconnect(Instruction):
         return f"disconnect({self._provider}, {self._providing_port}, {self._user}, {self._using_port})"
 
     def __eq__(self, other):
-        if isinstance(other, Disconnect):
+        if isinstance(other, disconnect):
             return other.provider() == self.provider() and other.providing_port() == self.providing_port() \
                    and other.user() == self.user() and other.using_port() == self.using_port()
         return False

@@ -14,7 +14,7 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
   var Mx : MsgToUses .
   var IdIx : IdentInstances .
 
-  op NotActUseWhenLeavinGroupProvide(_,_,_,_,_) : IdentInstances Marking Instances MsgToUses Connections ->  Bool .
+  op notActUseWhenLeavinGroupProvide(_,_,_,_,_) : IdentInstances Marking Instances MsgToUses Connections ->  Bool .
   ---   is used to ensure consistency when firing transitions
   ---   it takes as parameters when used in the firing transition rule: 
   ---   the set of identifiers for all instances of the concerned configuration (concerned by the firing of one of its instances)
@@ -24,13 +24,13 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
   ---   finally, a subset of Connections related to the configuration, where the instance concerned by firing is a provider.
   ---   so for each connection it checks that the firing of the concerned instance (provider) does not affect the corresponding user
   ---   i.e., if the provider for each connection after a firing goes from active to inactive, this implies that the user must be inactive.
-  eq NotActUseWhenLeavinGroupProvide(IdIx,NewMark,Ix,Mx,(Id1,Use,Id2,Pro),Lx) = NotActUseWhenLeavinGroupProvide(IdIx,NewMark,Ix,Mx,Lx) and 
+  eq notActUseWhenLeavinGroupProvide(IdIx,NewMark,Ix,Mx,(Id1,Use,Id2,Pro),Lx) = notActUseWhenLeavinGroupProvide(IdIx,NewMark,Ix,Mx,Lx) and 
   (
-    ( (Evaluation(IdIx,ExprActive(Id2,Pro),Mx, Ix,empty,nil ) == true) and 
-    (activeMarking(InstanceOfIdent(Ix,Id2),Pro,NewMark) == false )) 
-    implies  (Evaluation(IdIx,ExprActive(Id1,Use),Mx, Ix,empty,nil ) == false) 
+    ( (evaluation(IdIx,exprActive(Id2,Pro),Mx, Ix,empty,nil ) == true) and 
+    (activeMarking(instanceOfIdent(Ix,Id2),Pro,NewMark) == false )) 
+    implies  (evaluation(IdIx,exprActive(Id1,Use),Mx, Ix,empty,nil ) == false) 
   ) .
-  eq NotActUseWhenLeavinGroupProvide(IdIx,NewMark,Ix,Mx,empty) = true .
+  eq notActUseWhenLeavinGroupProvide(IdIx,NewMark,Ix,Mx,empty) = true .
 
 endfm
 
@@ -50,8 +50,8 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   vars IdentIns Id1 Id2 : IdentInstance .
   var IdIx : IdentInstances .
 
-  op ConnectedAndAllowed(_,_,_,_,_,_,_,_) : IdentInstances Place GroupUses Instance Instance Instances Connections MsgToUses -> Bool . 
-  ---  for the entreing place rule, in addition to the IsSatisfiedTransitionEndingStation condition on the choice of a station as an ending for a transition,
+  op connectedAndAllowed(_,_,_,_,_,_,_,_) : IdentInstances Place GroupUses Instance Instance Instances Connections MsgToUses -> Bool . 
+  ---  for the entreing place rule, in addition to the isSatisfiedTransitionEndingStation condition on the choice of a station as an ending for a transition,
   ---  we need the satifaction of ConnectedProvidedAllowed
   ---  this function takes as parameters:
   ---  the set of identifiers for all instances of the concerned configuration (concerned by the firing of one of its instances)
@@ -64,27 +64,27 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   ---  if, by applying the rule, the status of this port is changed from inactive to active, 
   ---  knowing that the place of the function belongs to this use port, then
   ---  two conditions must be met Connected and allowed of of its provider ports.
-  eq ConnectedAndAllowed(IdIx,p,empty,i,i',Is,Lx,Mx) = true .
-  ceq ConnectedAndAllowed(IdIx,p,(Use ! ps),GUx,i,i',Is,Lx,Mx) = 
-  Connected(IdIx,Use,IdentOfInstance(i),Lx,Mx)  and 
-  Allowed(IdIx,Use,IdentOfInstance(i),i,Is,Lx,Mx)   and 
-  ConnectedAndAllowed(IdIx,p,GUx,i,i',Is,Lx,Mx) 
+  eq connectedAndAllowed(IdIx,p,empty,i,i',Is,Lx,Mx) = true .
+  ceq connectedAndAllowed(IdIx,p,(Use ! ps),GUx,i,i',Is,Lx,Mx) = 
+  connected(IdIx,Use,identOfInstance(i),Lx,Mx)  and 
+  allowed(IdIx,Use,identOfInstance(i),i,Is,Lx,Mx)   and 
+  connectedAndAllowed(IdIx,p,GUx,i,i',Is,Lx,Mx) 
   if  ((p in ps) and active(i,Use) == false and active(i',Use) == true  ).     
   --- in the previous condition we use active directly since it's a local treatment for the concerned configuration
-  eq ConnectedAndAllowed(IdIx,p,(Use ! ps),GUx,i,i',Is,Lx,Mx) = ConnectedAndAllowed(IdIx,p,GUx,i,i',Is,Lx,Mx) [owise] .
+  eq connectedAndAllowed(IdIx,p,(Use ! ps),GUx,i,i',Is,Lx,Mx) = connectedAndAllowed(IdIx,p,GUx,i,i',Is,Lx,Mx) [owise] .
 
-  op Connected(_,_,_,_,_) : IdentInstances UsePort IdentInstance Connections MsgToUses -> Bool . 
+  op connected(_,_,_,_,_) : IdentInstances UsePort IdentInstance Connections MsgToUses -> Bool . 
   ---  connection must be verified on both user and provider instances
-  eq Connected(IdIx,Use,Id1,empty,Mx) = false .
-  ceq Connected(IdIx,Use,Id1,(Id1,Use,Id2,Pro),Lx,Mx) = true 
-  if(Evaluation(IdIx,ExprIsConnected(Id2,(Id1,Use,Id2,Pro)),Mx,empty,(Id1,Use,Id2,Pro),Lx,nil )   == true ) .
-  eq Connected(IdIx,Use1,IdentIns,(Id1,Use,Id2,Pro),Lx,Mx) = Connected(IdIx,Use1,IdentIns,Lx,Mx) [owise] .
+  eq connected(IdIx,Use,Id1,empty,Mx) = false .
+  ceq connected(IdIx,Use,Id1,(Id1,Use,Id2,Pro),Lx,Mx) = true 
+  if(evaluation(IdIx,exprIsConnected(Id2,(Id1,Use,Id2,Pro)),Mx,empty,(Id1,Use,Id2,Pro),Lx,nil )   == true ) .
+  eq connected(IdIx,Use1,IdentIns,(Id1,Use,Id2,Pro),Lx,Mx) = connected(IdIx,Use1,IdentIns,Lx,Mx) [owise] .
 
-  op Allowed(_,_,_,_,_,_) : IdentInstances UsePort  IdentInstance Instances Connections MsgToUses -> Bool . 
+  op allowed(_,_,_,_,_,_) : IdentInstances UsePort  IdentInstance Instances Connections MsgToUses -> Bool . 
   --- also the provide port connected to this use port of the instance must not be refused
-  eq Allowed(IdIx,Use,Id1,Is,empty,Mx) = false .
-  eq Allowed(IdIx,Use,Id1,Is,(Id1,Use,Id2,Pro),Lx,Mx) = (Evaluation(IdIx,ExprRefusing(Id2,Pro),Mx,Is,empty,nil ) == false) . 
-  eq Allowed(IdIx,Use1,IdentIns,Is,(Id1,Use,Id2,Pro),Lx,Mx) = Allowed(IdIx,Use1,IdentIns,Is,Lx,Mx) [owise] .
+  eq allowed(IdIx,Use,Id1,Is,empty,Mx) = false .
+  eq allowed(IdIx,Use,Id1,Is,(Id1,Use,Id2,Pro),Lx,Mx) = (evaluation(IdIx,exprRefusing(Id2,Pro),Mx,Is,empty,nil ) == false) . 
+  eq allowed(IdIx,Use1,IdentIns,Is,(Id1,Use,Id2,Pro),Lx,Mx) = allowed(IdIx,Use1,IdentIns,Is,Lx,Mx) [owise] .
 
 endfm
 

@@ -21,12 +21,12 @@ view MsgToUse from TRIV to DECLARATION-SORTS is
   sort Elt to MsgToUse .
 endv
 
-view send from TRIV to DECLARATION-SORTS is
-  sort Elt to send .
+view Send from TRIV to DECLARATION-SORTS is
+  sort Elt to Send .
 endv
 
-view receive from TRIV to DECLARATION-SORTS is
-  sort Elt to receive .
+view Receive from TRIV to DECLARATION-SORTS is
+  sort Elt to Receive .
 endv
 
 view SentHistory from TRIV to DECLARATION-SORTS is
@@ -74,3 +74,7 @@ endv
 view Instruction from TRIV to DECLARATION-SORTS is
  sort Elt to Instruction .
 endv
+
+---view Request from TRIV to REQUEST is
+ --- sort Elt to Request .
+---endv
