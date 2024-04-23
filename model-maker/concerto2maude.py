@@ -1,5 +1,6 @@
 from concerto import *
 
+ids_of_bhv = set()
 type_of_comp = {} # For a component name, store its concrete type
 
 def flatmap(func, iterable):
@@ -34,7 +35,7 @@ def get_instance_names(instances):
     if len(instances) == 0:
         return "empty" 
     names = set(map(lambda instance: f"inst{instance.id().capitalize()}", instances))
-    return ' '.join(names)
+    return ', '.join(names)
 
 def make_connections_name(node_name):
     return f"connections{node_name.capitalize()}"
@@ -59,6 +60,7 @@ def make_maude_instruction(instruction: Instruction):
     if instruction.isPushB():
         pushb = instruction
         type_comp = type_of_comp[pushb.component()]
+        ids_of_bhv.add(pushb.id())
         return f"pushB({pushb.component()}, {type_comp.name()}{pushb.behavior().capitalize()}, {pushb.id()})" 
     if instruction.isWait():
         wait = instruction
@@ -128,7 +130,7 @@ def gen_maude_instance(instance: ComponentInstance, active: str):
     instance_id = instance.id()
     instance_type = instance.type().name()
     ops.add(f"op {instance_name} : -> Instance .")
-    eqs.add(f"eq {instance_name} = < id: {instance_id}, type: {instance_type}, queueBehavior: nil, marking: m({active}, empty, empty) > .")
+    eqs.add(f"eq {instance_name} = < id: {instance_id}, type: {instance_type}, queueBehavior: nil, marking: m({instance_type}{active.capitalize()}, empty, empty) > .")
     return ops, eqs
 
 def gen_maude_connections(name_of_connections_set, connections):
@@ -138,7 +140,7 @@ def gen_maude_connections(name_of_connections_set, connections):
         str_connections = ["empty"]
     else:
         str_connections = list(map(lambda tuple: f"{(tuple[0], tuple[1], tuple[2], tuple[3])}", connections))
-    eqs.add(f"eq {name_of_connections_set} : " + ' '.join(str_connections) +" ." )
+    eqs.add(f"eq {name_of_connections_set} = " + ', '.join(str_connections) +" ." )
     return ops, eqs
 
 def fill_type_of_comp_from_adds(add_instructions: list[Add]):
@@ -203,12 +205,18 @@ def gen_maude(example_name, inventory):
         ops = ops.union(_ops)
         eqs = eqs.union(_eqs)
     all_lines = list(ops) + list(eqs)
+    ops_ident_bhv = f"ops {' '.join(ids_of_bhv)} : -> IdentBehavior . "
+    all_lines = all_lines + [ops_ident_bhv]
     eq_confs_lines = []
+    net_confs = []
     for eq_conf_name in eq_confs.keys():
         eq_conf_line = eq_confs[eq_conf_name]
-        eq_confs_lines.append(f"op {eq_conf_name}: ->  LocalConfiguration .")
+        eq_confs_lines.append(f"op {eq_conf_name} : ->  LocalConfiguration .")
         eq_confs_lines.append(eq_conf_line)
-    all_lines = all_lines + eq_confs_lines
+        net_confs.append(eq_conf_name)
+    net_op = "op globalSystem : -> Net ."
+    net_eq = f"eq globalSystem = {', '.join(net_confs)} . "
+    all_lines = all_lines + eq_confs_lines + [net_op, net_eq]
     indented_lines = ['\t' + line for line in all_lines]
     indented_maude = '\n'.join(indented_lines)
     maude = f"""fmod {example_name.upper()} is 
@@ -222,6 +230,6 @@ def gen_maude(example_name, inventory):
 \tinc UPDATE-COMMUNICATION-MESSAGES .
 
 {indented_maude}
-endm 
+endfm 
     """
     return maude

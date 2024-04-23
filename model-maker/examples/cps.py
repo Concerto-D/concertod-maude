@@ -100,7 +100,7 @@ def db_deploy():
     return  Program([
         Add("mydb0", database_type()),
         Connect("mydb0", "service", "mysys0", "dbService"),
-        PushB("mydb0", "deploy", "db1")
+        PushB("mydb0", "deploy", "bdb1")
     ])
     
 def sys_deploy(n):
@@ -115,9 +115,9 @@ def sys_deploy(n):
             Connect(f"listener{i}", "rcv", f"sensor{i}", "rcvService"),
             Connect(f"listener{i}", "config", f"sensor{i}", "configService")
         ]
-    program += [PushB("mysys0", "deploy", "sys1")]
+    program += [PushB("mysys0", "deploy", "bsys1")]
     program += [
-        PushB(f"listener{i}", "deploy", f"{i}lst1")
+        PushB(f"listener{i}", "deploy", f"b{i}lst1")
         for i in range(1,n+1)
     ]
     return Program(program)
@@ -127,7 +127,7 @@ def sensor_deploy(i):
         Add(f"sensor{i}", sensor_type()),
         Connect(f"listener{i}", "rcv", f"sensor{i}", "rcvService"),
         Connect(f"listener{i}", "config", f"sensor{i}", "configService"),
-        PushB(f"sensor{i}", "deploy", f"{i}sens1")
+        PushB(f"sensor{i}", "deploy", f"b{i}sens1")
     ])
     
 # --------------------------------
@@ -139,16 +139,16 @@ def sys_update_listeners(n):
     program = []
     for i in range(1,n+1): 
         program += [
-            PushB(f"listener{i}", "update", f"{2+i*2}"),
-            PushB(f"listener{i}", "deploy", f"{3+i*2}")
+            PushB(f"listener{i}", "update", f"b{2+i*2}"),
+            PushB(f"listener{i}", "deploy", f"b{3+i*2}")
         ]
     return Program(program)
 
 def sensor_update_listeners(i):
     progr = [
-        PushB(f"sensor{i}", "pause", f"0"),
-        Wait(f"listener{i}", f"{2+i*2}"),
-        PushB(f"sensor{i}", "start", f"1")
+        PushB(f"sensor{i}", "pause", f"b0"),
+        Wait(f"listener{i}", f"b{2+i*2}"),
+        PushB(f"sensor{i}", "start", f"b1")
     ]
     return Program(progr)
 
