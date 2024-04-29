@@ -26,9 +26,9 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
   ---   i.e., if the provider for each connection after a firing goes from active to inactive, this implies that the user must be inactive.
   eq notActUseWhenLeavinGroupProvide(IdIx,NewMark,Ix,Mx,(Id1,Use,Id2,Pro),Lx) = notActUseWhenLeavinGroupProvide(IdIx,NewMark,Ix,Mx,Lx) and 
   (
-    ( (evaluation(IdIx,exprActive(Id2,Pro),Mx, Ix,empty,nil ) == true) and 
+    ( (evaluationMsg(IdIx,< Id2 ; isActive(Pro) >,Mx, Ix,empty,nil ) == true) and 
     (activeMarking(instanceOfIdent(Ix,Id2),Pro,NewMark) == false )) 
-    implies  (evaluation(IdIx,exprActive(Id1,Use),Mx, Ix,empty,nil ) == false) 
+    implies  (evaluationMsg(IdIx,< Id1 ; isActive(Use) >,Mx, Ix,empty,nil ) == false) 
   ) .
   eq notActUseWhenLeavinGroupProvide(IdIx,NewMark,Ix,Mx,empty) = true .
 
@@ -77,13 +77,13 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   ---  connection must be verified on both user and provider instances
   eq connected(IdIx,Use,Id1,empty,Mx) = false .
   ceq connected(IdIx,Use,Id1,(Id1,Use,Id2,Pro),Lx,Mx) = true 
-  if(evaluation(IdIx,exprIsConnected(Id2,(Id1,Use,Id2,Pro)),Mx,empty,(Id1,Use,Id2,Pro),Lx,nil )   == true ) .
+  if(evaluationMsg(IdIx,< Id2 ; isConnected(Id1,Use,Id2,Pro) >,Mx,empty,(Id1,Use,Id2,Pro),Lx,nil )   == true ) .
   eq connected(IdIx,Use1,IdentIns,(Id1,Use,Id2,Pro),Lx,Mx) = connected(IdIx,Use1,IdentIns,Lx,Mx) [owise] .
 
   op allowed(_,_,_,_,_,_) : IdentInstances UsePort  IdentInstance Instances Connections MsgToUses -> Bool . 
   --- also the provide port connected to this use port of the instance must not be refused
   eq allowed(IdIx,Use,Id1,Is,empty,Mx) = false .
-  eq allowed(IdIx,Use,Id1,Is,(Id1,Use,Id2,Pro),Lx,Mx) = (evaluation(IdIx,exprRefusing(Id2,Pro),Mx,Is,empty,nil ) == false) . 
+  eq allowed(IdIx,Use,Id1,Is,(Id1,Use,Id2,Pro),Lx,Mx) = (evaluationMsg(IdIx,< Id2 ; isRefusing(Pro) >,Mx,Is,empty,nil ) == false) . 
   eq allowed(IdIx,Use1,IdentIns,Is,(Id1,Use,Id2,Pro),Lx,Mx) = allowed(IdIx,Use1,IdentIns,Is,Lx,Mx) [owise] .
 
 endfm

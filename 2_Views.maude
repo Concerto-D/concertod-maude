@@ -75,6 +75,6 @@ view Instruction from TRIV to DECLARATION-SORTS is
  sort Elt to Instruction .
 endv
 
----view Request from TRIV to REQUEST is
- --- sort Elt to Request .
----endv
+view Request from TRIV to DECLARATION-SORTS is
+ sort Elt to Request .
+endv

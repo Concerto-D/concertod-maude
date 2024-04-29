@@ -45,9 +45,9 @@ fmod STATION-PLACE is
 
   op placeOfStation(_,_) : Station StationPlaces -> Place . 
   --- gives the corresponding place for a station according to the "StationPlaces" set 
-  ceq placeOfStation(Ss1, ((Ss2 ; Q),SPs)) = Q if (Ss1 == Ss2) .
+  eq placeOfStation(Ss1, ((Ss1 ; Q),SPs)) = Q  .
   eq placeOfStation(Ss1, ((Ss2 ; Q),SPs)) = placeOfStation(Ss1,SPs) [owise] . 
-   ---otherwise
+  ---  case not-found not processed, each satation has a place and it is in the stationPlaces esnemble. 
 
   op stationsGroupPlaces(_,_) : Places StationPlaces -> Stations .  
   --- gives the stations associated to a Places group
@@ -55,7 +55,66 @@ fmod STATION-PLACE is
   ceq stationsGroupPlaces(Ps,((Ss1 ; Q),SPs)) = Ss1, stationsGroupPlaces(Ps,SPs) if(Q in Ps) .
   eq stationsGroupPlaces(Ps,((Ss1 ; Q),SPs)) =  stationsGroupPlaces(Ps,SPs) [owise] .
 
+
 endfm
+
+
+***(
+
+  --- This is the good style:
+  op _[_] : SFSet F$Elt' -> [F$Elt] . 
+  op not-found : -> [F$Elt] .
+  ceq (E, S)[E'] = E if E' = f(E).
+  eq S[E'] = not-found [owise] .
+
+  --- This is not the good style: 
+  op _{_} : SFSet F$Elt' -> [F$Elt] . 
+  eq (E, empty){E'} = not-found . 
+  ceq (E, S){E'} = E if E' = f(E).
+  eq (E, S){E'} = S[E'] [owise] .
+
+   --- This is the good style and efficient (but more specialized way):
+  --- but only if we are sure there is not any duplicated key!
+  op find _ in _ : NzNat SFSet -> [NzNat] .
+  op not-found : -> [NzNat] . 
+  eq find X in (S, (X,Y)) = Y .
+  eq find X in S = not-found [owise] .
+
+fmod MAP{X :: TRIV, Y :: TRIV} is
+  protecting BOOL .
+  sorts Entry{X,Y} Map{X,Y} .
+  subsort Entry{X,Y} < Map{X,Y} .
+
+  op _|->_ : X$Elt Y$Elt -> Entry{X,Y} [ctor] .
+  op empty : -> Map{X,Y} [ctor] .
+  op _,_ : Map{X,Y} Map{X,Y} -> Map{X,Y} [ctor assoc comm id: empty prec 121 format (d r os d)] .
+  op undefined : -> [Y$Elt] [ctor] .
+
+  var D : X$Elt .
+  vars R R' : Y$Elt .
+  var M : Map{X,Y} .
+
+  op insert : X$Elt Y$Elt Map{X,Y} -> Map{X,Y} .
+  eq insert(D, R, (M, D |-> R')) =
+     if $hasMapping(M, D) then insert(D, R, M)
+     else (M, D |-> R)
+     fi .
+  eq insert(D, R, M) = (M, D |-> R) [owise] .
+
+  op _[_] : Map{X,Y} X$Elt -> [Y$Elt] [prec 23] .
+  eq (M, D |-> R)[D] =
+     if $hasMapping(M, D) then undefined
+     else R
+     fi .
+  eq M[D] = undefined [owise] .
+
+  op $hasMapping : Map{X,Y} X$Elt -> Bool .
+  eq $hasMapping((M, D |-> R), D) = true .
+  eq $hasMapping(M, D) = false [owise] .
+endfm
+
+)
+
 
 fmod IDENT-COMPONENT-BEHAVIOR is
   
@@ -81,11 +140,11 @@ fmod BOOL-WITH-BOT is
   pr BOOL . 
   --- importation of sort BOOL
   
-  sort Bot .
-  sort BoolWithBot .
-  subsorts Bool  Bot < BoolWithBot .
+  ---sort Bot .
+  ---sort [Bool] .
+  ---subsorts Bool  Bot < [Bool] .
 
-  op bot : -> Bot .
+  op bot : -> [Bool] .
 
 endfm
 
@@ -134,35 +193,29 @@ fmod ID-FUNCTIONS-COMMUNICATED is
   inc IDENT-COMPONENT-BEHAVIOR .
   inc PORT .
   inc CONNECTION .
+  pr PAIR{IdentInstance,Request} .
   
   sort Msg .
-  sorts MsgActive MsgRefusing MsgIsConnected Msgdisconnect MsgCompleted .
-  subsorts MsgActive MsgRefusing MsgIsConnected Msgdisconnect MsgCompleted < Msg .
+  subsort Pair{IdentInstance, Request} < Msg .  
 
   var L : Connection .
   var Id : IdentInstance .
   var Port : Port .
   var IdBeh : IdentBehavior .
 
-  --- we have 5 types of messages to communicate
-  op exprActive(_,_) : IdentInstance Port -> MsgActive .  
-  ---for active
-  op exprRefusing(_,_) : IdentInstance Port -> MsgRefusing .    
-  --- for refusing
-  op exprIsConnected(_,_) : IdentInstance Connection -> MsgIsConnected .  
-  --- for a connection if it is established
-  op exprDisconnect(_,_) : IdentInstance Connection -> Msgdisconnect .  
-  --- for disconnect instruction
-  op exprCompleted(_,_) : IdentInstance IdentBehavior -> MsgCompleted .  
-  --- for complete execution of a behavior
-  
-  op getIdentForMsg(_) : Msg -> IdentInstance .  
-  --- get the identifier op a Msg 
-  eq getIdentForMsg(exprActive(Id,Port)) = Id .
-  eq getIdentForMsg(exprRefusing(Id,Port)) = Id .
-  eq getIdentForMsg(exprIsConnected(Id,L)) = Id .
-  eq getIdentForMsg(exprDisconnect(Id,L)) = Id .
-  eq getIdentForMsg(exprCompleted(Id,IdBeh)) = Id .
+
+
+  op isActive(_) :  Port -> Request [ctor] .  
+
+  op isRefusing(_) : Port -> Request [ctor] .    
+
+  op isConnected(_) : Connection -> Request [ctor] .  
+
+  op isDisconnect(_) : Connection -> Request [ctor] .  
+ 
+  op isCompleted(_) : IdentBehavior -> Request [ctor] .  
+
+
 
 endfm
 
