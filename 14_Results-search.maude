@@ -57,8 +57,8 @@ n:Net --> < ids: mydb0,instances: < id: mydb0,type: {places: databaseInitiated, 
     systemDeployed},queueBehavior: nil,marking: m(systemDeployed,empty,empty) >,connections: listener1,
     listenerSysservice,mysys0,systemService, sensor1,sensorRcvservice,listener1,listenerRcv, sensor1,
     sensorConfigservice,listener1,listenerConfig, mysys0,systemDbservice,mydb0,databaseService,program: nil,msgs:
-    extern(exprActive(sensor1,sensorRcvservice) ; false), extern(exprActive(sensor1,sensorConfigservice) ; false),
-    extern(exprRefusing(mydb0,databaseService) ; false), extern(exprIsConnected(mydb0,mysys0,systemDbservice,mydb0,
+    extern(< _; isActive(_) >(sensor1,sensorRcvservice) ; false), extern(< _; isActive(_) >(sensor1,sensorConfigservice) ; false),
+    extern(< _; isRefusing >(mydb0,databaseService) ; false), extern(< _; isConnected >(mydb0,mysys0,systemDbservice,mydb0,
     databaseService) ; true),receive: nil,send: nil,history: empty >
 sensortype:ComponentType --> {places: sensorRunning, sensorConfigured, sensorInstalled, sensorProvisioned, sensorOff,
     initial: sensorOff,stationPlaces: stsensorRunning ; sensorRunning, stsensorConfigured ; sensorConfigured,
@@ -71,9 +71,9 @@ sensortype:ComponentType --> {places: sensorRunning, sensorConfigured, sensorIns
     sensorConfigservice ! (sensorRunning, sensorConfigured, sensorInstalled),groupProvides: empty}
 connectionsNode:Connections --> sensor1,sensorRcvservice,listener1,listenerRcv, sensor1,sensorConfigservice,listener1,
     listenerConfig
-msgsNode:MsgToUses --> extern(exprRefusing(listener1,listenerRcv) ; false), extern(exprRefusing(listener1,
-    listenerConfig) ; false), extern(exprIsConnected(listener1,sensor1,sensorRcvservice,listener1,listenerRcv) ; true),
-    extern(exprIsConnected(listener1,sensor1,sensorConfigservice,listener1,listenerConfig) ; true), extern(
+msgsNode:MsgToUses --> extern(< _; isRefusing >(listener1,listenerRcv) ; false), extern(< _; isRefusing >(listener1,
+    listenerConfig) ; false), extern(< _; isConnected >(listener1,sensor1,sensorRcvservice,listener1,listenerRcv) ; true),
+    extern(< _; isConnected >(listener1,sensor1,sensorConfigservice,listener1,listenerConfig) ; true), extern(
     exprCompleted(listener1,idb4) ; true)
 rec:Qreceive --> (nil).List{receive}
 sen:Qsend --> (nil).List{send}

@@ -6,13 +6,13 @@ fmod UPDATE-COMMUNICATION-MESSAGES is
     var IdIx : IdentInstances . 
     var L : Connections .
     var Mx : MsgToUses .
-    var val : BoolWithBot .
+    var val : [Bool] .
     var Use : UsePort .
     var Pro : ProvidePort .
     var M : Msg .
     vars Id1 Id2 : IdentInstance .
 
-    op identInstanceonnectionWhenSendActive(_,_,_) : Connections Msg BoolWithBot -> IdentInstances .
+    op identInstanceonnectionWhenSendActive(_,_,_) : Connections Msg [Bool] -> IdentInstances .
 
     --- to maintain the consistency of exchanged information between nodes, an update is necessary for the old information received. 
     --- the update is applied when a local configuration communicates by message the information on one of the use ports of its instances which is not active, 
@@ -21,7 +21,7 @@ fmod UPDATE-COMMUNICATION-MESSAGES is
     --- which claims the active function which has a false evaluation. 
     --- Note that the expected result of this op is Id2 if it exists, otherwise empty, 
     --- so the result is a set that can contain either an empty element or a single identifier.
-    eq identInstanceonnectionWhenSendActive(((Id1,Use,Id2,Pro),L),exprActive(Id1,Use),false) = Id2 . 
+    eq identInstanceonnectionWhenSendActive(((Id1,Use,Id2,Pro),L),< Id1 ; isActive(Use) >,false) = Id2 . 
     eq identInstanceonnectionWhenSendActive(empty,M,val) = empty . 
     eq identInstanceonnectionWhenSendActive(((Id1,Use,Id2,Pro),L),M,val) = identInstanceonnectionWhenSendActive(L,M,val) [owise] . 
 
@@ -29,7 +29,7 @@ fmod UPDATE-COMMUNICATION-MESSAGES is
     --- The update is related only to message related to the refusing function who we know its identifier if exist.
     eq  upDateMsgToUsesSend(Mx,empty) = Mx .
     eq  upDateMsgToUsesSend(empty,IdIx) = empty .
-    ceq upDateMsgToUsesSend((extern(exprRefusing(Id1,Pro) ; val),Mx),IdIx) = extern(exprRefusing(Id1,Pro) ; bot), Mx if (Id1 in IdIx ) .
+    ceq upDateMsgToUsesSend((extern(< Id1 ; isRefusing(Pro) > ; val),Mx),IdIx) = extern(< Id1 ; isRefusing(Pro) > ; bot), Mx if (Id1 in IdIx ) .
     eq  upDateMsgToUsesSend((extern(M ; val),Mx),IdIx) = extern(M ; val), upDateMsgToUsesSend(Mx,IdIx) [owise] .
     
 endfm

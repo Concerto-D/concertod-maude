@@ -14,7 +14,7 @@ mod OPERATIONAL-SEMANTICS is
   vars Hx Hy : SentHistorys .
   
   var  M : Msg .
-  var Val : BoolWithBot .
+  var Val : [Bool] .
   var Ct : ComponentType .
   var Use : UsePort .
   var pro : ProvidePort .
@@ -100,11 +100,11 @@ crl [FiringTransitions] :
     (  
     (Id1,Use,Id2,pro) in Lx
     and
-    evaluation(IdIx,exprDisconnect(Id1,(Id1,Use,Id2,pro)),Mx,Ix,Lx,dcon(Id1,Use,Id2,pro) Rx) == true
+    evaluationMsg(IdIx,< Id1  ; isDisconnect(Id1,Use,Id2,pro) >,Mx,Ix,Lx,dcon(Id1,Use,Id2,pro) Rx) == true
     and
-    evaluation(IdIx,exprDisconnect(Id2,(Id1,Use,Id2,pro)),Mx,Ix,Lx,dcon(Id1,Use,Id2,pro) Rx) == true
+    evaluationMsg(IdIx,< Id2 ; isDisconnect(Id1,Use,Id2,pro) >,Mx,Ix,Lx,dcon(Id1,Use,Id2,pro) Rx) == true
     and
-    evaluation(IdIx,exprActive(Id1,Use),Mx,Ix,Lx,dcon(Id1,Use,Id2,pro) Rx) == false
+    evaluationMsg(IdIx,< Id1 ; isActive(Use) >,Mx,Ix,Lx,dcon(Id1,Use,Id2,pro) Rx) == false
     ) .
   
   crl [PushingBehavior] : 
@@ -117,7 +117,7 @@ crl [FiringTransitions] :
     < ids: IdIx,instances: < id: Id1,type: Ct,queueBehavior: Qb,marking: Mrk > ,Ix,connections: Lx, program: wait(Id2,IdBeh) Rx,msgs: Mx,receive: QRx,send: QSx,history: Hx > 
     =>   
     < ids: IdIx,instances: < id: Id1,type: Ct,queueBehavior: Qb,marking: Mrk > ,Ix,connections: Lx,program: Rx,msgs: Mx,receive: QRx,send: QSx,history: Hx > 
-    if (evaluation(IdIx,exprCompleted(Id2,IdBeh),Mx,Ix,Lx, Rx) == true ) .
+    if (evaluationMsg(IdIx,< Id2 ; isCompleted(IdBeh) >,Mx,Ix,Lx, Rx) == true ) .
 
   -----------------------------------------------Rules for collecting messages related to external used functions------------------------------------------
   ---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -169,30 +169,30 @@ crl [FiringTransitions] :
     < ids: IdIx,instances: Ix,connections: Lx,program: Rx,msgs: Mx,receive: QRx,send: M QSx,history: Hx > , 
     < ids: IdIy,instances: Iy,connections: Ly,program: Ry,msgs: My,receive: QRy,send: QSy,history: Hy >  
     =>
-    < ids: IdIx,instances: Ix,connections: Lx,program: Rx,msgs: addFunctionExtern(M,Mx),receive: QRx,send: QSx, history: (Hx, M) >  ,  
+    < ids: IdIx,instances: Ix,connections: Lx,program: Rx,msgs: addMsgExternProcess(M,Mx),receive: QRx,send: QSx, history: (Hx, M) >  ,  
     < ids: IdIy,instances: Iy,connections: Ly,program: Ry,msgs: My,receive: append(QRy, (M ; bot) ),send: QSy,history: Hy > 
-    if ( (not localFunction(M,IdIx)) and localFunction(M,IdIy) ) .
+    if ( (not isMsgProcessedLocally(M,IdIx)) and isMsgProcessedLocally(M,IdIy) ) .
 
   crl [SendevaluationFunction] : 
     < ids: IdIx,instances: Ix,connections: Lx,program: Rx,msgs: Mx,receive: QRx,send: M QSx,history: Hx > , 
     < ids: IdIy,instances: Iy,connections: Ly,program: Ry,msgs: My,receive: QRy,send: QSy,history: Hy >   
     =>
-    < ids: IdIx,instances: Ix,connections: Lx,program: Rx,msgs: upDateMsgToUsesSend(Mx,identInstanceonnectionWhenSendActive(Lx,M,localEvaluation(M,Ix,Lx,Rx))),
+    < ids: IdIx,instances: Ix,connections: Lx,program: Rx,msgs: upDateMsgToUsesSend(Mx,identInstanceonnectionWhenSendActive(Lx,M,localEvaluationMsg(M,Ix,Lx,Rx))),
     receive: QRx,send: QSx,history: Hx > , 
-    < ids: IdIy,instances: Iy,connections: Ly,program: Ry,msgs: My,receive: append(QRy, (M ; localEvaluation(M,Ix,Lx,Rx)) ),send: QSy,history: Hy >  
-    if ( localFunction(M,IdIx) and ((M in Hy) and (not existMsgInReceiveQueue(M,QRy) )  ) ) .
+    < ids: IdIy,instances: Iy,connections: Ly,program: Ry,msgs: My,receive: append(QRy, (M ; localEvaluationMsg(M,Ix,Lx,Rx)) ),send: QSy,history: Hy >  
+    if ( isMsgProcessedLocally(M,IdIx) and ((M in Hy) and (not existMsgInReceiveQueue(M,QRy) )  ) ) .
 
   crl [ReceivesRequest] : 
     < ids: IdIx,instances: Ix,connections: Lx,program: Rx,msgs: Mx,receive: (M ; Val ) QRx,send: QSx,history: Hx >  
     =>
     < ids: IdIx,instances: Ix,connections: Lx,program: Rx,msgs: Mx,receive: QRx,send: append(QSx, M ),history: Hx > 
-    if ( localFunction(M,IdIx) ) .  
+    if ( isMsgProcessedLocally(M,IdIx) ) .  
 
   crl [ReceivesevaluationFunction] : 
     < ids: IdIx,instances: Ix,connections: Lx,program: Rx,msgs: Mx,receive: (M ; Val ) QRx,send: QSx,history: Hx >   
     =>
-    < ids: IdIx,instances: Ix,connections: Lx,program: Rx,msgs: substitueEvaluationOfFunction(Mx,M,Val),receive: QRx,send: QSx,history: delete(M,Hx) >  
-    if ( not localFunction(M,IdIx) ) .  
+    < ids: IdIx,instances: Ix,connections: Lx,program: Rx,msgs: substitueEvaluationMsg(Mx,M,Val),receive: QRx,send: QSx,history: delete(M,Hx) >  
+    if ( not isMsgProcessedLocally(M,IdIx) ) .  
 
 endm
 
