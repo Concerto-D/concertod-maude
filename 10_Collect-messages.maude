@@ -8,33 +8,33 @@ fmod COLLECT-EXTERNAL-MESSAGES-FIRING is
   var IdIx : IdentInstances . 
   var Ix : Instances .
   var L : Connections .
-  var Val : [Bool] .
+  var Val : ExpectedValue .
   var Use : UsePort .
   var Pro : ProvidePort .
   vars Id1 Id2 : IdentInstance .
   var NewMark : Marking .
-  var Mx : MsgToUses .
-  var Hx : SentHistorys .
-  var QSx : Qsend .
+  var Mx : Map{Request,ExpectedValue} .
+  var Hx : Set{Request} .
+  var QSx : Qrequests .
 
-  op collectFunctionFiring(_,_,_,_,_,_,_) : IdentInstances Marking Instances Connections MsgToUses SentHistorys Qsend -> Qsend .
+  op collectFunctionFiring(_,_,_,_,_,_,_) : IdentInstances Marking Instances Connections Map{Request,ExpectedValue} Set{Request} Qrequests -> Qrequests .
   --- used to determine msg related to external functions that allow to apply the rule firing transition. 
-  --- it aims to build a queue of external < _; isActive(_) > messages for use ports whose current valuation in MsgToUses does not allow the rule to be applied; 
-  --- in other words, the evaluation of these messages is true or bot 
+  --- it aims to build a queue of external < _; isActive(_) > messages for use ports whose current valuation in Map{Request,ExpectedValue} does not allow the rule to be applied; 
+  --- in other words, the evaluation of these messages is true or noValueYet 
   --- knowing that the provide port linked to thier use port wants to change the status of its provide port from active to inactive.
   --- in this case, we add the message < _; isActive(_) > of each use port to the queue of external information, 
   --- on condition that the request for this message is not currently being processed.
-  --- this last condition is verified if < _; isActive(_) > doesn't belong to either SentHistorys or Qsend.
+  --- this last condition is verified if < _; isActive(_) > doesn't belong to either Set{Request} or Qrequests.
   eq collectFunctionFiring(IdIx,NewMark,Ix,empty,Mx,Hx,QSx) = nil .
   ceq collectFunctionFiring(IdIx,NewMark,Ix,(Id1,Use,Id2,Pro),L,Mx,Hx,QSx) = 
-  append(< Id1 ; isActive(Use) >,collectFunctionFiring(IdIx,NewMark,Ix,L,Mx,Hx,QSx))
+  append( [ dst: Id1 , query: isActive(Use) ],collectFunctionFiring(IdIx,NewMark,Ix,L,Mx,Hx,QSx))
   if
   (   
-  (not < Id1 ; isActive(Use) > in Hx) and 
-  (not (occurs(< Id1 ; isActive(Use) >,QSx)))  and
+  (not [ dst: Id1 , query: isActive(Use) ]  in Hx) and 
+  (not (occurs([ dst: Id1 , query: isActive(Use) ],QSx)))  and
   (not (Id1 in IdIx)) and
-  ( evaluationMsg(IdIx,< Id1 ; isActive(Use) >,Mx,empty,empty,nil )   == true  or evaluationMsg(IdIx,< Id1 ; isActive(Use) >,Mx,empty,empty,nil )  == bot ) and
-  ( (localEvaluationMsg(< Id2 ; isActive(Pro) >,Ix,empty,nil ) == true) and (activeMarking(instanceOfIdent(Ix,Id2),Pro,NewMark) == false ))  
+  ( evaluationMsg([ dst: Id1 , query: isActive(Use) ],IdIx,Mx,empty,empty,nil )   == true  or evaluationMsg([ dst: Id1 , query: isActive(Use) ],IdIx,Mx,empty,empty,nil )  == noValueYet ) and
+  ( (localEvaluationMsg([ dst: Id2 , query: isActive(Pro)],Ix,empty,nil ) == true) and (activeMarking(instanceOfIdent(Ix,Id2),Pro,NewMark) == false ))  
   ) .
   eq collectFunctionFiring(IdIx,NewMark,Ix,(Id1,Use,Id2,Pro),L,Mx,Hx,QSx) = collectFunctionFiring(IdIx,NewMark,Ix,L,Mx,Hx,QSx) [owise] .
 
@@ -53,41 +53,44 @@ fmod COLLECT-EXTERNAL-MESSAGES-ENTERING-PLACE is
   vars I I' : Instance .
   var Ix : Instances .
   var L : Connections .
-  var Mx : MsgToUses .
+  var Mx : Map{Request,ExpectedValue} .
   vars Use1 Use : UsePort .
   var Pro : ProvidePort .
   vars IdentIns Id1 Id2 : IdentInstance .
-  var Hx : SentHistorys .
-  var QSx : Qsend .  
+  var Hx : Set{Request} .
+  var QSx : Qrequests .  
   var IdIx : IdentInstances .   
 
-  op collectFunctionsEnteringPlace(_,_,_,_,_,_,_,_,_,_) : 
-  IdentInstances Place GroupUses Instance Instance Instances Connections MsgToUses SentHistorys Qsend -> Qsend .
-  eq collectFunctionsEnteringPlace(IdIx,P,empty,I,I',Ix,L,Mx,Hx,QSx) = nil .
-  ceq collectFunctionsEnteringPlace(IdIx,P,(Use ! Ps),GUx,I,I',Ix,L,Mx,Hx,QSx) = 
-  append(collectConnected(IdIx,Use,identOfInstance(I),L,Mx,Hx,QSx),append(collectAllowed(IdIx,Use,identOfInstance(I),I,Ix,L,Mx,Hx,QSx), collectFunctionsEnteringPlace(IdIx,P,GUx,I,I',Ix,L,Mx,Hx,QSx))) 
-  if  ((P in Ps) and active(I,Use) == false and active(I',Use) == true  ).   
-  eq collectFunctionsEnteringPlace(IdIx,P,(Use ! Ps),GUx,I,I',Ix,L,Mx,Hx,QSx) = collectFunctionsEnteringPlace(IdIx,P,GUx,I,I',Ix,L,Mx,Hx,QSx) [owise] .
+---Qanswers Qrequests 
+ --- Set{Request}
 
-  op collectConnected(_,_,_,_,_,_,_) : IdentInstances UsePort IdentInstance Connections MsgToUses SentHistorys Qsend -> Qsend . 
+  op collectFunctionsEnteringPlace(_,_,_,_,_,_,_,_,_,_,_) : 
+  IdentInstances IdentInstance Place GroupUses Instance Instance Instances Connections Map{Request,ExpectedValue} Set{Request} Qrequests -> Qrequests .
+  eq collectFunctionsEnteringPlace(IdIx,Id1,P,empty,I,I',Ix,L,Mx,Hx,QSx) = nil .
+  ceq collectFunctionsEnteringPlace(IdIx,Id1,P,(Use ! Ps),GUx,I,I',Ix,L,Mx,Hx,QSx) = 
+  append(collectConnected(IdIx,Use,Id1,L,Mx,Hx,QSx),append(collectAllowed(IdIx,Use,Id1,Ix,L,Mx,Hx,QSx), collectFunctionsEnteringPlace(IdIx,Id1,P,GUx,I,I',Ix,L,Mx,Hx,QSx))) 
+  if  ((P in Ps) and active(I,Use) == false and active(I',Use) == true  ).   
+  eq collectFunctionsEnteringPlace(IdIx,Id1,P,(Use ! Ps),GUx,I,I',Ix,L,Mx,Hx,QSx) = collectFunctionsEnteringPlace(IdIx,Id1,P,GUx,I,I',Ix,L,Mx,Hx,QSx) [owise] .
+
+  op collectConnected(_,_,_,_,_,_,_) : IdentInstances UsePort IdentInstance Connections Map{Request,ExpectedValue} Set{Request} Qrequests -> Qrequests . 
   eq collectConnected(IdIx,Use,Id1,empty,Mx,Hx,QSx) = nil .
-  ceq collectConnected(IdIx,Use,Id1,(Id1,Use,Id2,Pro),L,Mx,Hx,QSx) = < Id2 ; isConnected(Id1,Use,Id2,Pro) >
+  ceq collectConnected(IdIx,Use,Id1,(Id1,Use,Id2,Pro),L,Mx,Hx,QSx) = [ dst: Id2 , query: isConnected(Id1,Use,Id2,Pro) ] 
   if(
-    (not (< Id2 ; isConnected(Id1,Use,Id2,Pro) > in Hx)) and 
-    (not (occurs(< Id2 ; isConnected(Id1,Use,Id2,Pro) >,QSx)))  and
+    (not ([ dst: Id2 , query: isConnected(Id1,Use,Id2,Pro) ]  in Hx)) and 
+    (not (occurs([ dst: Id2 , query: isConnected(Id1,Use,Id2,Pro) ],QSx)))  and
     (not (Id2 in IdIx)) and
-    ( evaluationMsg(IdIx,< Id2 ; isConnected(Id1,Use,Id2,Pro) >,Mx,empty,empty,nil )   == false  or evaluationMsg(IdIx,< Id2 ; isConnected(Id1,Use,Id2,Pro) >,Mx,empty,empty,nil )   == bot )
+    ( evaluationMsg([ dst: Id2 , query: isConnected(Id1,Use,Id2,Pro) ],IdIx,Mx,empty,empty,nil )   == false  or evaluationMsg([ dst: Id2 , query: isConnected(Id1,Use,Id2,Pro) ],IdIx,Mx,empty,empty,nil )   == noValueYet )
     ) .
   eq collectConnected(IdIx,Use1,IdentIns,(Id1,Use,Id2,Pro),L,Mx,Hx,QSx) = collectConnected(IdIx,Use1,IdentIns,L,Mx,Hx,QSx) [owise] .
 
-  op collectAllowed(_,_,_,_,_,_,_,_) : IdentInstances UsePort  IdentInstance Instances Connections MsgToUses SentHistorys Qsend -> Qsend . 
+  op collectAllowed(_,_,_,_,_,_,_,_) : IdentInstances UsePort  IdentInstance Instances Connections Map{Request,ExpectedValue} Set{Request} Qrequests -> Qrequests . 
   eq collectAllowed(IdIx,Use,Id1,Ix,empty,Mx,Hx,QSx) = nil .
-  ceq collectAllowed(IdIx,Use,Id1,Ix,(Id1,Use,Id2,Pro),L,Mx,Hx,QSx) = < Id2 ; isRefusing(Pro) >
+  ceq collectAllowed(IdIx,Use,Id1,Ix,(Id1,Use,Id2,Pro),L,Mx,Hx,QSx) = [ dst: Id2 , query:  isRefusing(Pro) ] 
   if (
-      (not < Id2 ; isRefusing(Pro) > in Hx) and 
-      (not (occurs(< Id2 ; isRefusing(Pro) >,QSx)))  and
+      (not [ dst: Id2 , query:  isRefusing(Pro) ] in Hx) and 
+      (not (occurs([ dst: Id2 , query:  isRefusing(Pro) ],QSx)))  and
       (not (Id2 in IdIx)) and  
-      ( evaluationMsg(IdIx,< Id2 ; isRefusing(Pro) >,Mx,empty,empty,nil )   == true  or evaluationMsg(IdIx,< Id2 ; isRefusing(Pro) >,Mx,empty,empty,nil)   == bot )   
+      ( evaluationMsg([ dst: Id2 , query:  isRefusing(Pro) ],IdIx,Mx,empty,empty,nil )   == true  or evaluationMsg([ dst: Id2 , query:  isRefusing(Pro) ],IdIx,Mx,empty,empty,nil)   == noValueYet )   
     ) .
   eq collectAllowed(IdIx,Use1,IdentIns,Ix,(Id1,Use,Id2,Pro),L,Mx,Hx,QSx) = collectAllowed(IdIx,Use1,IdentIns,Ix,L,Mx,Hx,QSx) [owise] .
 
@@ -97,25 +100,25 @@ fmod COLLECT-EXTERNAL-MESSAGES-WAIT is
 
   inc CONCERTO-D-CONFIGURATION .
 
-  var Val : [Bool] .
+  var Val : ExpectedValue .
   var Id1 : IdentInstance .
   var IdBeh : IdentBehavior .
-  var Mx : MsgToUses .
-  var Hx : SentHistorys .
-  var QSx : Qsend .
-  var M : Msg .
+  var Mx : Map{Request,ExpectedValue} .
+  var Hx : Set{Request} .
+  var QSx : Qrequests .
+  var R : Request .
   var IdIx : IdentInstances .   
 
-  op collectFunctionWait(_,_,_,_,_,_) : IdentInstances IdentInstance IdentBehavior MsgToUses SentHistorys Qsend -> Qsend .
+  op collectFunctionWait(_,_,_,_,_,_) : IdentInstances IdentInstance IdentBehavior Map{Request,ExpectedValue} Set{Request} Qrequests -> Qrequests .
   ceq collectFunctionWait(IdIx,Id1,IdBeh,Mx,Hx,QSx) = nil if (Id1 in IdIx) .
-  ceq collectFunctionWait(IdIx,Id1,IdBeh,extern(M ; Val),Mx,Hx,QSx) =  collectFunctionWait(IdIx,Id1,IdBeh,Mx,Hx,QSx) 
-  if ((M =/= < Id1 ; isCompleted(IdBeh) > )  and (not (Id1 in IdIx)) ) .
+  ceq collectFunctionWait(IdIx,Id1,IdBeh,R |-> Val,Mx,Hx,QSx) =  collectFunctionWait(IdIx,Id1,IdBeh,Mx,Hx,QSx) 
+  if ((R =/= [ dst: Id1 , query:  isCompleted(IdBeh) ] )  and (not (Id1 in IdIx)) ) .
  
-  eq collectFunctionWait(IdIx,Id1,IdBeh,extern(< Id1 ; isCompleted(IdBeh) > ; Val),Mx,Hx,QSx) = 
-  if (( Val == true ) or (< Id1 ; isCompleted(IdBeh) > in Hx) or (occurs(< Id1 ; isCompleted(IdBeh) >,QSx) ) )  then nil else < Id1 ; isCompleted(IdBeh) > fi .
+  eq collectFunctionWait(IdIx,Id1,IdBeh,[ dst: Id1 , query:  isCompleted(IdBeh) ] |-> Val,Mx,Hx,QSx) = 
+  if (( Val == true ) or ([ dst: Id1 , query:  isCompleted(IdBeh) ] in Hx) or (occurs([ dst: Id1 , query:  isCompleted(IdBeh) ],QSx) ) )  then nil else [ dst: Id1 , query:  isCompleted(IdBeh) ] fi .
   
   eq collectFunctionWait(IdIx,Id1,IdBeh,empty,Hx,QSx) =  
-  if ((not (< Id1 ; isCompleted(IdBeh) > in Hx)) and  (not (occurs(< Id1 ; isCompleted(IdBeh) >,QSx)))) then < Id1 ; isCompleted(IdBeh) > else nil fi . 
+  if ((not ([ dst: Id1 , query:  isCompleted(IdBeh) ] in Hx)) and  (not (occurs([ dst: Id1 , query:  isCompleted(IdBeh) ],QSx)))) then [ dst: Id1 , query:  isCompleted(IdBeh) ] else nil fi . 
 
 endfm
 
@@ -123,39 +126,39 @@ fmod COLLECT-EXTERNAL-MESSAGES-DISCONNECT is
 
   inc CONCERTO-D-CONFIGURATION .
 
-  var Val : [Bool] .
+  var Val : ExpectedValue .
   var Use : UsePort .
   var Pro : ProvidePort .
   vars  Id1 Id2 : IdentInstance .
-  var Mx : MsgToUses .
-  var Hx : SentHistorys .
-  var QSx : Qsend .
-  var M : Msg .
+  var Mx : Map{Request,ExpectedValue} .
+  var Hx : Set{Request} .
+  var QSx : Qrequests .
+  var R : Request .
   var IdIx : IdentInstances . 
   var L : Connection .  
 
-  op collectFunctionsDiscon(_,_,_,_,_) : IdentInstances Connection MsgToUses SentHistorys Qsend -> Qsend .
+  op collectFunctionsDiscon(_,_,_,_,_) : IdentInstances Connection Map{Request,ExpectedValue} Set{Request} Qrequests -> Qrequests .
   ceq collectFunctionsDiscon(IdIx,(Id1,Use,Id2,Pro),Mx,Hx,QSx) = append(activeCollect(Id1,Use,Mx,Hx,QSx),(disconCollect(Id1,(Id1,Use,Id2,Pro),Mx,Hx,QSx))) 
   if (not (Id1 in IdIx) ) .
   ceq collectFunctionsDiscon(IdIx,(Id1,Use,Id2,Pro),Mx,Hx,QSx) = disconCollect(Id2,(Id1,Use,Id2,Pro),Mx,Hx,QSx) 
   if (not (Id2 in IdIx) ) .
   eq collectFunctionsDiscon(IdIx,(Id1,Use,Id2,Pro),Mx,Hx,QSx) = nil [owise] .
 
-  op activeCollect(_,_,_,_,_) : IdentInstance UsePort MsgToUses SentHistorys Qsend -> Qsend .
-  ceq activeCollect(Id1,Use,extern(M ; Val),Mx,Hx,QSx) =  activeCollect(Id1,Use,Mx,Hx,QSx) if (M =/= < Id1 ; isActive(Use) >) .
-  eq activeCollect(Id1,Use,extern(< Id1 ; isActive(Use) > ; Val),Mx,Hx,QSx) = 
+  op activeCollect(_,_,_,_,_) : IdentInstance UsePort Map{Request,ExpectedValue} Set{Request} Qrequests -> Qrequests .
+  ceq activeCollect(Id1,Use,R |-> Val,Mx,Hx,QSx) =  activeCollect(Id1,Use,Mx,Hx,QSx) if (R =/= [ dst: Id1 , query: isActive(Use) ]) . 
+  eq activeCollect(Id1,Use,[ dst: Id1 , query: isActive(Use) ] |-> Val,Mx,Hx,QSx) = 
   if 
-  (( Val == false ) or (< Id1 ; isActive(Use) > in Hx) or (< Id1 ; isActive(Use) > in QSx) ) then nil else < Id1 ; isActive(Use) > fi .
+  (( Val == false ) or ([ dst: Id1 , query: isActive(Use) ] in Hx) or ([ dst: Id1 , query: isActive(Use) ] in QSx) ) then nil else [ dst: Id1 , query: isActive(Use) ] fi .
   eq activeCollect(Id1,Use,empty,Hx,QSx) =  
-  if ((not (< Id1 ; isActive(Use) > in Hx)) and  (not (occurs(< Id1 ; isActive(Use) >,QSx)))) then < Id1 ; isActive(Use) > else nil fi . 
+  if ((not ([ dst: Id1 , query: isActive(Use) ] in Hx)) and  (not (occurs([ dst: Id1 , query: isActive(Use) ],QSx)))) then [ dst: Id1 , query: isActive(Use) ] else nil fi . 
 
-  op disconCollect(_,_,_,_,_) : IdentInstance Connection MsgToUses SentHistorys Qsend -> Qsend .
-  ceq disconCollect(Id1,L,extern(M ; Val),Mx,Hx,QSx) =  disconCollect(Id1,L,Mx,Hx,QSx) if (M =/= < Id1  ; isDisconnect(L) >) .
-  eq disconCollect(Id1,L,extern(< Id1  ; isDisconnect(L) > ; Val),Mx,Hx,QSx) = 
+  op disconCollect(_,_,_,_,_) : IdentInstance Connection Map{Request,ExpectedValue} Set{Request} Qrequests -> Qrequests .
+  ceq disconCollect(Id1,L,R |-> Val,Mx,Hx,QSx) =  disconCollect(Id1,L,Mx,Hx,QSx) if (R =/= [ dst: Id1 , query: isDisconnect(L) ]) . 
+  eq disconCollect(Id1,L,[ dst: Id1 , query: isDisconnect(L) ] |-> Val,Mx,Hx,QSx) = 
   if 
-  (( Val == true ) or (< Id1  ; isDisconnect(L) > in Hx) or (< Id1  ; isDisconnect(L) > in QSx) ) then nil else < Id1  ; isDisconnect(L) > fi .
+  (( Val == true ) or ([ dst: Id1 , query: isDisconnect(L) ] in Hx) or ([ dst: Id1 , query: isDisconnect(L) ] in QSx) ) then nil else [ dst: Id1 , query: isDisconnect(L) ] fi .
   eq disconCollect(Id1,L,empty,Hx,QSx) =  
-  if ((not (< Id1  ; isDisconnect(L) > in Hx)) and  (not (occurs(< Id1  ; isDisconnect(L) >,QSx)))) then < Id1  ; isDisconnect(L) > else nil fi . 
+  if ((not ([ dst: Id1 , query: isDisconnect(L) ] in Hx)) and  (not (occurs([ dst: Id1 , query: isDisconnect(L) ],QSx)))) then [ dst: Id1 , query: isDisconnect(L) ] else nil fi . 
 
 endfm
 

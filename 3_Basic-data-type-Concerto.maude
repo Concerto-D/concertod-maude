@@ -43,10 +43,14 @@ fmod STATION-PLACE is
   op (_;_) : Station Place -> StationPlace . 
   --- an element StationPlace is a tuple (Station;Place)
 
-  op placeOfStation(_,_) : Station StationPlaces -> Place . 
+  op placeOfStation(_,_) : Station StationPlaces -> [Place] .
+  op not-found : -> [Place] . 
   --- gives the corresponding place for a station according to the "StationPlaces" set 
   eq placeOfStation(Ss1, ((Ss1 ; Q),SPs)) = Q  .
-  eq placeOfStation(Ss1, ((Ss2 ; Q),SPs)) = placeOfStation(Ss1,SPs) [owise] . 
+  eq placeOfStation(Ss1, SPs) = not-found [owise] . 
+  
+  ---eq placeOfStation(Ss1, ((Ss1 ; Q),SPs)) = Q  .
+  ---eq placeOfStation(Ss1, ((Ss2 ; Q),SPs)) = placeOfStation(Ss1,SPs) [owise] . 
   ---  case not-found not processed, each satation has a place and it is in the stationPlaces esnemble. 
 
   op stationsGroupPlaces(_,_) : Places StationPlaces -> Stations .  
@@ -134,19 +138,6 @@ fmod PORT is
 
 endfm
 
-fmod BOOL-WITH-BOT is  
---- A new sort to represent the 3 values : true, false and bot based on predefined sort bool
-  
-  pr BOOL . 
-  --- importation of sort BOOL
-  
-  ---sort Bot .
-  ---sort [Bool] .
-  ---subsorts Bool  Bot < [Bool] .
-
-  op bot : -> [Bool] .
-
-endfm
 
 
 fmod CONNECTION is
@@ -188,36 +179,40 @@ fmod CONNECTION is
 
 endfm
 
-fmod ID-FUNCTIONS-COMMUNICATED is
 
-  inc IDENT-COMPONENT-BEHAVIOR .
+fmod REQUEST is
+
+  inc IDENT-COMPONENT-BEHAVIOR . 
   inc PORT .
   inc CONNECTION .
-  pr PAIR{IdentInstance,Request} .
   
-  sort Msg .
-  subsort Pair{IdentInstance, Request} < Msg .  
+  sorts Query .
 
-  var L : Connection .
-  var Id : IdentInstance .
-  var Port : Port .
-  var IdBeh : IdentBehavior .
+  op isActive(_) :  Port -> Query [ctor] .  
+  op isRefusing(_) : Port -> Query [ctor] .    
+  op isConnected(_) : Connection -> Query [ctor] .  
+  op isDisconnect(_) : Connection -> Query [ctor] .  
+  op isCompleted(_) : IdentBehavior -> Query [ctor] .  
+  
+  op [ dst: _ , query: _ ] : IdentInstance Query -> Request [ctor] .
 
-
-
-  op isActive(_) :  Port -> Request [ctor] .  
-
-  op isRefusing(_) : Port -> Request [ctor] .    
-
-  op isConnected(_) : Connection -> Request [ctor] .  
-
-  op isDisconnect(_) : Connection -> Request [ctor] .  
- 
-  op isCompleted(_) : IdentBehavior -> Request [ctor] .  
-
-
-
+  
 endfm
+
+
+fmod ANSWER is 
+  inc REQUEST . 
+
+  ---sort ExpectedValue .
+  subsort Bool < ExpectedValue .
+  op noValueYet : -> ExpectedValue .
+
+  op [ req: _, value: _ ] : Request ExpectedValue -> Answer [ctor] .
+endfm 
+
+
+
+
 
 fmod TRANSITION-TRANSITION-ENDING is
   inc PLACE .
@@ -278,7 +273,6 @@ fmod TRANSITION-TRANSITION-ENDING is
   ---Construct the transition endings of a set of transitions
   eq transitionEndingsOfTransitions(empty) = empty .
   eq transitionEndingsOfTransitions(t(P1,Ss1),Ts) = union(transitionEndingsOfOneTransition(t(P1,Ss1),Ss1), transitionEndingsOfTransitions(Ts) ) .
-
 
 
   op isSatisfiedTransitionEndingStation(_,_,_) : Station Transitions TransitionEndings -> Bool .
