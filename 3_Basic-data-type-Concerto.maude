@@ -1,17 +1,11 @@
 fmod PLACE is
   
-  inc DECLARATION-SORTS . 
-  ---to include the defined sort "Place"
-  
+  inc DECLARATION-SORTS .   
   sorts InitialPlace Places . 
-  --- definie two sorts
   subsort InitialPlace < Place . 
-  --- InitialPlace is a subsort of Place
-  pr SET{Place} .  
-  --- Import the parameterized module of SET of Place 
+  pr SET{Place} .   
   subsort Set{Place} <  Places  .  
-  --- declare the Place set as a sub-type of Places. 
-
+   
 endfm
 
 fmod STATION is
@@ -155,21 +149,22 @@ fmod CONNECTION is
   var Pro : ProvidePort .   
   vars Id Id1 Id2 : IdentInstance .  
 
+
+
+
   op (_,_,_,_) : IdentInstance UsePort IdentInstance ProvidePort -> Connection .  
   --- Define a new operator to create a Connection
 
   --- some operations related to the connections used later
   op inConnectionIdentUsePort(_,_,_) :  IdentInstance UsePort Connections -> Bool . 
   --- checks whether an instance is connected via a particular use port
-  eq inConnectionIdentUsePort(Id,Use,empty) = false . 
   eq inConnectionIdentUsePort(Id,Use,((Id,Use,Id2,Pro),Lx)) = true  .  
-  eq inConnectionIdentUsePort(Id,Use,((Id1,Use1,Id2,Pro),Lx)) = inConnectionIdentUsePort(Id,Use,Lx) [owise] .  
+  eq inConnectionIdentUsePort(Id,Use,Lx) = false [owise] .  
 
   op inConnectionIdent(_,_) :  IdentInstance Connections -> Bool .   
   --- checks whether an instance is connected (via use or provide port)
-  eq  inConnectionIdent(Id,empty) = false .  
   ceq inConnectionIdent(Id,((Id1,Use,Id2,Pro),Lx)) = true if (Id1 == Id or Id2 == Id) .  
-  eq inConnectionIdent(Id,((Id1,Use,Id2,Pro),Lx)) = inConnectionIdent(Id,Lx) [owise] .  
+  eq inConnectionIdent(Id,Lx) = false [owise] .  
 
   op connectionProIdent(_,_) :  IdentInstance Connections -> Connections .  
   --- checks restriction on connections for an instance which is in role provide Port within connections
@@ -206,12 +201,8 @@ fmod ANSWER is
   ---sort ExpectedValue .
   subsort Bool < ExpectedValue .
   op noValueYet : -> ExpectedValue .
-
   op [ req: _, value: _ ] : Request ExpectedValue -> Answer [ctor] .
 endfm 
-
-
-
 
 
 fmod TRANSITION-TRANSITION-ENDING is
@@ -284,8 +275,7 @@ fmod TRANSITION-TRANSITION-ENDING is
   eq isSatisfiedTransitionEndingStation(S1,empty,Tes) = true .
   ceq isSatisfiedTransitionEndingStation(S1,t(P1,Ss1),Ts,Tes) = isSatisfiedTransitionEndingStation(S1,Ts,Tes) 
   if(not(S1 in Ss1) or (te(t(P1,Ss1),S1) in Tes) ) .
-  ceq isSatisfiedTransitionEndingStation(S1,t(P1,Ss1),Ts,Tes) = false 
-  if( (S1 in Ss1) and (not(te(t(P1,Ss1),S1) in Tes)) ) .
+  eq isSatisfiedTransitionEndingStation(S1,t(P1,Ss1),Ts,Tes) = false [owise] .
 
 endfm
 

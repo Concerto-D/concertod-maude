@@ -99,6 +99,21 @@ fmod CONCERTO-D-CONFIGURATION is
 
 
 
+***(
+    op placeOfStation(_,_) : Station StationPlaces -> [Place] .
+  op not-found : -> [Place] . 
+  --- gives the corresponding place for a station according to the "StationPlaces" set 
+  eq placeOfStation(Ss1, ((Ss1 ; Q),SPs)) = Q  .
+  eq placeOfStation(Ss1, SPs) = not-found [owise] . 
+
+ op inConnectionIdentUsePort(_,_,_) :  IdentInstance UsePort Connections -> Bool . 
+  --- checks whether an instance is connected via a particular use port
+  eq inConnectionIdentUsePort(Id,Use,((Id,Use,Id2,Pro),Lx)) = true  .  
+  eq inConnectionIdentUsePort(Id,Use,Lx) = false [owise] .  
+
+)
+
+
   ---op _;_) : Request ExpectedValue ->   MsgToUse .  
   ---defines a Request as external (relted to external function) with an evaluation, to be used locally . 
 

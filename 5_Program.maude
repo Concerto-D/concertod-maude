@@ -22,6 +22,8 @@ fmod PROGRAM is
   op dcon(_) : Connection -> Instruction .
   op wait(_,_) : IdentInstance IdentBehavior -> Instruction .
 
+
+
  --- some operations related to program used later
   op notDcon(_,_) :  Connection Program -> Bool .  
   ---check for a given connection, there is no dcon instrcution in a given program
@@ -44,6 +46,6 @@ fmod PROGRAM is
   ---checks that in a given program there is no push Behavior Instruction for IdentInstance and IdentBehavior
   eq notPushBProg(Id1,IdBeh, nil) = true .
   ceq notPushBProg(Id1,IdBeh,Inst Rx) = notPushBProg(Id1,IdBeh,Rx) if (not instructionIspushB(Inst,Id1,IdBeh)) .
-  ceq notPushBProg(Id1,IdBeh,Inst Rx) = false if (instructionIspushB(Inst,Id1,IdBeh)) .
+  eq notPushBProg(Id1,IdBeh,Inst Rx) = false [owise] .
   
 endfm
