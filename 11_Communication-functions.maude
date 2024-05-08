@@ -3,10 +3,10 @@ fmod UPDATE-COMMUNICATION-MESSAGES is
 
     inc CONCERTO-D-CONFIGURATION .
 
-    var IdIx : IdentInstances . 
-    var L : Connections .
-    var Mx : Map{Request,ExpectedValue} .
-    var val : ExpectedValue .
+    var Idsx : IdentInstances . 
+    var Cx : Connections .
+    var RcvAnsx : Map{Request,ExpectedValue} .
+    var Val : ExpectedValue .
     var Use : UsePort .
     var Pro : ProvidePort .
     var R : Request .
@@ -21,19 +21,15 @@ fmod UPDATE-COMMUNICATION-MESSAGES is
     --- which claims the active function which has a false evaluation. 
     --- Note that the expected result of this op is Id2 if it exists, otherwise empty, 
     --- so the result is a set that can contain either an empty element or a single identifier.
-    eq identInstanceConnectionWhenSendActive(((Id1,Use,Id2,Pro),L),[ dst: Id1 , query: isActive(Use) ],false) = Id2 . 
-    eq identInstanceConnectionWhenSendActive(empty,R,val) = empty . 
-    eq identInstanceConnectionWhenSendActive(((Id1,Use,Id2,Pro),L),R,val) = identInstanceConnectionWhenSendActive(L,R,val) [owise] . 
-
-----------A optimiser suivant AC par deux equiations.
-
-
+    eq identInstanceConnectionWhenSendActive(((Id1,Use,Id2,Pro),Cx),[ dst: Id1 , query: isActive(Use) ],false) = Id2 . 
+    eq identInstanceConnectionWhenSendActive(Cx,R,Val) = empty [owise] . 
+    
     op  upDateReceivedAnswers(_,_) : Map{Request,ExpectedValue} IdentInstances -> Map{Request,ExpectedValue} .  
     --- The update is related only to message related to the refusing function who we know its identifier if exist.
-    eq  upDateReceivedAnswers(Mx,empty) = Mx .
-    eq  upDateReceivedAnswers(empty,IdIx) = empty .
-    ceq upDateReceivedAnswers(([ dst: Id1 , query: isRefusing(Pro) ] |-> val,Mx),IdIx) = [ dst: Id1 , query: isRefusing(Pro) ] |-> noValueYet, Mx if (Id1 in IdIx ) .
-    eq  upDateReceivedAnswers((R |-> val,Mx),IdIx) = R |-> val, upDateReceivedAnswers(Mx,IdIx) [owise] .
+    eq  upDateReceivedAnswers(RcvAnsx,empty) = RcvAnsx .
+    eq  upDateReceivedAnswers(empty,Idsx) = empty .
+    ceq upDateReceivedAnswers(([ dst: Id1 , query: isRefusing(Pro) ] |-> Val,RcvAnsx),Idsx) = [ dst: Id1 , query: isRefusing(Pro) ] |-> noValueYet, RcvAnsx if (Id1 in Idsx ) .
+    eq  upDateReceivedAnswers((R |-> Val,RcvAnsx),Idsx) = R |-> Val, RcvAnsx [owise] .
     
 endfm
 

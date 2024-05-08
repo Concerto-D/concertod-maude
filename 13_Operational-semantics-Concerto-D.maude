@@ -37,7 +37,7 @@ mod OPERATIONAL-SEMANTICS is
 
 crl [FiringTransitions] : 
     < nodeInventory: Idsx,
-      instances: (Id1 |-> { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(P, Ps,Ts,Tes) }) , Ix,
+      instances: (Id1 |-> { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m((P, Ps),Ts,Tes) }) , Ix,
       connections: Cx,
       program: Px,
       receivedAnswers: RcvAnsx,
@@ -54,7 +54,7 @@ crl [FiringTransitions] :
       outgoingRequests: OutReqx,
       history: Hx > 
     if ( restrictTransitionsToPlace(TsBeh,P) =/= empty and
-        notActUseWhenLeavinGroupProvide(Idsx,m(Ps,union(Ts, restrictTransitionsToPlace(TsBeh,P) ),Tes) ,(Id1 |-> { type: Ct,
+        notActiveUseWhenLeavinGroupProvide(Idsx,m(Ps,union(Ts, restrictTransitionsToPlace(TsBeh,P) ),Tes) ,(Id1 |-> { type: Ct,
         queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(P, Ps,Ts,Tes) } ,Ix),RcvAnsx,connectionProIdent(Id1, Cx))) . 
 
 
@@ -88,7 +88,8 @@ crl [FiringTransitions] :
       history: Hx >  
     =>
     < nodeInventory: Idsx,
-      instances: (Id1 |-> { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(placeOfStation(S,getStationPlaces(Ct)),Ps, Ts, removeTransitionEndingStation(Tes,S) ) }) , Ix,
+      instances: (Id1 |-> { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,
+      marking: m(placeOfStation(S,getStationPlaces(Ct)),Ps, Ts, removeTransitionEndingStation(Tes,S) ) }) , Ix,
       connections: Cx,
       program: Px,
       receivedAnswers: RcvAnsx,
@@ -97,7 +98,7 @@ crl [FiringTransitions] :
       history: Hx > 
     if 
       (isSatisfiedTransitionEndingStation(S,TsBeh,te(t(P1,S,Ss),S), Tes) and 
-      connectedAndAllowed(Idsx,Id1,placeOfStation(S,getStationPlaces(Ct)), getUsePorts(Ct), { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(Ps, Ts, te(t(P1,S,Ss),S), Tes  ) },
+      connectedAndAllowed(Idsx,Id1,placeOfStation(S,getStationPlaces(Ct)), getUsePorts(Ct), { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(Ps, Ts, te(t(P1,S,Ss),S), Tes) },
       { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(placeOfStation(S,getStationPlaces(Ct)),Ps, Ts, removeTransitionEndingStation(Tes,S) ) } ,Ix, Cx,RcvAnsx)
       ) .  
 
@@ -205,9 +206,9 @@ crl [FiringTransitions] :
       history: Hx >  
     if
     ( 
-    evaluationMsg([ dst: Id1 , query: isDisconnect(Id1,Use,Id2,pro) ],Idsx,RcvAnsx,Ix,Cx,dcon(Id1,Use,Id2,pro) Px) == true and
-    evaluationMsg([ dst: Id2 , query: isDisconnect(Id1,Use,Id2,pro) ],Idsx,RcvAnsx,Ix,Cx,dcon(Id1,Use,Id2,pro) Px) == true and 
-    evaluationMsg([ dst: Id1 , query: isActive(Use) ],Idsx,RcvAnsx,Ix,Cx,dcon(Id1,Use,Id2,pro) Px) == false
+    evaluation([ dst: Id1 , query: isDisconnect(Id1,Use,Id2,pro) ],Idsx,RcvAnsx,Ix,Cx,dcon(Id1,Use,Id2,pro) Px) == true and
+    evaluation([ dst: Id2 , query: isDisconnect(Id1,Use,Id2,pro) ],Idsx,RcvAnsx,Ix,Cx,dcon(Id1,Use,Id2,pro) Px) == true and 
+    evaluation([ dst: Id1 , query: isActive(Use) ],Idsx,RcvAnsx,Ix,Cx,dcon(Id1,Use,Id2,pro) Px) == false
     ) .
   
   crl [PushingBehavior] : 
@@ -248,14 +249,14 @@ crl [FiringTransitions] :
       outgoingAnswers: OutAnsx,
       outgoingRequests: OutReqx,
       history: Hx > 
-    if (evaluationMsg([ dst: Id2 , query: isCompleted(IdBeh) ],Idsx,RcvAnsx,Ix,Cx,wait(Id2,IdBeh) Px) == true ) .
+    if (evaluation([ dst: Id2 , query: isCompleted(IdBeh) ],Idsx,RcvAnsx,Ix,Cx,wait(Id2,IdBeh) Px) == true ) .
    
   -----------------------------------------------Rules for collecting messages related to external used functions------------------------------------------
   ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
   crl [RequestsForFiringTransitions] : 
     < nodeInventory: Idsx,
-      instances: (Id1 |-> { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(P, Ps,Ts,Tes) }) , Ix,
+      instances: (Id1 |-> { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m((P, Ps),Ts,Tes) }) , Ix,
       connections: Cx,
       program: Px,
       receivedAnswers: RcvAnsx,
@@ -264,16 +265,16 @@ crl [FiringTransitions] :
       history: Hx >  
     =>
     < nodeInventory: Idsx, 
-      instances:  (Id1 |-> { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(P, Ps,Ts,Tes) }) , Ix ,
+      instances:  (Id1 |-> { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m((P, Ps),Ts,Tes) }) , Ix ,
       connections: Cx,
       program: Px,
       receivedAnswers: RcvAnsx,
       outgoingAnswers: OutAnsx,
-      outgoingRequests: append(OutReqx,collectFunctionFiring(Idsx,m(Ps,union(Ts, restrictTransitionsToPlace(TsBeh,P) ),Tes),
-      (Id1 |-> { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(P, Ps,Ts,Tes) }) , Ix,connectionProIdent(Id1,Cx),RcvAnsx,Hx,OutReqx)),
+      outgoingRequests: append(OutReqx,collectRuleFiring(Idsx,m(Ps,union(Ts, restrictTransitionsToPlace(TsBeh,P) ),Tes),
+      (Id1 |-> { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m((P, Ps),Ts,Tes) }) , Ix,connectionProIdent(Id1,Cx),RcvAnsx,Hx,OutReqx)),
       history: Hx >  
-    if (restrictTransitionsToPlace(TsBeh,P) =/= empty and collectFunctionFiring(Idsx,m(Ps,union(Ts, restrictTransitionsToPlace(TsBeh,P) ),Tes),
-    (Id1 |-> { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(P, Ps,Ts,Tes) }) , Ix,connectionProIdent(Id1,Cx ),RcvAnsx,Hx,OutReqx) =/= nil) . 
+    if (restrictTransitionsToPlace(TsBeh,P) =/= empty and collectRuleFiring(Idsx,m(Ps,union(Ts, restrictTransitionsToPlace(TsBeh,P) ),Tes),
+    (Id1 |-> { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m((P, Ps),Ts,Tes) }) , Ix,connectionProIdent(Id1,Cx ),RcvAnsx,Hx,OutReqx) =/= nil) . 
 
   crl [RequestsForEnteringPlace] : 
     < nodeInventory: Idsx,
@@ -284,20 +285,24 @@ crl [FiringTransitions] :
       outgoingAnswers: OutAnsx,
       outgoingRequests: OutReqx,
       history: Hx > 
-    => --- IdentInstances IdentInstance Place GroupUses Instance Instance Instances Connections Map{Request,ExpectedValue} Set{Request} Qrequests -> Qrequests .
+    => 
     < nodeInventory: Idsx,
       instances: (Id1 |-> { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(Ps, Ts, te(t(P,S,Ss),S), Tes  ) })  , Ix,
       connections: Cx,
       program: Px, 
       receivedAnswers: RcvAnsx,
       outgoingAnswers: OutAnsx,
-      outgoingRequests: append(OutReqx,collectFunctionsEnteringPlace(Idsx,Id1,placeOfStation(S,getStationPlaces(Ct)), getUsePorts(Ct), { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(Ps, Ts, te(t(P,S,Ss),S), Tes  ) },
-      { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(placeOfStation(S,getStationPlaces(Ct)),Ps, Ts, removeTransitionEndingStation(Tes,S) ) },Ix,Cx,RcvAnsx,Hx,OutReqx)), 
+      outgoingRequests: append(OutReqx,collectRuleEnteringPlace(Idsx,Id1,placeOfStation(S,getStationPlaces(Ct)), getUsePorts(Ct), 
+      { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(Ps, Ts, te(t(P,S,Ss),S), Tes  ) },
+      { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(placeOfStation(S,getStationPlaces(Ct)),Ps, Ts, removeTransitionEndingStation(Tes,S) ) },
+      Ix,Cx,RcvAnsx,Hx,OutReqx)), 
       history: Hx > 
     if 
     ( isSatisfiedTransitionEndingStation(S,TsBeh,te(t(P,S,Ss),S), Tes)  and
-      (collectFunctionsEnteringPlace(Idsx,Id1,placeOfStation(S,getStationPlaces(Ct)), getUsePorts(Ct), { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(Ps, Ts, te(t(P,S,Ss),S), Tes) },
-      { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(placeOfStation(S,getStationPlaces(Ct)),Ps, Ts, removeTransitionEndingStation(Tes,S) ) },Ix, Cx,RcvAnsx,Hx,OutReqx) =/= nil )
+      (collectRuleEnteringPlace(Idsx,Id1,placeOfStation(S,getStationPlaces(Ct)), getUsePorts(Ct), 
+      { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(Ps, Ts, te(t(P,S,Ss),S), Tes) },
+      { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(placeOfStation(S,getStationPlaces(Ct)),Ps, Ts, removeTransitionEndingStation(Tes,S) ) },
+      Ix, Cx,RcvAnsx,Hx,OutReqx) =/= nil )
     ) .
 
   crl [RequestsForDisconnectPorts] : 
@@ -316,9 +321,9 @@ crl [FiringTransitions] :
       program: dcon(Id1,Use,Id2,pro) Px,
       receivedAnswers: RcvAnsx,
       outgoingAnswers: OutAnsx,
-      outgoingRequests: append(OutReqx,collectFunctionsDiscon(Idsx,(Id1,Use,Id2,pro),RcvAnsx,Hx,OutReqx)),
+      outgoingRequests: append(OutReqx,collectRuleDisconnect(Idsx,(Id1,Use,Id2,pro),RcvAnsx,Hx,OutReqx)),
       history: Hx >   
-    if ( (collectFunctionsDiscon(Idsx,(Id1,Use,Id2,pro),RcvAnsx,Hx,OutReqx) =/= nil) ) .
+    if ( (collectRuleDisconnect(Idsx,(Id1,Use,Id2,pro),RcvAnsx,Hx,OutReqx) =/= nil) ) .
 
   crl [RequestsForWait] :
     < nodeInventory: Idsx,
@@ -336,9 +341,9 @@ crl [FiringTransitions] :
       program: wait(Id1,IdBeh) Px,
       receivedAnswers: RcvAnsx,
       outgoingAnswers: OutAnsx, 
-      outgoingRequests: append(OutReqx,collectFunctionWait(Idsx,Id1,IdBeh,RcvAnsx,Hx,OutReqx)),
+      outgoingRequests: append(OutReqx,collectRuleWait(Idsx,Id1,IdBeh,RcvAnsx,Hx,OutReqx)),
       history: Hx >    
-    if (collectFunctionWait(Idsx,Id1,IdBeh,RcvAnsx,Hx,OutReqx) =/= nil ) .
+    if (collectRuleWait(Idsx,Id1,IdBeh,RcvAnsx,Hx,OutReqx) =/= nil ) .
 
   --------------------------------------------------------------Rules for communication---------------------------------------------------------------------
   ----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -396,14 +401,14 @@ crl [FiringTransitions] :
     < nodeInventory: Idsx, 
       instances: Ix, 
       connections: Cx, program: Px, 
-      receivedAnswers: upDateReceivedAnswers(RcvAnsx,identInstanceConnectionWhenSendActive(Cx,[dst: Dst, query: Q],localEvaluationMsg([dst: Dst, query: Q],Ix,Cx,Px))) ,
+      receivedAnswers: upDateReceivedAnswers(RcvAnsx,identInstanceConnectionWhenSendActive(Cx,[dst: Dst, query: Q],localEvaluation([dst: Dst, query: Q],Ix,Cx,Px))) ,
       outgoingAnswers: OutAnsx, 
       outgoingRequests: OutReqx, 
       history: Hx > ,
     < nodeInventory: Idsy, 
       instances: Iy, 
       connections: Cy, program: Py, 
-      receivedAnswers: insert([dst: Dst, query: Q], localEvaluationMsg([dst: Dst, query: Q],Ix,Cx,Px), RcvAnsy),
+      receivedAnswers: insert([dst: Dst, query: Q], localEvaluation([dst: Dst, query: Q],Ix,Cx,Px), RcvAnsy),
       outgoingAnswers: OutAnsy, 
       outgoingRequests: OutReqy,
       history: Hy > . 
