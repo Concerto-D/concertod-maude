@@ -7,7 +7,7 @@ fmod LISTENER-SENSOR-EXAMPLE is
         inc COLLECT-EXTERNAL-MESSAGES-DISCONNECT .
         inc COLLECT-EXTERNAL-MESSAGES-ENTERING-PLACE .
         inc UPDATE-COMMUNICATION-MESSAGES .
- 
+
         op listener1 : -> IdentInstance .
         ops systemDeploy systemInterrupt systemStop : -> Behavior .
         op connectionsNode3 : -> Connections .
@@ -117,12 +117,12 @@ fmod LISTENER-SENSOR-EXAMPLE is
         eq msgsNode2 = [ dst: mydb0 , query: isConnected(mysys0,systemDbservice,mydb0,databaseService) ] |-> true , [ dst: mydb0 , query: isRefusing(databaseService) ] |-> false .
         eq msgsNode3 = [ dst: listener1 , query: isConnected((sensor1,sensorRcvservice,listener1,listenerRcv)) ] |-> true , [ dst: listener1 , query: isRefusing(listenerRcv) ] |-> false ,[ dst: listener1 , query: isConnected(sensor1,sensorConfigservice,listener1,listenerConfig ) ] |-> true , [ dst: listener1 , query: isRefusing(listenerConfig) ] |-> false .
         ops idb0 idb1 idb2 idb3 idb4 idb5 : -> IdentBehavior .
-        eq confNode1 = < nodeInventory: mydb0, instances: mydb0 |-> instMydb0, connections: connectionsNode1, program: nil , receivedAnswers: msgsNode1, outgoingAnswers: nil, outgoingRequests: nil, history: empty > .
+        eq confNode1 = < nodeInventory: mydb0, instances: mydb0 |-> instMydb0, connections: connectionsNode1, program: nil , receivedAnswers: msgsNode1, outgoingAnswers: nil, outgoingRequests: nil, history: empty, buffer: nil > .
         op confNode2 : ->  LocalConfiguration .
         eq confNode2 = < nodeInventory: listener1, mysys0, instances: mysys0 |-> instMysys0, listener1 |-> instListener1, connections: connectionsNode2, program: 
-        pushB(listener1, listenerUpdate, idb4) pushB(listener1, listenerDeploy, idb5), receivedAnswers: msgsNode2, outgoingAnswers: nil, outgoingRequests: nil, history: empty > .      
+        pushB(listener1, listenerUpdate, idb4) pushB(listener1, listenerDeploy, idb5), receivedAnswers: msgsNode2, outgoingAnswers: nil, outgoingRequests: nil, history: empty, buffer: nil > .      
         op confNode3 : ->  LocalConfiguration .
-        eq confNode3 = < nodeInventory: sensor1, instances: sensor1 |-> instSensor1, connections: connectionsNode3, program: pushB(sensor1, sensorPause, idb0) wait(listener1, idb4) pushB(sensor1, sensorDeploy, idb1), receivedAnswers: msgsNode3, outgoingAnswers: nil, outgoingRequests: nil, history: empty > .
+        eq confNode3 = < nodeInventory: sensor1, instances: sensor1 |-> instSensor1, connections: connectionsNode3, program: pushB(sensor1, sensorPause, idb0) wait(listener1, idb4) pushB(sensor1, sensorDeploy, idb1), receivedAnswers: msgsNode3, outgoingAnswers: nil, outgoingRequests: nil, history: empty, buffer: nil > .
         op globalsystem : -> Net .
         eq globalsystem = confNode1, confNode2, confNode3 .
 

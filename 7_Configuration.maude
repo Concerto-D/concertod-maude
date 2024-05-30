@@ -12,9 +12,9 @@ fmod CONCERTO-D-CONFIGURATION is
   pr LIST{Request} . 
   pr LIST{Answer} .
 
-  sorts  Qrequests Qanswers  . 
-  subsort List{Request} < Qrequests . 
-  subsort List{Answer} < Qanswers . 
+  sorts  Qrequest Qanswer  . 
+  subsort List{Request} < Qrequest . 
+  subsort List{Answer} < Qanswer . 
 
   var Ix : Instances .
   var I1 : Instance .
@@ -32,15 +32,15 @@ fmod CONCERTO-D-CONFIGURATION is
   vars R1 R2 : Request .
   var RcvAnsx : Map{Request,ExpectedValue} .
   var val : ExpectedValue .
-
+  var Bx : Qanswer .
+ 
   op < nodeInventory: _, instances: _, 
        connections: _, program: _, 
        receivedAnswers: _, outgoingAnswers: _, outgoingRequests: _, 
-       history: _ > : 
+       history: _,buffer: _ > : 
   IdentInstances Instances Connections Program 
-  Map{Request,ExpectedValue} Qanswers Qrequests 
-  Set{Request} -> LocalConfiguration 
-  [ctor format(n s s d n++i s d ni s d ni s d ni s d ni s d ni s d ni s d s--i) ] .   
+  Map{Request,ExpectedValue} Qrequest  Qrequest 
+  Set{Request} Qanswer -> LocalConfiguration  .   
 
   --- some ops on configuration
  op isProcessedLocallyEvaluation(_,_) : Request IdentInstances -> Bool .  
@@ -77,5 +77,12 @@ fmod CONCERTO-D-CONFIGURATION is
   op evaluation(_,_,_,_,_,_) :  Request IdentInstances Map{Request,ExpectedValue} Instances Connections Program -> ExpectedValue . 
   --- gives the evaluation of a function related to Request according to the two cases, the function is local or external
   eq evaluation(R1,Idsx,RcvAnsx, Ix,Lx,Px ) = if (isProcessedLocallyEvaluation(R1,Idsx)) then localEvaluation(R1,Ix,Lx,Px) else externEvaluation(R1,RcvAnsx) fi .
+
+
+  op InQueue(_,_) : Request Qanswer -> Bool .
+  --- determine whether a request is already in the queue of messages received. 
+  eq InQueue(R1,nil) = false .
+  eq InQueue(R1,[ req: R1, value: val ] Bx) = true  .
+  eq InQueue(R1,[ req: R2, value: val ] Bx) =  InQueue(R1, Bx) [owise] .
 
 endfm
