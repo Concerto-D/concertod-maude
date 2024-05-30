@@ -3,8 +3,8 @@ mod OPERATIONAL-SEMANTICS is
 
   pr LISTENER-SENSOR-EXAMPLE .
 
-  vars Dst Id1 Id2 : IdentInstance .
-  var Idsx Idsy : IdentInstances .
+  vars Dst Id1 Id2 : IdInstance .
+  var Idsx Idsy : IdInstances .
   var Q : Query .
   var R : Request .
   vars Ix Iy : Instances .
@@ -23,7 +23,7 @@ mod OPERATIONAL-SEMANTICS is
   vars Qb Qb1 : QBehaviorWithId .
   var Beh : Behavior .
   var Mrk : Marking .
-  var IdBeh : IdentBehavior .
+  var IdBeh : IdBehavior .
 
   vars P P1 P2 : Place .
   var Ps : Places .
@@ -164,7 +164,7 @@ crl [FiringTransitions] :
       history: Hx,
       buffer: Bx 
       >     
-    if (not isUsedIdentInstances(Id1,Ix))   .  
+    if (not isUsedIdInstances(Id1,Ix))   .  
 
   crl [DeleteComponentInstance] : 
     < nodeInventory: Idsx,
@@ -467,7 +467,7 @@ rl [SendRequest] :
       instances: Ix, 
       connections: Cx, 
       program: Px, 
-      receivedAnswers: upDateReceivedAnswers(RcvAnsx,identInstanceConnectionWhenSendActive(Cx,R,localEvaluation(R,Ix,Cx,Px))) ,
+      receivedAnswers: upDateReceivedAnswers(RcvAnsx,IdInstanceConnectionWhenSendActive(Cx,R,localEvaluation(R,Ix,Cx,Px))) ,
       outgoingAnswers: OutAnsx, 
       outgoingRequests: OutReqx, 
       history: Hx,
@@ -483,47 +483,47 @@ rl [SendRequest] :
       buffer: append(By,[ req: R, value: localEvaluation(R,Ix,Cx,Px) ]) > 
     if ( not InQueue (R,By) ) .
 
-  rl [ReceiveRequest] : 
-  < nodeInventory: (Dst, Idsx),
+    rl [ReceiveRequest] : 
+    < nodeInventory: (Dst, Idsx),
+      instances: Ix,
+      connections: Cx,
+      program: Px,
+      receivedAnswers: RcvAnsx,
+      outgoingAnswers: OutAnsx,
+      outgoingRequests: OutReqx,
+      history: Hx,
+      buffer: [ req: [dst: Dst, query: Q], value: Val ] Bx >   
+    => 
+  < nodeInventory: (Dst,Idsx),
     instances: Ix,
     connections: Cx,
     program: Px,
     receivedAnswers: RcvAnsx,
-    outgoingAnswers: OutAnsx,
+    outgoingAnswers: append(OutAnsx,[ dst: Dst, query: Q ]), 
     outgoingRequests: OutReqx,
     history: Hx,
-    buffer: [ req: [dst: Dst, query: Q], value: Val ] Bx >   
-  => 
- < nodeInventory: (Dst,Idsx),
-   instances: Ix,
-   connections: Cx,
-   program: Px,
-   receivedAnswers: RcvAnsx,
-   outgoingAnswers: append(OutAnsx,[ dst: Dst, query: Q ]), 
-   outgoingRequests: OutReqx,
-   history: Hx,
-   buffer: Bx >  .
+    buffer: Bx >  .
 
-   rl [ReceiveEvaluation] : 
- < nodeInventory: Idsx,
-   instances: Ix,
-   connections: Cx,
-   program: Px,
-   receivedAnswers: RcvAnsx,
-   outgoingAnswers: OutAnsx, 
-   outgoingRequests: OutReqx,
-   history: (R,Hx),
-   buffer: [ req: R, value: Val ] Bx >  
-     =>
- < nodeInventory: Idsx,
-   instances: Ix,
-   connections: Cx,
-   program: Px,
-   receivedAnswers: insert(R,Val,RcvAnsx),
-   outgoingAnswers: OutAnsx, 
-   outgoingRequests: OutReqx,
-   history: Hx,
-   buffer: Bx > .
-   
+    rl [ReceiveEvaluation] : 
+  < nodeInventory: Idsx,
+    instances: Ix,
+    connections: Cx,
+    program: Px,
+    receivedAnswers: RcvAnsx,
+    outgoingAnswers: OutAnsx, 
+    outgoingRequests: OutReqx,
+    history: (R,Hx),
+    buffer: [ req: R, value: Val ] Bx >  
+      =>
+  < nodeInventory: Idsx,
+    instances: Ix,
+    connections: Cx,
+    program: Px,
+    receivedAnswers: insert(R,Val,RcvAnsx),
+    outgoingAnswers: OutAnsx, 
+    outgoingRequests: OutReqx,
+    history: Hx,
+    buffer: Bx > .
+    
 endm
 

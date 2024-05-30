@@ -27,7 +27,7 @@ search [1] globalsystem =>*
   outgoingRequests: OutReq3:Qrequest, 
   history: hist3:Set{Request},
   buffer: Buf3:Qanswer >,
-< nodeInventory: listener1,idInst:IdentInstances,
+< nodeInventory: listener1,idInst:IdInstances,
   instances: (listener1 |-> { type: listenertype:ComponentType,queueBehavior: nil,marking: m(listenerRunning,empty,empty) }), Is:Instances,
   connections: connectNode2:Connections,
   program: nil,
@@ -114,7 +114,7 @@ search [1] globalsystem =>*
   outgoingRequests: OutReq3:Qrequest, 
   history: hist3:Set{Request},
   buffer: Buf3:Qanswer >, 
-< nodeInventory: listener1, idInst:IdentInstances,
+< nodeInventory: listener1, idInst:IdInstances,
   instances: (listener1 |-> { type: listenertype:ComponentType,queueBehavior: qblistener1:QBehaviorWithId, marking: marklistener1:Marking }), Is:Instances  ,
   connections: connectNode2:Connections,
   program: progNode2:Program,
@@ -123,7 +123,7 @@ search [1] globalsystem =>*
  outgoingRequests: OutReq2:Qrequest,  
  history: hist2:Set{Request},
  buffer: Buf2:Qanswer >, n:Net 
- such that (existIdentBehaviorehListBeh(idb4,qblistener1:QBehaviorWithId) or not (notPushBProg(listener1,idb4,progNode2:Program)) ) .
+ such that (existIdBehaviorehListBeh(idb4,qblistener1:QBehaviorWithId) or not (notPushBProg(listener1,idb4,progNode2:Program)) ) .
 
 
 --- the result is as follows:

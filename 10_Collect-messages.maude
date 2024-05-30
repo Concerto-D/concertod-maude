@@ -5,19 +5,19 @@ fmod COLLECT-EXTERNAL-MESSAGES-FIRING is
 
   inc CONCERTO-D-CONFIGURATION .
 
-  var Idsx : IdentInstances . 
+  var Idsx : IdInstances . 
   var Ix : Instances .
   var Cx : Connections .
   var Val : ExpectedValue .
   var Use : UsePort .
   var Pro : ProvidePort .
-  vars Id1 Id2 : IdentInstance .
+  vars Id1 Id2 : IdInstance .
   var NewMark : Marking .
   var RcvAnsx : Map{Request,ExpectedValue} .
   var Hx : Set{Request} .
   var OutReqx : Qrequest .
 
-  op collectRuleFiring(_,_,_,_,_,_,_) : IdentInstances Marking Instances Connections Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
+  op collectRuleFiring(_,_,_,_,_,_,_) : IdInstances Marking Instances Connections Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
   --- used to determine msg related to external functions that allow to apply the rule firing transition. 
   --- it aims to build a queue of external [ dst: Id1 , query: isActive(Use) ]  messages for use ports whose current valuation in Map{Request,ExpectedValue} does not allow the rule to be applied; 
   --- in other words, the evaluation of these messages is true or noValueYet 
@@ -57,20 +57,20 @@ fmod COLLECT-EXTERNAL-MESSAGES-ENTERING-PLACE is
   var RcvAnsx : Map{Request,ExpectedValue} .
   var Use : UsePort .
   var Pro : ProvidePort .
-  vars Id1 Id2 : IdentInstance .
+  vars Id1 Id2 : IdInstance .
   var Hx : Set{Request} .
   var OutReqx : Qrequest .  
-  var Idsx : IdentInstances .   
+  var Idsx : IdInstances .   
 
   op collectRuleEnteringPlace(_,_,_,_,_,_,_,_,_,_,_) : 
-  IdentInstances IdentInstance Place GroupUses Instance Instance Instances Connections Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
+  IdInstances IdInstance Place GroupUses Instance Instance Instances Connections Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
   eq collectRuleEnteringPlace(Idsx,Id1,P,empty,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx) = nil .
   ceq collectRuleEnteringPlace(Idsx,Id1,P,(Use ! Ps),GUx,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx) = 
   append(collectConnected(Idsx,Use,Id1,Cx,RcvAnsx,Hx,OutReqx),append(collectAllowed(Idsx,Use,Id1,Ix,Cx,RcvAnsx,Hx,OutReqx), collectRuleEnteringPlace(Idsx,Id1,P,GUx,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx))) 
   if  ((P in Ps) and active(I,Use) == false and active(I',Use) == true  ).   
   eq collectRuleEnteringPlace(Idsx,Id1,P,(Use ! Ps),GUx,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx) = collectRuleEnteringPlace(Idsx,Id1,P,GUx,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx) [owise] .
 
-  op collectConnected(_,_,_,_,_,_,_) : IdentInstances UsePort IdentInstance Connections Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest . 
+  op collectConnected(_,_,_,_,_,_,_) : IdInstances UsePort IdInstance Connections Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest . 
   ceq collectConnected(Idsx,Use,Id1,(Id1,Use,Id2,Pro),Cx,RcvAnsx,Hx,OutReqx) = [ dst: Id2 , query: isConnected(Id1,Use,Id2,Pro) ] 
   if(
     (not ([ dst: Id2 , query: isConnected(Id1,Use,Id2,Pro) ]  in Hx)) and 
@@ -80,7 +80,7 @@ fmod COLLECT-EXTERNAL-MESSAGES-ENTERING-PLACE is
     ) .
   eq collectConnected(Idsx,Use,Id1,Cx,RcvAnsx,Hx,OutReqx) = nil [owise] .
 
-  op collectAllowed(_,_,_,_,_,_,_,_) : IdentInstances UsePort  IdentInstance Instances Connections Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest . 
+  op collectAllowed(_,_,_,_,_,_,_,_) : IdInstances UsePort  IdInstance Instances Connections Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest . 
   ceq collectAllowed(Idsx,Use,Id1,Ix,(Id1,Use,Id2,Pro),Cx,RcvAnsx,Hx,OutReqx) = [ dst: Id2 , query:  isRefusing(Pro) ] 
   if (
       (not [ dst: Id2 , query:  isRefusing(Pro) ] in Hx) and 
@@ -97,15 +97,15 @@ fmod COLLECT-EXTERNAL-MESSAGES-WAIT is
   inc CONCERTO-D-CONFIGURATION .
 
   var Val : ExpectedValue .
-  var Id1 : IdentInstance .
-  var IdBeh : IdentBehavior .
+  var Id1 : IdInstance .
+  var IdBeh : IdBehavior .
   var RcvAnsx : Map{Request,ExpectedValue} .
   var Hx : Set{Request} .
   var OutReqx : Qrequest .
   var R : Request .
-  var Idsx : IdentInstances .   
+  var Idsx : IdInstances .   
 
-  op collectRuleWait(_,_,_,_,_,_) : IdentInstances IdentInstance IdentBehavior Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
+  op collectRuleWait(_,_,_,_,_,_) : IdInstances IdInstance IdBehavior Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
   ceq collectRuleWait(Idsx,Id1,IdBeh,RcvAnsx,Hx,OutReqx) = [ dst: Id1 , query:  isCompleted(IdBeh) ] 
   if(
     (not ([ dst: Id1 , query:  isCompleted(IdBeh) ]   in Hx)) and 
@@ -124,15 +124,15 @@ fmod COLLECT-EXTERNAL-MESSAGES-DISCONNECT is
   var Val : ExpectedValue .
   var Use : UsePort .
   var Pro : ProvidePort .
-  vars  Id1 Id2 : IdentInstance .
+  vars  Id1 Id2 : IdInstance .
   var RcvAnsx : Map{Request,ExpectedValue} .
   var Hx : Set{Request} .
   var OutReqx : Qrequest .
   var R : Request .
-  var Idsx : IdentInstances . 
+  var Idsx : IdInstances . 
   var C : Connection .  
 
-  op collectRuleDisconnect(_,_,_,_,_) : IdentInstances Connection Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
+  op collectRuleDisconnect(_,_,_,_,_) : IdInstances Connection Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
   ceq collectRuleDisconnect(Idsx,(Id1,Use,Id2,Pro),RcvAnsx,Hx,OutReqx) =
    append(activeCollect(Id1,Use,RcvAnsx,Hx,OutReqx),(disconCollect(Id1,(Id1,Use,Id2,Pro),RcvAnsx,Hx,OutReqx))) 
   if (not (Id1 in Idsx) ) .
@@ -141,7 +141,7 @@ fmod COLLECT-EXTERNAL-MESSAGES-DISCONNECT is
   if (not (Id2 in Idsx) ) .
   eq collectRuleDisconnect(Idsx,(Id1,Use,Id2,Pro),RcvAnsx,Hx,OutReqx) = nil [owise] .
 
-  op activeCollect(_,_,_,_,_) : IdentInstance UsePort Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
+  op activeCollect(_,_,_,_,_) : IdInstance UsePort Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
   ceq activeCollect(Id1,Use,RcvAnsx,Hx,OutReqx) = [ dst: Id1 , query: isActive(Use) ] 
   if(
     (not ([ dst: Id1 , query: isActive(Use) ]   in Hx)) and 
@@ -150,7 +150,7 @@ fmod COLLECT-EXTERNAL-MESSAGES-DISCONNECT is
     ) .
   eq activeCollect(Id1,Use,RcvAnsx,Hx,OutReqx) = nil [owise] .
 
-  op disconCollect(_,_,_,_,_) : IdentInstance Connection Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
+  op disconCollect(_,_,_,_,_) : IdInstance Connection Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
   ceq disconCollect(Id1,C,RcvAnsx,Hx,OutReqx) = [ dst: Id1 , query: isDisconnect(C) ] 
   if(
     (not ([ dst: Id1 , query: isDisconnect(C) ]   in Hx)) and 

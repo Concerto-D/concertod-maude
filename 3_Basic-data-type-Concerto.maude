@@ -57,70 +57,15 @@ fmod STATION-PLACE is
 endfm
 
 
-***(
-
-  --- This is the good style:
-  op _[_] : SFSet F$Elt' -> [F$Elt] . 
-  op not-found : -> [F$Elt] .
-  ceq (E, S)[E'] = E if E' = f(E).
-  eq S[E'] = not-found [owise] .
-
-  --- This is not the good style: 
-  op _{_} : SFSet F$Elt' -> [F$Elt] . 
-  eq (E, empty){E'} = not-found . 
-  ceq (E, S){E'} = E if E' = f(E).
-  eq (E, S){E'} = S[E'] [owise] .
-
-   --- This is the good style and efficient (but more specialized way):
-  --- but only if we are sure there is not any duplicated key!
-  op find _ in _ : NzNat SFSet -> [NzNat] .
-  op not-found : -> [NzNat] . 
-  eq find X in (S, (X,Y)) = Y .
-  eq find X in S = not-found [owise] .
-
-fmod MAP{X :: TRIV, Y :: TRIV} is
-  protecting BOOL .
-  sorts Entry{X,Y} Map{X,Y} .
-  subsort Entry{X,Y} < Map{X,Y} .
-
-  op _|->_ : X$Elt Y$Elt -> Entry{X,Y} [ctor] .
-  op empty : -> Map{X,Y} [ctor] .
-  op _,_ : Map{X,Y} Map{X,Y} -> Map{X,Y} [ctor assoc comm id: empty prec 121 format (d r os d)] .
-  op undefined : -> [Y$Elt] [ctor] .
-
-  var D : X$Elt .
-  vars R R' : Y$Elt .
-  var M : Map{X,Y} .
-
-  op insert : X$Elt Y$Elt Map{X,Y} -> Map{X,Y} .
-  eq insert(D, R, (M, D |-> R')) =
-     if $hasMapping(M, D) then insert(D, R, M)
-     else (M, D |-> R)
-     fi .
-  eq insert(D, R, M) = (M, D |-> R) [owise] .
-
-  op _[_] : Map{X,Y} X$Elt -> [Y$Elt] [prec 23] .
-  eq (M, D |-> R)[D] =
-     if $hasMapping(M, D) then undefined
-     else R
-     fi .
-  eq M[D] = undefined [owise] .
-
-  op $hasMapping : Map{X,Y} X$Elt -> Bool .
-  eq $hasMapping((M, D |-> R), D) = true .
-  eq $hasMapping(M, D) = false [owise] .
-endfm
-
-)
 
 
-fmod IDENT-COMPONENT-BEHAVIOR is
+fmod ID-COMPONENT-BEHAVIOR is
   
   inc DECLARATION-SORTS . 
   
-  sorts IdentInstances IdentBehavior  . 
-  pr SET{IdentInstance} .
-  subsort Set{IdentInstance} < IdentInstances . 
+  sorts IdInstances IdBehavior  . 
+  pr SET{IdInstance} .
+  subsort Set{IdInstance} < IdInstances . 
   
 endfm
 
@@ -137,7 +82,7 @@ endfm
 fmod CONNECTION is
   
   inc DECLARATION-SORTS . 
-  inc IDENT-COMPONENT-BEHAVIOR .
+  inc ID-COMPONENT-BEHAVIOR .
   inc PORT .
   
   sort  Connections . 
@@ -147,26 +92,24 @@ fmod CONNECTION is
   var Lx : Connections .   
   vars Use Use1 : UsePort .  
   var Pro : ProvidePort .   
-  vars Id Id1 Id2 : IdentInstance .  
+  vars Id Id1 Id2 : IdInstance .  
 
 
-
-
-  op (_,_,_,_) : IdentInstance UsePort IdentInstance ProvidePort -> Connection .  
+  op (_,_,_,_) : IdInstance UsePort IdInstance ProvidePort -> Connection .  
   --- Define a new operator to create a Connection
 
   --- some operations related to the connections used later
-  op inConnectionIdentUsePort(_,_,_) :  IdentInstance UsePort Connections -> Bool . 
+  op inConnectionIdentUsePort(_,_,_) :  IdInstance UsePort Connections -> Bool . 
   --- checks whether an instance is connected via a particular use port
   eq inConnectionIdentUsePort(Id,Use,((Id,Use,Id2,Pro),Lx)) = true  .  
   eq inConnectionIdentUsePort(Id,Use,Lx) = false [owise] .  
 
-  op inConnectionIdent(_,_) :  IdentInstance Connections -> Bool .   
+  op inConnectionIdent(_,_) :  IdInstance Connections -> Bool .   
   --- checks whether an instance is connected (via use or provide port)
   ceq inConnectionIdent(Id,((Id1,Use,Id2,Pro),Lx)) = true if (Id1 == Id or Id2 == Id) .  
   eq inConnectionIdent(Id,Lx) = false [owise] .  
 
-  op connectionProIdent(_,_) :  IdentInstance Connections -> Connections .  
+  op connectionProIdent(_,_) :  IdInstance Connections -> Connections .  
   --- checks restriction on connections for an instance which is in role provide Port within connections
   eq connectionProIdent(Id,empty) = empty .
   eq connectionProIdent(Id2,((Id1,Use,Id2,Pro),Lx)) = (Id1,Use,Id2,Pro), connectionProIdent(Id2,Lx)  .  
@@ -177,7 +120,7 @@ endfm
 
 fmod REQUEST is
 
-  inc IDENT-COMPONENT-BEHAVIOR . 
+  inc ID-COMPONENT-BEHAVIOR . 
   inc PORT .
   inc CONNECTION .
   
@@ -187,9 +130,9 @@ fmod REQUEST is
   op isRefusing(_) : Port -> Query [ctor] .    
   op isConnected(_) : Connection -> Query [ctor] .  
   op isDisconnect(_) : Connection -> Query [ctor] .  
-  op isCompleted(_) : IdentBehavior -> Query [ctor] .  
+  op isCompleted(_) : IdBehavior -> Query [ctor] .  
   
-  op [ dst: _ , query: _ ] : IdentInstance Query -> Request [ctor] .
+  op [ dst: _ , query: _ ] : IdInstance Query -> Request [ctor] .
 
   
 endfm
@@ -315,7 +258,7 @@ endfm
 fmod BEHAVIOR is
   
   inc TRANSITION-TRANSITION-ENDING .
-  inc IDENT-COMPONENT-BEHAVIOR .
+  inc ID-COMPONENT-BEHAVIOR .
 
   pr DECLARATION-SORTS .
   sorts Behaviors QBehaviorWithId .  
@@ -325,19 +268,19 @@ fmod BEHAVIOR is
   subsort List{BehaviorWithId} < QBehaviorWithId . 
   --- QBehaviorWithId est une liste pour les element de sort BehaviorWithId 
 
-  vars IdBehx IdBehy : IdentBehavior .
+  vars IdBehx IdBehy : IdBehavior .
   var BehL : QBehaviorWithId .
   var Beh : Behavior .
 
   op b(_) : Transitions -> Behavior .   
   ---a behavoir is a set of transitions
-  op (_;_) : IdentBehavior Behavior -> BehaviorWithId . 
+  op (_;_) : IdBehavior Behavior -> BehaviorWithId . 
   ---BehaviorWithId is an identified behavior
 
-  op existIdentBehaviorehListBeh(_,_) : IdentBehavior QBehaviorWithId -> Bool .  
+  op existIdBehaviorehListBeh(_,_) : IdBehavior QBehaviorWithId -> Bool .  
   ---to check if a behavior identifier is used in the behavior list  
-  eq existIdentBehaviorehListBeh(IdBehx, nil) = false .
-  eq existIdentBehaviorehListBeh(IdBehx, (IdBehx ; Beh) BehL) = true .
-  eq existIdentBehaviorehListBeh(IdBehx, (IdBehy ; Beh) BehL) = existIdentBehaviorehListBeh(IdBehx,BehL) [owise] .
+  eq existIdBehaviorehListBeh(IdBehx, nil) = false .
+  eq existIdBehaviorehListBeh(IdBehx, (IdBehx ; Beh) BehL) = true .
+  eq existIdBehaviorehListBeh(IdBehx, (IdBehy ; Beh) BehL) = existIdBehaviorehListBeh(IdBehx,BehL) [owise] .
 
 endfm

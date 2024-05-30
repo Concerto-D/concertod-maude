@@ -29,7 +29,7 @@
 --------------------------------------------------------------------------------------------------------------------------------
 fmod DECLARATION-SORTS is 
 
-  sorts Place Station StationPlace  IdentInstance MsgToUse Send Receive SentHistory Connection Instance LocalConfiguration .
+  sorts Place Station StationPlace  IdInstance MsgToUse Send Receive SentHistory Connection Instance LocalConfiguration .
   sorts Transition TransitionEnding Behavior BehaviorWithId GroupUse GroupProvide Instruction Request Answer ExpectedValue .
 
 endfm

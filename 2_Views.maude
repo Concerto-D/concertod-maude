@@ -12,8 +12,8 @@ view Station from TRIV to DECLARATION-SORTS is
   sort Elt to Station .
 endv
 
-view IdentInstance from TRIV to DECLARATION-SORTS is
- sort Elt to IdentInstance .
+view IdInstance from TRIV to DECLARATION-SORTS is
+ sort Elt to IdInstance .
 endv
 
 

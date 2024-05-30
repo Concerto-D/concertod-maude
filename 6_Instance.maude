@@ -2,17 +2,17 @@ fmod INSTANCE is
   
   inc COMPONENT-TYPE .
   inc BEHAVIOR .
-  inc IDENT-COMPONENT-BEHAVIOR .
+  inc ID-COMPONENT-BEHAVIOR .
   inc MARKING . 
   inc DECLARATION-SORTS . 
   sort Instances .
-  pr MAP{IdentInstance,Instance} .
-  subsort Map{IdentInstance,Instance} < Instances .
+  pr MAP{IdInstance,Instance} .
+  subsort Map{IdInstance,Instance} < Instances .
 
   vars P Q : Place . 
   var Ps : Places .
-  vars  Id1 Id2 : IdentInstance .
-  var IdBeh : IdentBehavior .
+  vars  Id1 Id2 : IdInstance .
+  var IdBeh : IdBehavior .
   vars Ss1 Ss2 : Stations .
   var Qb : QBehaviorWithId .
   var Mark : Marking .
@@ -27,16 +27,16 @@ fmod INSTANCE is
   op { type: _, queueBehavior: _, marking: _ } : 
   ComponentType QBehaviorWithId Marking -> Instance [ctor] .
 
-  ---op identOfInstance(_) : Instance -> IdentInstance .  
+  ---op identOfInstance(_) : Instance -> IdInstance .  
   --- gives the id of an instance
   ----eq identOfInstance(< id: Id1,type: Ct,queueBehavior: Qb,marking: Mark > ) = Id1 .
 
-  op isUsedIdentInstances(_,_) : IdentInstance Instances -> Bool . 
+  op isUsedIdInstances(_,_) : IdInstance Instances -> Bool . 
   ---to check if an id of instance is used in the set of instances
-  eq isUsedIdentInstances(Id1, (Id1 |-> { type: Ct,queueBehavior: Qb,marking: Mark }, Ix)) = true  .
-  eq isUsedIdentInstances(Id1, Ix) = false [owise] .
+  eq isUsedIdInstances(Id1, (Id1 |-> { type: Ct,queueBehavior: Qb,marking: Mark }, Ix)) = true  .
+  eq isUsedIdInstances(Id1, Ix) = false [owise] .
 
-  op instanceOfIdent(_,_) : Instances IdentInstance -> [Instance] . 
+  op instanceOfIdent(_,_) : Instances IdInstance -> [Instance] . 
   op not-found : -> [Instance] . 
   --- gives the instance identified by a given id
   --- applied only when we are sure that the instance exists. 

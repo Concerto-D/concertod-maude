@@ -185,7 +185,7 @@ def gen_maude(example_name, inventory):
         conf_name = f"conf{node.capitalize()}"
         conf_ids = get_all_ids(instances, program)
         for id in conf_ids:
-            ops.add(f"op {id} : -> IdentInstance .")
+            ops.add(f"op {id} : -> IdInstance .")
         conf_instances = get_instance_names(instances)
         conf_connections = make_connections_name(node)
         conf_program = make_conf_program(program)

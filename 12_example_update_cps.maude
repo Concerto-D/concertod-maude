@@ -8,17 +8,17 @@ fmod LISTENER-SENSOR-EXAMPLE is
         inc COLLECT-EXTERNAL-MESSAGES-ENTERING-PLACE .
         inc UPDATE-COMMUNICATION-MESSAGES .
 
-        op listener1 : -> IdentInstance .
+        op listener1 : -> IdInstance .
         ops systemDeploy systemInterrupt systemStop : -> Behavior .
         op connectionsNode3 : -> Connections .
         ops databaseInitiated databaseConfigured databaseBootstrapped databaseDeployed databaseRegistered : -> Place .        
         ops sensorRunning sensorConfigured sensorInstalled sensorProvisioned sensorOff : -> Place .
         op instSensor1 : -> Instance .
         ops stlistenerRunning stlistenerConfigured stlistenerPaused stlistenerOff : -> Station .
-        op mydb0 : -> IdentInstance .
+        op mydb0 : -> IdInstance .
         op instMydb0 : -> Instance .
         ops stdatabaseInitiated stdatabaseConfigured stdatabaseBootstrapped stdatabaseDeployed stdatabaseRegistered : -> Station .
-        op sensor1 : -> IdentInstance .
+        op sensor1 : -> IdInstance .
         ops sensorRcvservice sensorConfigservice : -> UsePort .
         ops sensorDeploy sensorPause sensorStop : -> Behavior .
         op system : -> ComponentType .
@@ -40,7 +40,7 @@ fmod LISTENER-SENSOR-EXAMPLE is
         op systemInitiated : -> InitialPlace .
         op sensorOff : -> InitialPlace .
         ops listenerDeploy1 listenerDeploy2 listenerDeploy3 listenerUpdate1 listenerDestroy1 : -> Transition .
-        op mysys0 : -> IdentInstance .
+        op mysys0 : -> IdInstance .
         op sensor : -> ComponentType .
         op connectionsNode2 : -> Connections .
         ops listenerSysservice : -> UsePort .
@@ -116,7 +116,7 @@ fmod LISTENER-SENSOR-EXAMPLE is
         eq msgsNode1 = empty .
         eq msgsNode2 = [ dst: mydb0 , query: isConnected(mysys0,systemDbservice,mydb0,databaseService) ] |-> true , [ dst: mydb0 , query: isRefusing(databaseService) ] |-> false .
         eq msgsNode3 = [ dst: listener1 , query: isConnected((sensor1,sensorRcvservice,listener1,listenerRcv)) ] |-> true , [ dst: listener1 , query: isRefusing(listenerRcv) ] |-> false ,[ dst: listener1 , query: isConnected(sensor1,sensorConfigservice,listener1,listenerConfig ) ] |-> true , [ dst: listener1 , query: isRefusing(listenerConfig) ] |-> false .
-        ops idb0 idb1 idb2 idb3 idb4 idb5 : -> IdentBehavior .
+        ops idb0 idb1 idb2 idb3 idb4 idb5 : -> IdBehavior .
         eq confNode1 = < nodeInventory: mydb0, instances: mydb0 |-> instMydb0, connections: connectionsNode1, program: nil , receivedAnswers: msgsNode1, outgoingAnswers: nil, outgoingRequests: nil, history: empty, buffer: nil > .
         op confNode2 : ->  LocalConfiguration .
         eq confNode2 = < nodeInventory: listener1, mysys0, instances: mysys0 |-> instMysys0, listener1 |-> instListener1, connections: connectionsNode2, program: 
@@ -133,5 +133,5 @@ endfm
        connections: _, program: _, 
        receivedAnswers: _, outgoingAnswers: _, outgoingRequests: _, 
        history: _ > : 
-  IdentInstances Instance
+  IdInstances Instance
 )

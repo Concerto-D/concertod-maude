@@ -18,8 +18,8 @@ fmod CONCERTO-D-CONFIGURATION is
 
   var Ix : Instances .
   var I1 : Instance .
-  var Idsx : IdentInstances .
-  var IdBeh : IdentBehavior .
+  var Idsx : IdInstances .
+  var IdBeh : IdBehavior .
   var Ct : ComponentType .
   var Port : Port .
   var Lx : Connections .
@@ -28,7 +28,7 @@ fmod CONCERTO-D-CONFIGURATION is
   var Qb : QBehaviorWithId .
   var Mark : Marking .
   var Q : Query .
-  var Id : IdentInstance .
+  var Id : IdInstance .
   vars R1 R2 : Request .
   var RcvAnsx : Map{Request,ExpectedValue} .
   var val : ExpectedValue .
@@ -38,12 +38,12 @@ fmod CONCERTO-D-CONFIGURATION is
        connections: _, program: _, 
        receivedAnswers: _, outgoingAnswers: _, outgoingRequests: _, 
        history: _,buffer: _ > : 
-  IdentInstances Instances Connections Program 
+  IdInstances Instances Connections Program 
   Map{Request,ExpectedValue} Qrequest  Qrequest 
   Set{Request} Qanswer -> LocalConfiguration  .   
 
   --- some ops on configuration
- op isProcessedLocallyEvaluation(_,_) : Request IdentInstances -> Bool .  
+ op isProcessedLocallyEvaluation(_,_) : Request IdInstances -> Bool .  
   --- determine whether a Request is related to a local treatement.
  eq isProcessedLocallyEvaluation([ dst: Id , query: Q ], Idsx) = Id in Idsx .
 
@@ -69,12 +69,12 @@ fmod CONCERTO-D-CONFIGURATION is
   eq localEvaluation ([ dst: Id , query: isDisconnect(L) ], Ix,Lx,Px) = disconnect(L,Px) . 
  
   eq localEvaluation ([ dst: Id , query: isCompleted(IdBeh) ], (Id |-> { type: Ct,queueBehavior: Qb,marking: Mark },Ix),Lx,Px) =  
-  (not existIdentBehaviorehListBeh(IdBeh,Qb) ) and notPushBProg(Id,IdBeh,Px) .
+  (not existIdBehaviorehListBeh(IdBeh,Qb) ) and notPushBProg(Id,IdBeh,Px) .
   --- the evaluation of completed of an IdBeh depends on whether the push IdBeh exists in the program or in the behavior list.
   eq localEvaluation ([ dst: Id , query: isCompleted(IdBeh) ], Ix,Lx,Px) =   notPushBProg(Id,IdBeh,Px) [owise] . 
   --- special case the instance doesn't (the instance is not yet added or it is deleted)
 
-  op evaluation(_,_,_,_,_,_) :  Request IdentInstances Map{Request,ExpectedValue} Instances Connections Program -> ExpectedValue . 
+  op evaluation(_,_,_,_,_,_) :  Request IdInstances Map{Request,ExpectedValue} Instances Connections Program -> ExpectedValue . 
   --- gives the evaluation of a function related to Request according to the two cases, the function is local or external
   eq evaluation(R1,Idsx,RcvAnsx, Ix,Lx,Px ) = if (isProcessedLocallyEvaluation(R1,Idsx)) then localEvaluation(R1,Ix,Lx,Px) else externEvaluation(R1,RcvAnsx) fi .
 

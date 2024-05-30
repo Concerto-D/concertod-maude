@@ -1,7 +1,7 @@
 --------------------------------------------some ops used in the operating rules ------------------------------------------------
 -------------------------------------- rules firing transition and entering place  --------------------------------------------------
 
----   op evaluation(_,_,_,_,_,_) :  Request IdentInstances Map{Request,ExpectedValue} Instances Connections Program -> ExpectedValue . 
+---   op evaluation(_,_,_,_,_,_) :  Request IdInstances Map{Request,ExpectedValue} Instances Connections Program -> ExpectedValue . 
 
 fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
 
@@ -9,14 +9,14 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
 
   var NewMark : Marking .
   var Ix : Instances .
-  vars Id1 Id2 : IdentInstance .
+  vars Id1 Id2 : IdInstance .
   var Use : UsePort .
   var Pro : ProvidePort .
   var Lx : Connections .
   var RcvAnsx : Map{Request,ExpectedValue} .
-  var Idsx  : IdentInstances .
+  var Idsx  : IdInstances .
 
-  op notActiveUseWhenLeavinGroupProvide(_,_,_,_,_) : IdentInstances Marking Instances Map{Request,ExpectedValue} Connections ->  Bool .
+  op notActiveUseWhenLeavinGroupProvide(_,_,_,_,_) : IdInstances Marking Instances Map{Request,ExpectedValue} Connections ->  Bool .
   ---   is used to ensure consistency when firing transitions
   ---   it takes as parameters when used in the firing transition rule: 
   ---   the set of identifiers for all instances of the concerned configuration (concerned by the firing of one of its instances)
@@ -51,10 +51,10 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   var RcvAnsx : Map{Request,ExpectedValue} .
   vars Use1 Use : UsePort .
   var Pro : ProvidePort .
-  vars IdentIns Id1 Id2 : IdentInstance .
-  var Idsx  : IdentInstances .
+  vars IdentIns Id1 Id2 : IdInstance .
+  var Idsx  : IdInstances .
 
-  op connectedAndAllowed(_,_,_,_,_,_,_,_,_) : IdentInstances IdentInstance Place GroupUses Instance Instance Instances Connections Map{Request,ExpectedValue} -> Bool . 
+  op connectedAndAllowed(_,_,_,_,_,_,_,_,_) : IdInstances IdInstance Place GroupUses Instance Instance Instances Connections Map{Request,ExpectedValue} -> Bool . 
   ---  for the entreing place rule, in addition to the isSatisfiedTransitionEndingStation condition on the choice of a station as an ending for a transition,
   ---  we need the satifaction of ConnectedProvidedAllowed
   ---  this function takes as parameters:
@@ -77,13 +77,13 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   --- in the previous condition we use active directly since it's a local treatment for the concerned configuration
   eq connectedAndAllowed(Idsx ,Id1,p,(Use ! ps),GUx,I,I',Is,Lx,RcvAnsx) = connectedAndAllowed(Idsx ,Id1,p,GUx,I,I',Is,Lx,RcvAnsx) [owise] .
 
-  op connected(_,_,_,_,_) : IdentInstances UsePort IdentInstance Connections Map{Request,ExpectedValue} -> Bool . 
+  op connected(_,_,_,_,_) : IdInstances UsePort IdInstance Connections Map{Request,ExpectedValue} -> Bool . 
   ---  connection must be verified on noValueYeth user and provider instances
   ceq connected(Idsx ,Use,Id1,(Id1,Use,Id2,Pro),Lx,RcvAnsx) = true 
   if(evaluation([ dst: Id2 , query: isConnected(Id1,Use,Id2,Pro) ], Idsx ,RcvAnsx,empty,(Id1,Use,Id2,Pro),Lx,nil )   == true ) .
   eq connected(Idsx ,Use,Id1,Lx,RcvAnsx) = false [owise] .
 
-  op allowed(_,_,_,_,_,_) : IdentInstances UsePort  IdentInstance Instances Connections Map{Request,ExpectedValue} -> Bool . 
+  op allowed(_,_,_,_,_,_) : IdInstances UsePort  IdInstance Instances Connections Map{Request,ExpectedValue} -> Bool . 
   --- also the provide port connected to this use port of the instance must not be refused
   eq allowed(Idsx ,Use,Id1,Is,(Id1,Use,Id2,Pro),Lx,RcvAnsx) = (evaluation([ dst: Id2 , query: isRefusing(Pro) ],Idsx ,RcvAnsx,Is,empty,nil ) == false) . 
   eq allowed(Idsx ,Use,Id1,Is,Lx,RcvAnsx) = false [owise] .  ---is not important since connected ensure that there is a connection.
