@@ -1,33 +1,4 @@
-***(fmod CONCERTO-D-CONFIGURATION is 
 
-  inc ANSWER .
-  inc INSTANCE .
-  inc PROGRAM .
-  inc CONNECTION .
-  inc DECLARATION-SORTS . 
-
-  pr SET{Request} . 
-  pr MAP{Request,ExpectedValue} .
-  pr LIST{Request} . 
-  pr LIST{Answer} .
-
-  sorts  Qrequests Qanswers  .  --- define new sorts of queues
-  subsort List{Request} < Qrequests . 
-  subsort List{Answer} < Qanswers . 
-  
-  --- Pas sûr pour les noms des différents ensembles et files
-  op < nodeInventory: _, instances: _, 
-       connections: _, program: _, 
-       receivedAnswers: _, outgoingAnswers: _, outgoingRequests: _, 
-       history: _ > : 
-  IdentInstances Instances Connections Program 
-  Map{Request,ExpectedValue} Qanswers Qrequests 
-  Set{Request} -> LocalConfiguration 
-  [ctor format(n s s d n++i s d ni s d ni s d ni s d ni s d ni s d ni s d s--i) ] .   
-
-endfm
-
-)
 fmod CONCERTO-D-CONFIGURATION is 
 
   inc ANSWER .
@@ -100,8 +71,8 @@ fmod CONCERTO-D-CONFIGURATION is
   eq localEvaluation ([ dst: Id , query: isCompleted(IdBeh) ], (Id |-> { type: Ct,queueBehavior: Qb,marking: Mark },Ix),Lx,Px) =  
   (not existIdentBehaviorehListBeh(IdBeh,Qb) ) and notPushBProg(Id,IdBeh,Px) .
   --- the evaluation of completed of an IdBeh depends on whether the push IdBeh exists in the program or in the behavior list.
-  eq localEvaluation ([ dst: Id , query: isCompleted(IdBeh) ], Ix,Lx,Px) =  if ((not isUsedIdentInstances(Id,Ix) ) and notPushBProg(Id,IdBeh,Px)) then true else false fi . 
-  --- special case the instance doesn't exist and even the push of IdBeh in the program. this is the case when a program is executed and its instance is deleted.
+  eq localEvaluation ([ dst: Id , query: isCompleted(IdBeh) ], Ix,Lx,Px) =   notPushBProg(Id,IdBeh,Px) [owise] . 
+  --- special case the instance doesn't (the instance is not yet added or it is deleted)
 
   op evaluation(_,_,_,_,_,_) :  Request IdentInstances Map{Request,ExpectedValue} Instances Connections Program -> ExpectedValue . 
   --- gives the evaluation of a function related to Request according to the two cases, the function is local or external

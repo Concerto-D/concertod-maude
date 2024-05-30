@@ -364,7 +364,7 @@ crl [FiringTransitions] :
     => 
     < nodeInventory: Idsx, instances: Ix, 
       connections: Cx, program: Px, 
-      receivedAnswers: RcvAnsx, ---insert([dst: Dst, query: Q],noValueYet, RcvAnsx),  [dst: Dst, query: Q] |-> noValueYet, RcvAnsx) est remplacee ou bien on la supprimer c mieux modif par outgoingAnswers
+      receivedAnswers: RcvAnsx,
       outgoingAnswers: OutAnsx, 
       outgoingRequests: OutReqx, 
       history: [dst: Dst, query: Q], Hx > ,
@@ -374,15 +374,8 @@ crl [FiringTransitions] :
       outgoingAnswers: append(OutAnsy,[req: [dst: Dst, query: Q], value: noValueYet ]),
       outgoingRequests: OutReqy,
       history: Hy > .
-    ---if not($hasMapping(RcvAnsx, [dst: Dst, query: Q])) --- vraiment nécessaire?
-    
-      ---if not($hasMapping(RcvAnsx, [dst: Dst, query: Q])) --- vraiment nécessaire?
-    ---- on doit pas mettre cette condition si non la regle se bloque 
-    --- il se fait inserer le nouveau mapping avec une valeur indeterminé
-    --- dans le cas ou un map existe pour cet valeur elle sera ecrasé sa valeur booleene ou valeur indetermine par indeterminé
-    --- ca valeur booleene n'est pas intersessente pour la fonction correspondante et une nouvelle recherche sur eventuellement une valeur intersesnte est en cou
-    
-    rl [SendReceiveEvaluation] : 
+     
+    rl [SendEvaluation] : 
     < nodeInventory: Idsx, 
       instances: Ix, 
       connections: Cx, program: Px, 
@@ -401,24 +394,20 @@ crl [FiringTransitions] :
     < nodeInventory: Idsx, 
       instances: Ix, 
       connections: Cx, program: Px, 
-      receivedAnswers: upDateReceivedAnswers(RcvAnsx,identInstanceConnectionWhenSendActive(Cx,[dst: Dst, query: Q],localEvaluation([dst: Dst, query: Q],Ix,Cx,Px))) ,
+      receivedAnswers: upDateReceivedAnswers(RcvAnsx,identInstanceConnectionWhenSendActive(Cx,[dst: Dst, query: Q],
+      localEvaluation([dst: Dst, query: Q],Ix,Cx,Px))) ,
       outgoingAnswers: OutAnsx, 
       outgoingRequests: OutReqx, 
       history: Hx > ,
     < nodeInventory: Idsy, 
       instances: Iy, 
       connections: Cy, program: Py, 
-      receivedAnswers: insert([dst: Dst, query: Q], localEvaluation([dst: Dst, query: Q],Ix,Cx,Px), RcvAnsy),
+      receivedAnswers: insert([dst: Dst, query: Q], 
+      localEvaluation([dst: Dst, query: Q],Ix,Cx,Px), RcvAnsy),
       outgoingAnswers: OutAnsy, 
       outgoingRequests: OutReqy,
       history: Hy > . 
     
     
-    ---- ($hasMapping(RcvAnsx, [dst: Dst, query: Q])) --- vraiment nécessaire?
-    
-
-
-
-
 endm
 
