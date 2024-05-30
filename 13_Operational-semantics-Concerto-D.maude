@@ -443,15 +443,13 @@ rl [SendRequest] :
       buffer: append(By,[ req: [ dst: Dst, query: Q ], value: noValueYet ])     > .
     
 
-
-
   crl [SendEvaluationOfRequest] : 
     < nodeInventory: Idsx, 
       instances: Ix, 
       connections: Cx, 
       program: Px, 
       receivedAnswers: RcvAnsx, 
-      outgoingAnswers: [ dst: Dst, query: Q ] OutAnsx,  
+      outgoingAnswers: R OutAnsx,  
       outgoingRequests: OutReqx, 
       history: Hx,
       buffer: Bx > , 
@@ -462,14 +460,14 @@ rl [SendRequest] :
       receivedAnswers: RcvAnsy, 
       outgoingAnswers: OutAnsy, 
       outgoingRequests: OutReqy, 
-      history: [ dst: Dst, query: Q ], Hy,
+      history: R, Hy,
       buffer: By >
     => 
     < nodeInventory: Idsx, 
       instances: Ix, 
       connections: Cx, 
       program: Px, 
-      receivedAnswers: upDateReceivedAnswers(RcvAnsx,identInstanceConnectionWhenSendActive(Cx,[ dst: Dst, query: Q ],localEvaluation([ dst: Dst, query: Q ],Ix,Cx,Px))) ,
+      receivedAnswers: upDateReceivedAnswers(RcvAnsx,identInstanceConnectionWhenSendActive(Cx,R,localEvaluation(R,Ix,Cx,Px))) ,
       outgoingAnswers: OutAnsx, 
       outgoingRequests: OutReqx, 
       history: Hx,
@@ -481,9 +479,9 @@ rl [SendRequest] :
       receivedAnswers: RcvAnsy,
       outgoingAnswers: OutAnsy, 
       outgoingRequests: OutReqy,
-      history: ([ dst: Dst, query: Q ], Hy),
-      buffer: append(By,[ req: [ dst: Dst, query: Q ], value: localEvaluation([ dst: Dst, query: Q ],Ix,Cx,Px) ]) > 
-    if ( not InQueue ([ dst: Dst, query: Q ],By) ) .
+      history: (R, Hy),
+      buffer: append(By,[ req: R, value: localEvaluation(R,Ix,Cx,Px) ]) > 
+    if ( not InQueue (R,By) ) .
 
   rl [ReceiveRequest] : 
   < nodeInventory: (Dst, Idsx),
