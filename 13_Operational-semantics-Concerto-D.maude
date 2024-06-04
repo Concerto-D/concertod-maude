@@ -59,7 +59,7 @@ crl [FiringTransitions] :
       buffer: Bx 
       >  
     if ( restrictTransitionsToPlace(TsBeh,P) =/= empty and
-        notActiveUseWhenLeavinGroupProvide(Idsx,m(Ps,union(Ts, restrictTransitionsToPlace(TsBeh,P) ),Tes) ,(Id1 |-> { type: Ct,
+        safeToFire(Idsx,m(Ps,union(Ts, restrictTransitionsToPlace(TsBeh,P) ),Tes) ,(Id1 |-> { type: Ct,
         queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(P, Ps,Ts,Tes) } ,Ix),RcvAnsx,connectionProIdent(Id1, Cx))) . 
 
 

@@ -16,7 +16,7 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
   var RcvAnsx : Map{Request,ExpectedValue} .
   var Idsx  : IdInstances .
 
-  op notActiveUseWhenLeavinGroupProvide(_,_,_,_,_) : IdInstances Marking Instances Map{Request,ExpectedValue} Connections ->  Bool .
+  op safeToFire(_,_,_,_,_) : IdInstances Marking Instances Map{Request,ExpectedValue} Connections ->  Bool .
   ---   is used to ensure consistency when firing transitions
   ---   it takes as parameters when used in the firing transition rule: 
   ---   the set of identifiers for all instances of the concerned configuration (concerned by the firing of one of its instances)
@@ -26,13 +26,13 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
   ---   finally, a subset of Connections related to the configuration, where the instance concerned by firing is a provider.
   ---   so for each connection it checks that the firing of the concerned instance (provider) does not affect the corresponding user
   ---   i.e., if the provider for each connection after a firing goes from active to inactive, this implies that the user must be inactive.
-  eq notActiveUseWhenLeavinGroupProvide(Idsx ,NewMark,Ix,RcvAnsx,(Id1,Use,Id2,Pro),Lx) = notActiveUseWhenLeavinGroupProvide(Idsx ,NewMark,Ix,RcvAnsx,Lx) and 
+  eq safeToFire(Idsx ,NewMark,Ix,RcvAnsx,(Id1,Use,Id2,Pro),Lx) = safeToFire(Idsx ,NewMark,Ix,RcvAnsx,Lx) and 
   (
     ( (evaluation([ dst: Id2 , query: isActive(Pro) ] ,Idsx ,RcvAnsx, Ix,empty,nil ) == true) and 
     (activeMarking(instanceOfIdent(Ix,Id2),Pro,NewMark) == false )) 
     implies  (evaluation([ dst: Id1 , query: isActive(Use) ],Idsx ,RcvAnsx, Ix,empty,nil ) == false) 
   ) .
-  eq notActiveUseWhenLeavinGroupProvide(Idsx ,NewMark,Ix,RcvAnsx,empty) = true .
+  eq safeToFire(Idsx ,NewMark,Ix,RcvAnsx,empty) = true .
 
 endfm
 
