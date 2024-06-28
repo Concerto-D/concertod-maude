@@ -1,100 +1,88 @@
+
 fmod CONCERTO-D-CONFIGURATION is 
 
-  inc ID-FUNCTIONS-COMMUNICATED .
+  inc ANSWER .
   inc INSTANCE .
   inc PROGRAM .
   inc CONNECTION .
-  inc BOOL-WITH-BOT .
   inc DECLARATION-SORTS . 
 
-  sorts  MsgToUses SentHistorys . ---define new sorts of type set
-  sorts  Qsend Qreceive  . ---define new sorts of type list
-  subsort Msg  < SentHistory . --- Msg is also an element of W 
-  subsort Msg  < Send . ---- Msg is also an element of the send 
-  pr SET{MsgToUse} .
-    subsort Set{MsgToUse} < MsgToUses . 
-  pr SET{SentHistory} .
-    subsort Set{SentHistory} < SentHistorys . 
-  pr LIST{Send} .
-    subsort List{Send} < Qsend . 
-  pr LIST{Receive} .
-    subsort List{Receive} < Qreceive . 
+  pr SET{Request} . 
+  pr MAP{Request,ExpectedValue} .
+  pr LIST{Request} . 
+  pr LIST{Answer} .
 
-  vars  M1 M2 : Msg .
-  var Mx : MsgToUses .
-  vars NewVal val : [Bool] .
+  sorts  Qrequest Qanswer  . 
+  subsort List{Request} < Qrequest . 
+  subsort List{Answer} < Qanswer . 
+
   var Ix : Instances .
-  var Id1 : IdentInstance .
-  var IdIx : IdentInstances .
-  var IdBeh : IdentBehavior .
+  var I1 : Instance .
+  var Idsx : IdInstances .
+  var IdBeh : IdBehavior .
   var Ct : ComponentType .
   var Port : Port .
   var Lx : Connections .
-  var Rx : Program .
+  var Px : Program .
   var L : Connection .
   var Qb : QBehaviorWithId .
   var Mark : Marking .
-  var QRx : Qreceive .
+  var Q : Query .
+  var Id : IdInstance .
+  vars R1 R2 : Request .
+  var RcvAnsx : Map{Request,ExpectedValue} .
+  var val : ExpectedValue .
+  var Bx : Qanswer .
  
-  op extern(_;_) : Msg [Bool] ->   MsgToUse .  
-  ---defines a Msg as external (relted to external function) with an evaluation, to be used locally . 
-
-  op (_;_) :  Msg [Bool]  -> Receive .  
-  --- a message to receive when communicating
-  
-  op < ids: _,instances: _,connections: _,program: _,msgs: _,receive: _,send: _,history: _ > : 
-  IdentInstances Instances Connections Program MsgToUses Qreceive Qsend  SentHistorys -> LocalConfiguration .   
+  op < nodeInventory: _, instances: _, 
+       connections: _, program: _, 
+       receivedAnswers: _, outgoingAnswers: _, outgoingRequests: _, 
+       history: _,buffer: _ > : 
+  IdInstances Instances Connections Program 
+  Map{Request,ExpectedValue} Qrequest  Qrequest 
+  Set{Request} Qanswer -> LocalConfiguration  .   
 
   --- some ops on configuration
-  op isMsgProcessedLocally(_,_) : Msg IdentInstances -> Bool .  
-  --- determine whether a Msg is related to a local treatement.
-  eq isMsgProcessedLocally(M1, IdIx) = 1st(M1) in IdIx .
- 
-  op isMsgConsidredProcessedExternally(_,_) : Msg MsgToUses -> Bool . 
-  --- determine whether a message is considered external
-  eq isMsgConsidredProcessedExternally(M1,empty) = false .
-  eq isMsgConsidredProcessedExternally(M1, extern(M1 ; val),Mx ) = true  .
-  eq isMsgConsidredProcessedExternally(M1, extern(M2 ; val),Mx ) = isMsgConsidredProcessedExternally(M1, Mx) [owise] .
+ op isProcessedLocallyEvaluation(_,_) : Request IdInstances -> Bool .  
+  --- determine whether a Request is related to a local treatement.
+ eq isProcessedLocallyEvaluation([ dst: Id , query: Q ], Idsx) = Id in Idsx .
 
-  op addMsgExternProcess(_,_) : Msg MsgToUses -> MsgToUses .
-  --- add Msg related to an external function with a bot evaluation to MsgToUses if it is not already in this set.
-  ceq addMsgExternProcess(M1,Mx) =  extern(M1 ; bot),Mx if (not isMsgConsidredProcessedExternally(M1, Mx )) .  
-  eq addMsgExternProcess(M1,Mx) = Mx [owise] . 
 
-  op externEvaluationMsg(_,_) : Msg MsgToUses  -> [Bool] .  
-  ---obtain the evalaution of an external function related to a Msg from MsgToUses
-  eq externEvaluationMsg(M1, empty) = bot . 
-  eq externEvaluationMsg(M1, extern(M1 ; val), Mx ) = val  .
-  eq externEvaluationMsg(M1, extern(M2 ; val), Mx ) = externEvaluationMsg(M1, Mx ) [owise] .
+  op externEvaluation(_,_) : Request Map{Request,ExpectedValue}  -> ExpectedValue .  
+  ---obtain the evalaution of an external function related to a Request from Map{Request,ExpectedValue}
+  eq externEvaluation(R1, R1 |-> val, RcvAnsx ) = val  .
+  eq externEvaluation(R1, RcvAnsx ) =  noValueYet [owise] .
 
-  op substitueEvaluationMsg(_,_,_) : MsgToUses Msg [Bool] -> MsgToUses .  
-  --- substitutes the evaluation related to an external function of Msg in the set of MsgToUses.
-  eq substitueEvaluationMsg(empty,M1,NewVal) = empty . 
-  eq substitueEvaluationMsg((extern(M1 ; val), Mx),M1,NewVal) = extern(M1 ; NewVal), Mx  .
-  eq substitueEvaluationMsg((extern(M1 ; val), Mx),M2,NewVal) = extern(M1 ; val), substitueEvaluationMsg(Mx,M2,NewVal) [owise] .
- 
-  op localEvaluationMsg(_,_,_,_) : Msg Instances Connections Program -> [Bool] .  
-  ---- gives the evaluation of a local function related to Msg according to certain parameters of a given configuration
-  eq localEvaluationMsg (< Id1 ; isActive(Port) >, Ix,Lx,Rx) =  if (not isUsedIdentInstances(Id1,Ix)) then false else active(instanceOfIdent(Ix,Id1),Port) fi .   
+  op localEvaluation(_,_,_,_) : Request Instances Connections Program -> ExpectedValue .  
+  ---- gives the evaluation of a local function related to Request according to certain parameters of a given configuration
+  
   ---if the instance does not yet exist, then the active local function: active(Id1,Port) = false, otherwise it is the local active function within the instance. 
-  eq localEvaluationMsg (< Id1 ; isRefusing(Port) >, Ix,Lx,Rx) =  if (not isUsedIdentInstances(Id1,Ix)) then true else refusing(instanceOfIdent(Ix,Id1),Port) fi .
-   ---if the instance does not yet exist, then the refusing local function: refusing(Id1,Port) = true, otherwise it is the local refusing function within the instance.   
-  eq localEvaluationMsg (< Id1 ; isConnected(L) >, Ix,Lx,Rx) = L in Lx . 
-  eq localEvaluationMsg (< Id1 ; isDisconnect(L) >, Ix,Lx,Rx) = disconnect(L,Rx) . 
-  eq localEvaluationMsg (< Id1 ; isCompleted(IdBeh) >, (< id: Id1,type: Ct,queueBehavior: Qb,marking: Mark >,Ix),Lx,Rx) =  
-  (not existIdentBehaviorehListBeh(IdBeh,Qb) ) and notPushBProg(Id1,IdBeh,Rx) .
+  eq localEvaluation ([ dst: Id , query: isActive(Port) ],(Id |-> I1, Ix),Lx,Px) =  active(I1,Port) .
+  eq localEvaluation ([ dst: Id , query: isActive(Port) ],Ix,Lx,Px) =  noValueYet [owise] .
+
+  ---if the instance does not yet exist, then the refusing local function: refusing(Id1,Port) = true, otherwise it is the local refusing function within the instance.
+  eq localEvaluation ([ dst: Id , query: isRefusing(Port) ],(Id |-> I1, Ix),Lx,Px) =   refusing(I1,Port) .
+  eq localEvaluation ([ dst: Id , query: isRefusing(Port) ],Ix,Lx,Px) =  noValueYet [owise] .
+      
+  eq localEvaluation ([ dst: Id , query: isConnected(L) ], Ix,Lx,Px) = L in Lx . 
+
+  eq localEvaluation ([ dst: Id , query: isDisconnect(L) ], Ix,Lx,Px) = disconnect(L,Px) . 
+ 
+  eq localEvaluation ([ dst: Id , query: isCompleted(IdBeh) ], (Id |-> { type: Ct,queueBehavior: Qb,marking: Mark },Ix),Lx,Px) =  
+  (not existIdBehaviorehListBeh(IdBeh,Qb) ) and notPushBProg(Id,IdBeh,Px) .
   --- the evaluation of completed of an IdBeh depends on whether the push IdBeh exists in the program or in the behavior list.
-  eq localEvaluationMsg (< Id1 ; isCompleted(IdBeh) >, Ix,Lx,Rx) =  if ((not isUsedIdentInstances(Id1,Ix) ) and notPushBProg(Id1,IdBeh,Rx)) then true else false fi . 
-  --- special case the instance doesn't exist and even the push of IdBeh in the program. this is the case when a program is executed and its instance is deleted.
+  eq localEvaluation ([ dst: Id , query: isCompleted(IdBeh) ], Ix,Lx,Px) =   notPushBProg(Id,IdBeh,Px) [owise] . 
+  --- special case the instance doesn't (the instance is not yet added or it is deleted)
 
-  op evaluationMsg(_,_,_,_,_,_) : IdentInstances Msg MsgToUses Instances Connections Program -> [Bool] . 
-  --- gives the evaluation of a function related to Msg according to the two cases, the function is local or external
-  eq evaluationMsg(IdIx,M1,Mx, Ix,Lx,Rx ) = if (isMsgProcessedLocally(M1,IdIx)) then localEvaluationMsg(M1,Ix,Lx,Rx) else externEvaluationMsg(M1,Mx) fi .
+  op evaluation(_,_,_,_,_,_) :  Request IdInstances Map{Request,ExpectedValue} Instances Connections Program -> ExpectedValue . 
+  --- gives the evaluation of a function related to Request according to the two cases, the function is local or external
+  eq evaluation(R1,Idsx,RcvAnsx, Ix,Lx,Px ) = if (isProcessedLocallyEvaluation(R1,Idsx)) then localEvaluation(R1,Ix,Lx,Px) else externEvaluation(R1,RcvAnsx) fi .
 
-  op existMsgInReceiveQueue(_,_) : Msg Qreceive -> Bool .
-  --- determine whether a Msg related to a function is already in the queue of messages received. 
-  eq existMsgInReceiveQueue(M1,nil) = false .
-  ceq existMsgInReceiveQueue(M1,(M2 ; val) QRx) = true if (M1 == M2)  .
-  eq existMsgInReceiveQueue(M1,(M2 ; val) QRx) =  existMsgInReceiveQueue(M1, QRx) [owise] .
+
+  op InQueue(_,_) : Request Qanswer -> Bool .
+  --- determine whether a request is already in the queue of messages received. 
+  eq InQueue(R1,nil) = false .
+  eq InQueue(R1,[ req: R1, value: val ] Bx) = true  .
+  eq InQueue(R1,[ req: R2, value: val ] Bx) =  InQueue(R1, Bx) [owise] .
 
 endfm

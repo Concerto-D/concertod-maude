@@ -24,6 +24,7 @@ fmod COMPONENT-TYPE is
   vars Pro Pro1 : ProvidePort .
   var Beh  : Behavior .
 
+
   op (_!_) : UsePort Places -> GroupUse . 
   --- GroupUse is defined as tuple : the use port and a group (set) of places
   op (_?_) : ProvidePort Places -> GroupProvide . 
@@ -44,17 +45,16 @@ fmod COMPONENT-TYPE is
   --- to get the set of the use ports of the component
   eq getUsePorts ({ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Behs,groupUses: GUx,groupProvides: GPx }) = GUx .
 
+
   op placesOfUsePort(_,_) : UsePort GroupUses -> Places . 
   --- to get places of a use port from a set of use ports
-  eq placesOfUsePort(Use,empty) = empty .
   eq placesOfUsePort(Use,(Use ! Ps),GUx) = Ps . 
-  eq placesOfUsePort(Use,(Use1 ! Ps),GUx) = placesOfUsePort(Use,GUx) [owise] . 
+  eq placesOfUsePort(Use,GUx) = empty [owise] . 
    
   op placesOfProvidePort(_,_) : ProvidePort GroupProvides -> Places . 
   --- to get places of a provide port from a set of use ports
-  eq placesOfProvidePort(Pro,empty) = empty .
   eq placesOfProvidePort(Pro,((Pro ? Ps),GPx)) = Ps  . 
-  eq placesOfProvidePort(Pro,((Pro1 ? Ps),GPx)) = placesOfProvidePort(Pro,GPx) [owise] . 
+  eq placesOfProvidePort(Pro,GPx) = empty [owise] . 
    
   op groupPlacesofPort(_,_) : Port ComponentType -> Places . 
   --- to get places of a port use or provide
@@ -68,7 +68,8 @@ fmod COMPONENT-TYPE is
   op markingWithRespectToPlaces(_,_) : Places ComponentType -> Marking .   
   --- gives the elements of Marking (places, transitions, TransitionEndings) of group of places depending a ComponentType
   eq markingWithRespectToPlaces(Ps1,{ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Behs,groupUses: GUx,groupProvides: GPx }) = 
-  m(Ps1, transitionsOfPlacesWithRespectToStations(Ps1,Ts,stationsGroupPlaces(Ps1,SPs)), transitionEndingsOfTransitions(transitionsOfPlacesWithRespectToStations(Ps1,Ts,stationsGroupPlaces(Ps1,SPs)))) .
+  m(Ps1, transitionsOfPlacesWithRespectToStations(Ps1,Ts,stationsGroupPlaces(Ps1,SPs)), 
+  transitionEndingsOfTransitions(transitionsOfPlacesWithRespectToStations(Ps1,Ts,stationsGroupPlaces(Ps1,SPs)))) .
 
 endfm
 

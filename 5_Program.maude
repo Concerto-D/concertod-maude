@@ -1,7 +1,7 @@
 fmod PROGRAM is
   
   inc COMPONENT-TYPE .
-  inc IDENT-COMPONENT-BEHAVIOR .
+  inc ID-COMPONENT-BEHAVIOR .
   inc CONNECTION .
 
   sorts Program . 
@@ -11,16 +11,18 @@ fmod PROGRAM is
   var Rx : Program .
   var L : Connection .
   var Inst : Instruction .
-  var Id1 : IdentInstance .
-  var IdBeh : IdentBehavior .
+  var Id1 : IdInstance .
+  var IdBeh : IdBehavior .
   var Beh : Behavior .
 
-  op add(_,_) : IdentInstance ComponentType -> Instruction .
-  op del(_) : IdentInstance -> Instruction .
-  op pushB(_,_,_) : IdentInstance Behavior IdentBehavior -> Instruction .
+  op add(_,_) : IdInstance ComponentType -> Instruction .
+  op del(_) : IdInstance -> Instruction .
+  op pushB(_,_,_) : IdInstance Behavior IdBehavior -> Instruction .
   op con(_) : Connection -> Instruction .
   op dcon(_) : Connection -> Instruction .
-  op wait(_,_) : IdentInstance IdentBehavior -> Instruction .
+  op wait(_,_) : IdInstance IdBehavior -> Instruction .
+
+
 
  --- some operations related to program used later
   op notDcon(_,_) :  Connection Program -> Bool .  
@@ -35,15 +37,15 @@ fmod PROGRAM is
   eq disconnect(L,nil) = true .
   eq disconnect(L,Inst Rx) = notDcon(L,Rx) .
   
-  op instructionIspushB(_,_,_) : Instruction IdentInstance IdentBehavior -> Bool .  
-  --- checks whether the current instruction is a push instruction for a given IdentInstance and IdentBehavior
+  op instructionIspushB(_,_,_) : Instruction IdInstance IdBehavior -> Bool .  
+  --- checks whether the current instruction is a push instruction for a given IdInstance and IdBehavior
   eq instructionIspushB(pushB(Id1,Beh,IdBeh), Id1,IdBeh ) = true .
   eq instructionIspushB(Inst, Id1,IdBeh ) = false [owise] .
 
-  op notPushBProg(_,_,_) : IdentInstance IdentBehavior Program -> Bool .  
-  ---checks that in a given program there is no push Behavior Instruction for IdentInstance and IdentBehavior
+  op notPushBProg(_,_,_) : IdInstance IdBehavior Program -> Bool .  
+  ---checks that in a given program there is no push Behavior Instruction for IdInstance and IdBehavior
   eq notPushBProg(Id1,IdBeh, nil) = true .
   ceq notPushBProg(Id1,IdBeh,Inst Rx) = notPushBProg(Id1,IdBeh,Rx) if (not instructionIspushB(Inst,Id1,IdBeh)) .
-  ceq notPushBProg(Id1,IdBeh,Inst Rx) = false if (instructionIspushB(Inst,Id1,IdBeh)) .
+  eq notPushBProg(Id1,IdBeh,Inst Rx) = false [owise] .
   
 endfm

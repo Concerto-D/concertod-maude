@@ -12,8 +12,8 @@ view Station from TRIV to DECLARATION-SORTS is
   sort Elt to Station .
 endv
 
-view IdentInstance from TRIV to DECLARATION-SORTS is
- sort Elt to IdentInstance .
+view IdInstance from TRIV to DECLARATION-SORTS is
+ sort Elt to IdInstance .
 endv
 
 
@@ -75,6 +75,13 @@ view Instruction from TRIV to DECLARATION-SORTS is
  sort Elt to Instruction .
 endv
 
-view Request from TRIV to DECLARATION-SORTS is
- sort Elt to Request .
+view Request from TRIV to DECLARATION-SORTS is 
+  sort Elt to Request .
 endv
+view Answer from TRIV to DECLARATION-SORTS is 
+  sort Elt to Answer .
+endv
+view ExpectedValue from TRIV to DECLARATION-SORTS is 
+  sort Elt to ExpectedValue .
+endv
+
