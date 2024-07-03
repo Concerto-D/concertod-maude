@@ -14,7 +14,7 @@ fmod INSTANCE is
   vars  Id1 Id2 : IdInstance .
   var IdBeh : IdBehavior .
   vars Ss1 Ss2 : Stations .
-  var Qb : QBehaviorWithId .
+  var Qb : List{BehaviorWithId} .
   var Mark : Marking .
   var Port : Port . 
   vars Ts : Transitions .
@@ -25,7 +25,7 @@ fmod INSTANCE is
 
 
   op { type: _, queueBehavior: _, marking: _ } : 
-  ComponentType QBehaviorWithId Marking -> Instance [ctor] .
+  ComponentType List{BehaviorWithId} Marking -> Instance [ctor] .
 
   ---op identOfInstance(_) : Instance -> IdInstance .  
   --- gives the id of an instance
@@ -56,14 +56,14 @@ fmod INSTANCE is
   eq  existTranOfPlace(P,t(P,Ss1),Ts) = true .
   eq  existTranOfPlace(P,Ts) = false  [owise].
 
-  op placeExitGroup(_,_,_) : Place QBehaviorWithId Stations -> Bool .  
+  op placeExitGroup(_,_,_) : Place List{BehaviorWithId} Stations -> Bool .  
   --- check if a place leaves a group of places according to the current behavior and with respect to the stations associated with the places of the group.
   eq placeExitGroup(P,nil,Ss1) = false . 
   ---because the behavior is nil, a place does not leave the group 
   eq placeExitGroup(P,(IdBeh ; b(Ts)) Qb,Ss1) = existTranOfPlace(P,Ts) and allTranOfPlaceQuitGroup(P,Ts,Ss1) . 
   --- there is transitions started from P  and all these transitions leave the group
 
-  op allPlacesExitGroup(_,_,_) : Places QBehaviorWithId Stations -> Bool .  
+  op allPlacesExitGroup(_,_,_) : Places List{BehaviorWithId} Stations -> Bool .  
   --- check whether for certain places and according to the current transitions in the behavior list 
   --- the transitions of these places necessarily leave the group. 
   --- this last condition is determined on the stations associated with the places (3rd parameter).

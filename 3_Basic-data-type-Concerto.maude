@@ -45,7 +45,7 @@ fmod STATION-PLACE is
   
   ---eq placeOfStation(Ss1, ((Ss1 ; Q),SPs)) = Q  .
   ---eq placeOfStation(Ss1, ((Ss2 ; Q),SPs)) = placeOfStation(Ss1,SPs) [owise] . 
-  ---  case not-found not processed, each satation has a place and it is in the stationPlaces esnemble. 
+  ---  case not-found not processed, each station has a place and it is in the stationPlaces esnemble. 
 
   op stationsGroupPlaces(_,_) : Places StationPlaces -> Stations .  
   --- gives the stations associated to a Places group
@@ -141,11 +141,18 @@ endfm
 fmod ANSWER is 
   inc REQUEST . 
 
-  ---sort ExpectedValue .
-  subsort Bool < ExpectedValue .
-  op noValueYet : -> ExpectedValue .
-  op [ req: _, value: _ ] : Request ExpectedValue -> Answer [ctor] .
-endfm 
+  op [ req: _, value: _ ] : Request Bool -> Answer [ctor] .
+endfm
+
+
+fmod MESSAGE is
+   inc REQUEST .
+   inc ANSWER .
+
+   op reqMsg : Request -> Message [ctor] .
+   op ansMsg : Answer -> Message [ctor] .
+
+endfm
 
 
 fmod TRANSITION-TRANSITION-ENDING is
@@ -261,15 +268,14 @@ fmod BEHAVIOR is
   inc ID-COMPONENT-BEHAVIOR .
 
   pr DECLARATION-SORTS .
-  sorts Behaviors QBehaviorWithId .  
+  sorts Behaviors .  
   pr SET{Behavior} .
   subsort Set{Behavior} < Behaviors .  
   pr LIST{BehaviorWithId} .
-  subsort List{BehaviorWithId} < QBehaviorWithId . 
-  --- QBehaviorWithId est une liste pour les element de sort BehaviorWithId 
+  --- List{BehaviorWithId} est une liste pour les element de sort BehaviorWithId 
 
   vars IdBehx IdBehy : IdBehavior .
-  var BehL : QBehaviorWithId .
+  var BehL : List{BehaviorWithId} .
   var Beh : Behavior .
 
   op b(_) : Transitions -> Behavior .   
@@ -277,7 +283,7 @@ fmod BEHAVIOR is
   op (_;_) : IdBehavior Behavior -> BehaviorWithId . 
   ---BehaviorWithId is an identified behavior
 
-  op existIdBehaviorehListBeh(_,_) : IdBehavior QBehaviorWithId -> Bool .  
+  op existIdBehaviorehListBeh(_,_) : IdBehavior List{BehaviorWithId} -> Bool .  
   ---to check if a behavior identifier is used in the behavior list  
   eq existIdBehaviorehListBeh(IdBehx, nil) = false .
   eq existIdBehaviorehListBeh(IdBehx, (IdBehx ; Beh) BehL) = true .

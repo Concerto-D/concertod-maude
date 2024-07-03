@@ -8,33 +8,33 @@ fmod COLLECT-EXTERNAL-MESSAGES-FIRING is
   var Idsx : IdInstances . 
   var Ix : Instances .
   var Cx : Connections .
-  var Val : ExpectedValue .
+  var Val : Bool .
   var Use : UsePort .
   var Pro : ProvidePort .
   vars Id1 Id2 : IdInstance .
   var NewMark : Marking .
-  var RcvAnsx : Map{Request,ExpectedValue} .
+  var RcvAnsx : Map{Request,Bool} .
   var Hx : Set{Request} .
-  var OutReqx : Qrequest .
+  var OutReqx : List{Request} .
 
-  op collectRuleFiring(_,_,_,_,_,_,_) : IdInstances Marking Instances Connections Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
+  op collectRuleFiring(_,_,_,_,_,_,_) : IdInstances Marking Instances Connections Map{Request,Bool} Set{Request} List{Request} -> List{Request} .
   --- used to determine msg related to external functions that allow to apply the rule firing transition. 
-  --- it aims to build a queue of external [ dst: Id1 , query: isActive(Use) ]  messages for use ports whose current valuation in Map{Request,ExpectedValue} does not allow the rule to be applied; 
+  --- it aims to build a queue of external [ dst: Id1 , query: isActive(Use) ]  messages for use ports whose current valuation in Map{Request,Bool} does not allow the rule to be applied; 
   --- in other words, the evaluation of these messages is true or noValueYet 
   --- knowing that the provide port linked to thier use port wants to change the status of its provide port from active to inactive.
   --- in this case, we add the message [ dst: Id1 , query: isActive(Use) ]  of each use port to the queue of external information, 
   --- on condition that the request for this message is not currently being processed.
-  --- this last condition is verified if [ dst: Id1 , query: isActive(Use) ]  doesn't belong to either Set{Request} or Qrequest.
-  eq collectRuleFiring(Idsx,NewMark,Ix,empty,RcvAnsx,Hx,OutReqx) = nil .
-  ceq collectRuleFiring(Idsx,NewMark,Ix,(Id1,Use,Id2,Pro),Cx,RcvAnsx,Hx,OutReqx) = 
-  append( [ dst: Id1 , query: isActive(Use) ],collectRuleFiring(Idsx,NewMark,Ix,Cx,RcvAnsx,Hx,OutReqx))
+  --- this last condition is verified if [ dst: Id1 , query: isActive(Use) ]  doesn't belong to either Set{Request} or List{Request}.
+  eq collectRuleFiring(Idsx, NewMark, Ix, empty, RcvAnsx, Hx, OutReqx) = nil .
+  ceq collectRuleFiring(Idsx, NewMark, Ix, (Id1, Use, Id2, Pro), Cx, RcvAnsx, Hx, OutReqx) = 
+  append([ dst: Id1 , query: isActive(Use) ], collectRuleFiring(Idsx,NewMark,Ix,Cx,RcvAnsx,Hx,OutReqx))
   if
   (   
   (not [ dst: Id1 , query: isActive(Use) ]  in Hx) and 
-  (not (occurs([ dst: Id1 , query: isActive(Use) ],OutReqx)))  and
+  (not (occurs([ dst: Id1 , query: isActive(Use) ], OutReqx)))  and
   (not (Id1 in Idsx)) and
-  ( evaluation([ dst: Id1 , query: isActive(Use) ],Idsx,RcvAnsx,empty,empty,nil )   =/= false ) and
-  ( (localEvaluation([ dst: Id2 , query: isActive(Pro)],Ix,empty,nil ) == true) and (activeMarking(instanceOfIdent(Ix,Id2),Pro,NewMark) == false ))  
+  (evaluation([ dst: Id1 , query: isActive(Use) ], Idsx, RcvAnsx, empty, empty, nil) =/= false) and
+  ((localEvaluation([ dst: Id2 , query: isActive(Pro)], Ix, empty, nil) == true) and (activeMarking(instanceOfIdent(Ix,Id2),Pro,NewMark) == false))
   ) .
   eq collectRuleFiring(Idsx,NewMark,Ix,(Id1,Use,Id2,Pro),Cx,RcvAnsx,Hx,OutReqx) = collectRuleFiring(Idsx,NewMark,Ix,Cx,RcvAnsx,Hx,OutReqx) [owise] .
 
@@ -54,23 +54,23 @@ fmod COLLECT-EXTERNAL-MESSAGES-ENTERING-PLACE is
   vars I I' : Instance .
   var Ix : Instances .
   var Cx : Connections .
-  var RcvAnsx : Map{Request,ExpectedValue} .
+  var RcvAnsx : Map{Request,Bool} .
   var Use : UsePort .
   var Pro : ProvidePort .
   vars Id1 Id2 : IdInstance .
   var Hx : Set{Request} .
-  var OutReqx : Qrequest .  
+  var OutReqx : List{Request} .  
   var Idsx : IdInstances .   
 
   op collectRuleEnteringPlace(_,_,_,_,_,_,_,_,_,_,_) : 
-  IdInstances IdInstance Place GroupUses Instance Instance Instances Connections Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
+  IdInstances IdInstance Place GroupUses Instance Instance Instances Connections Map{Request,Bool} Set{Request} List{Request} -> List{Request} .
   eq collectRuleEnteringPlace(Idsx,Id1,P,empty,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx) = nil .
   ceq collectRuleEnteringPlace(Idsx,Id1,P,(Use ! Ps),GUx,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx) = 
   append(collectConnected(Idsx,Use,Id1,Cx,RcvAnsx,Hx,OutReqx),append(collectAllowed(Idsx,Use,Id1,Ix,Cx,RcvAnsx,Hx,OutReqx), collectRuleEnteringPlace(Idsx,Id1,P,GUx,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx))) 
   if  ((P in Ps) and active(I,Use) == false and active(I',Use) == true  ).   
   eq collectRuleEnteringPlace(Idsx,Id1,P,(Use ! Ps),GUx,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx) = collectRuleEnteringPlace(Idsx,Id1,P,GUx,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx) [owise] .
 
-  op collectConnected(_,_,_,_,_,_,_) : IdInstances UsePort IdInstance Connections Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest . 
+  op collectConnected(_,_,_,_,_,_,_) : IdInstances UsePort IdInstance Connections Map{Request,Bool} Set{Request} List{Request} -> List{Request} . 
   ceq collectConnected(Idsx,Use,Id1,(Id1,Use,Id2,Pro),Cx,RcvAnsx,Hx,OutReqx) = [ dst: Id2 , query: isConnected(Id1,Use,Id2,Pro) ] 
   if(
     (not ([ dst: Id2 , query: isConnected(Id1,Use,Id2,Pro) ]  in Hx)) and 
@@ -80,7 +80,7 @@ fmod COLLECT-EXTERNAL-MESSAGES-ENTERING-PLACE is
     ) .
   eq collectConnected(Idsx,Use,Id1,Cx,RcvAnsx,Hx,OutReqx) = nil [owise] .
 
-  op collectAllowed(_,_,_,_,_,_,_,_) : IdInstances UsePort  IdInstance Instances Connections Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest . 
+  op collectAllowed(_,_,_,_,_,_,_,_) : IdInstances UsePort  IdInstance Instances Connections Map{Request,Bool} Set{Request} List{Request} -> List{Request} . 
   ceq collectAllowed(Idsx,Use,Id1,Ix,(Id1,Use,Id2,Pro),Cx,RcvAnsx,Hx,OutReqx) = [ dst: Id2 , query:  isRefusing(Pro) ] 
   if (
       (not [ dst: Id2 , query:  isRefusing(Pro) ] in Hx) and 
@@ -96,16 +96,16 @@ fmod COLLECT-EXTERNAL-MESSAGES-WAIT is
 
   inc CONCERTO-D-CONFIGURATION .
 
-  var Val : ExpectedValue .
+  var Val : Bool .
   var Id1 : IdInstance .
   var IdBeh : IdBehavior .
-  var RcvAnsx : Map{Request,ExpectedValue} .
+  var RcvAnsx : Map{Request,Bool} .
   var Hx : Set{Request} .
-  var OutReqx : Qrequest .
+  var OutReqx : List{Request} .
   var R : Request .
   var Idsx : IdInstances .   
 
-  op collectRuleWait(_,_,_,_,_,_) : IdInstances IdInstance IdBehavior Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
+  op collectRuleWait(_,_,_,_,_,_) : IdInstances IdInstance IdBehavior Map{Request,Bool} Set{Request} List{Request} -> List{Request} .
   ceq collectRuleWait(Idsx,Id1,IdBeh,RcvAnsx,Hx,OutReqx) = [ dst: Id1 , query:  isCompleted(IdBeh) ] 
   if(
     (not ([ dst: Id1 , query:  isCompleted(IdBeh) ]   in Hx)) and 
@@ -121,18 +121,18 @@ fmod COLLECT-EXTERNAL-MESSAGES-DISCONNECT is
 
   inc CONCERTO-D-CONFIGURATION .
 
-  var Val : ExpectedValue .
+  var Val : Bool .
   var Use : UsePort .
   var Pro : ProvidePort .
   vars  Id1 Id2 : IdInstance .
-  var RcvAnsx : Map{Request,ExpectedValue} .
+  var RcvAnsx : Map{Request,Bool} .
   var Hx : Set{Request} .
-  var OutReqx : Qrequest .
+  var OutReqx : List{Request} .
   var R : Request .
   var Idsx : IdInstances . 
   var C : Connection .  
 
-  op collectRuleDisconnect(_,_,_,_,_) : IdInstances Connection Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
+  op collectRuleDisconnect(_,_,_,_,_) : IdInstances Connection Map{Request,Bool} Set{Request} List{Request} -> List{Request} .
   ceq collectRuleDisconnect(Idsx,(Id1,Use,Id2,Pro),RcvAnsx,Hx,OutReqx) =
    append(activeCollect(Id1,Use,RcvAnsx,Hx,OutReqx),(disconCollect(Id1,(Id1,Use,Id2,Pro),RcvAnsx,Hx,OutReqx))) 
   if (not (Id1 in Idsx) ) .
@@ -141,7 +141,7 @@ fmod COLLECT-EXTERNAL-MESSAGES-DISCONNECT is
   if (not (Id2 in Idsx) ) .
   eq collectRuleDisconnect(Idsx,(Id1,Use,Id2,Pro),RcvAnsx,Hx,OutReqx) = nil [owise] .
 
-  op activeCollect(_,_,_,_,_) : IdInstance UsePort Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
+  op activeCollect(_,_,_,_,_) : IdInstance UsePort Map{Request,Bool} Set{Request} List{Request} -> List{Request} .
   ceq activeCollect(Id1,Use,RcvAnsx,Hx,OutReqx) = [ dst: Id1 , query: isActive(Use) ] 
   if(
     (not ([ dst: Id1 , query: isActive(Use) ]   in Hx)) and 
@@ -150,12 +150,12 @@ fmod COLLECT-EXTERNAL-MESSAGES-DISCONNECT is
     ) .
   eq activeCollect(Id1,Use,RcvAnsx,Hx,OutReqx) = nil [owise] .
 
-  op disconCollect(_,_,_,_,_) : IdInstance Connection Map{Request,ExpectedValue} Set{Request} Qrequest -> Qrequest .
+  op disconCollect(_,_,_,_,_) : IdInstance Connection Map{Request, Bool} Set{Request} List{Request} -> List{Request} .
   ceq disconCollect(Id1,C,RcvAnsx,Hx,OutReqx) = [ dst: Id1 , query: isDisconnect(C) ] 
   if(
     (not ([ dst: Id1 , query: isDisconnect(C) ]   in Hx)) and 
-    (not (occurs([ dst: Id1 , query: isDisconnect(C) ]  ,OutReqx)))  and
-    (externEvaluation([ dst: Id1 , query: isDisconnect(C) ] ,RcvAnsx )   =/= true )
+    (not (occurs([ dst: Id1 , query: isDisconnect(C) ], OutReqx))) and
+    (externEvaluation([ dst: Id1 , query: isDisconnect(C) ], RcvAnsx ) =/= true )
     ) .
   eq disconCollect(Id1,C,RcvAnsx,Hx,OutReqx) = nil [owise] .
 

@@ -19,23 +19,23 @@
 
 search [1] globalsystem =>*  
 < nodeInventory: sensor1, 
-  instances: (sensor1 |-> { type: sensortype:ComponentType, queueBehavior: nil, marking: m(sensorRunning, empty, empty) }),
+  instances: (sensor1 |-> { type: sensortype:ComponentType, queueBehavior: nil:List{BehaviorWithId}, marking: m(sensorRunning, empty, empty) }),
   connections: connectNode3:Connections, 
-  program: nil, 
-  receivedAnswers: receivedAnswersNode3:Map{Request,ExpectedValue}, 
-  outgoingAnswers: OutAns3:Qrequest, 
-  outgoingRequests: OutReq3:Qrequest, 
+  program: nil:Program, 
+  receivedAnswers: receivedAnswersNode3:Map{Request,Bool}, 
+  outgoingAnswers: OutAns3:List{Request}, 
+  outgoingRequests: OutReq3:List{Request}, 
   history: hist3:Set{Request},
-  buffer: Buf3:Qanswer >,
+  buffer: Buf3:List{Message} >,
 < nodeInventory: listener1,idInst:IdInstances,
-  instances: (listener1 |-> { type: listenertype:ComponentType,queueBehavior: nil,marking: m(listenerRunning,empty,empty) }), Is:Instances,
+  instances: (listener1 |-> { type: listenertype:ComponentType,queueBehavior: nil:List{BehaviorWithId}, marking: m(listenerRunning,empty,empty) }), Is:Instances,
   connections: connectNode2:Connections,
-  program: nil,
-  receivedAnswers: receivedAnswersNode2:Map{Request,ExpectedValue}, 
-  outgoingAnswers: OutAns2:Qrequest, 
-  outgoingRequests: OutReq2:Qrequest, 
+  program: nil:Program,
+  receivedAnswers: receivedAnswersNode2:Map{Request,Bool}, 
+  outgoingAnswers: OutAns2:List{Request}, 
+  outgoingRequests: OutReq2:List{Request}, 
   history: hist2:Set{Request},
-  buffer: Buf2:Qanswer >, n:Net .
+  buffer: Buf2:List{Message} >, n:Net .
 
 ---there is a proposed solution for this commend given as follows:
 
@@ -87,7 +87,7 @@ sensortype:ComponentType --> {places: sensorRunning, sensorConfigured, sensorIns
     sensorConfigservice ! (sensorRunning, sensorConfigured, sensorInstalled),groupProvides: empty}
 connectionsNode:Connections --> sensor1,sensorRcvservice,listener1,listenerRcv, sensor1,sensorConfigservice,listener1,
     listenerConfig
-msgsNode:Map{Request,ExpectedValue} --> extern(< _; isRefusing >(listener1,listenerRcv) ; false), extern(< _; isRefusing >(listener1,
+msgsNode:Map{Request,Bool} --> extern(< _; isRefusing >(listener1,listenerRcv) ; false), extern(< _; isRefusing >(listener1,
     listenerConfig) ; false), extern(< _; isConnected >(listener1,sensor1,sensorRcvservice,listener1,listenerRcv) ; true),
     extern(< _; isConnected >(listener1,sensor1,sensorConfigservice,listener1,listenerConfig) ; true), extern(
     exprCompleted(listener1,idb4) ; true)
@@ -106,24 +106,24 @@ Maude>
 search [1] globalsystem =>*  
 < nodeInventory: sensor1, 
   instances: (sensor1 |-> { type: sensortype:ComponentType, queueBehavior: (idb1 ; b(t(sensorConfigured,stsensorRunning), t(sensorInstalled,stsensorConfigured), t(sensorProvisioned,stsensorInstalled), 
-  t(sensorOff,stsensorProvisioned))) qsensor:QBehaviorWithId, marking: marksensor1:Marking }) , 
+  t(sensorOff,stsensorProvisioned))) qsensor:List{BehaviorWithId}, marking: marksensor1:Marking }) , 
   connections: connectNode3:Connections, 
   program: progNode3:Program, 
-  receivedAnswers: receivedAnswersNode3:Map{Request,ExpectedValue}, 
-  outgoingAnswers: OutAns3:Qrequest, 
-  outgoingRequests: OutReq3:Qrequest, 
+  receivedAnswers: receivedAnswersNode3:Map{Request,Bool}, 
+  outgoingAnswers: OutAns3:List{Request}, 
+  outgoingRequests: OutReq3:List{Request}, 
   history: hist3:Set{Request},
-  buffer: Buf3:Qanswer >, 
+  buffer: Buf3:List{Message} >, 
 < nodeInventory: listener1, idInst:IdInstances,
-  instances: (listener1 |-> { type: listenertype:ComponentType,queueBehavior: qblistener1:QBehaviorWithId, marking: marklistener1:Marking }), Is:Instances  ,
+  instances: (listener1 |-> { type: listenertype:ComponentType,queueBehavior: qblistener1:List{BehaviorWithId}, marking: marklistener1:Marking }), Is:Instances  ,
   connections: connectNode2:Connections,
   program: progNode2:Program,
-  receivedAnswers: receivedAnswersNode2:Map{Request,ExpectedValue}, 
- outgoingAnswers: OutAns2:Qrequest, 
- outgoingRequests: OutReq2:Qrequest,  
+  receivedAnswers: receivedAnswersNode2:Map{Request, Bool}, 
+ outgoingAnswers: OutAns2:List{Request}, 
+ outgoingRequests: OutReq2:List{Request},  
  history: hist2:Set{Request},
- buffer: Buf2:Qanswer >, n:Net 
- such that (existIdBehaviorehListBeh(idb4,qblistener1:QBehaviorWithId) or not (notPushBProg(listener1,idb4,progNode2:Program)) ) .
+ buffer: Buf2:List{Message} >, n:Net 
+ such that (existIdBehaviorehListBeh(idb4,qblistener1:List{BehaviorWithId}) or not (notPushBProg(listener1,idb4,progNode2:Program)) ) .
 
 
 --- the result is as follows:
