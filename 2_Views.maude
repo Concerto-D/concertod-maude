@@ -16,11 +16,6 @@ view IdInstance from TRIV to DECLARATION-SORTS is
  sort Elt to IdInstance .
 endv
 
-
-view MsgToUse from TRIV to DECLARATION-SORTS is
-  sort Elt to MsgToUse .
-endv
-
 view Send from TRIV to DECLARATION-SORTS is
   sort Elt to Send .
 endv
@@ -78,10 +73,8 @@ endv
 view Request from TRIV to DECLARATION-SORTS is 
   sort Elt to Request .
 endv
-view Answer from TRIV to DECLARATION-SORTS is 
-  sort Elt to Answer .
-endv
-view ExpectedValue from TRIV to DECLARATION-SORTS is 
-  sort Elt to ExpectedValue .
+
+view Message from TRIV to DECLARATION-SORTS is 
+  sort Elt to Message .
 endv
 

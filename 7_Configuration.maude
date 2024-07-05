@@ -1,20 +1,16 @@
 
 fmod CONCERTO-D-CONFIGURATION is 
 
-  inc ANSWER .
+  inc MESSAGE .
   inc INSTANCE .
   inc PROGRAM .
   inc CONNECTION .
   inc DECLARATION-SORTS . 
 
   pr SET{Request} . 
-  pr MAP{Request,ExpectedValue} .
+  pr MAP{Request, Bool} .
   pr LIST{Request} . 
-  pr LIST{Answer} .
-
-  sorts  Qrequest Qanswer  . 
-  subsort List{Request} < Qrequest . 
-  subsort List{Answer} < Qanswer . 
+  pr LIST{Message} .
 
   var Ix : Instances .
   var I1 : Instance .
@@ -25,22 +21,22 @@ fmod CONCERTO-D-CONFIGURATION is
   var Lx : Connections .
   var Px : Program .
   var L : Connection .
-  var Qb : QBehaviorWithId .
+  var Qb : List{BehaviorWithId} .
   var Mark : Marking .
   var Q : Query .
   var Id : IdInstance .
   vars R1 R2 : Request .
-  var RcvAnsx : Map{Request,ExpectedValue} .
-  var val : ExpectedValue .
-  var Bx : Qanswer .
+  var RcvAnsx : Map{Request, Bool} .
+  var Val : Bool .
+  var Bx : List{Message} .
  
   op < nodeInventory: _, instances: _, 
        connections: _, program: _, 
        receivedAnswers: _, outgoingAnswers: _, outgoingRequests: _, 
        history: _,buffer: _ > : 
   IdInstances Instances Connections Program 
-  Map{Request,ExpectedValue} Qrequest  Qrequest 
-  Set{Request} Qanswer -> LocalConfiguration  .   
+  Map{Request, Bool} List{Request}  List{Request} 
+  Set{Request} List{Message} -> LocalConfiguration [ctor].
 
   --- some ops on configuration
  op isProcessedLocallyEvaluation(_,_) : Request IdInstances -> Bool .  
@@ -48,21 +44,21 @@ fmod CONCERTO-D-CONFIGURATION is
  eq isProcessedLocallyEvaluation([ dst: Id , query: Q ], Idsx) = Id in Idsx .
 
 
-  op externEvaluation(_,_) : Request Map{Request,ExpectedValue}  -> ExpectedValue .  
-  ---obtain the evalaution of an external function related to a Request from Map{Request,ExpectedValue}
-  eq externEvaluation(R1, R1 |-> val, RcvAnsx ) = val  .
-  eq externEvaluation(R1, RcvAnsx ) =  noValueYet [owise] .
+  op externEvaluation(_,_) : Request Map{Request, Bool}  -> Bool .  
+  ---obtain the evalaution of an external function related to a Request from Map{Request, Bool}
+  eq externEvaluation(R1, R1 |-> Val, RcvAnsx ) = Val .
+  --- eq externEvaluation(R1, RcvAnsx ) =  noValueYet [owise] .
 
-  op localEvaluation(_,_,_,_) : Request Instances Connections Program -> ExpectedValue .  
+  op localEvaluation(_,_,_,_) : Request Instances Connections Program -> Bool .  
   ---- gives the evaluation of a local function related to Request according to certain parameters of a given configuration
   
-  ---if the instance does not yet exist, then the active local function: active(Id1,Port) = false, otherwise it is the local active function within the instance. 
-  eq localEvaluation ([ dst: Id , query: isActive(Port) ],(Id |-> I1, Ix),Lx,Px) =  active(I1,Port) .
-  eq localEvaluation ([ dst: Id , query: isActive(Port) ],Ix,Lx,Px) =  noValueYet [owise] .
+  ---if the instance does not yet exist, then the active local function: active(Id1, Port) = false, otherwise it is the local active function within the instance. 
+  eq localEvaluation ([ dst: Id , query: isActive(Port) ],(Id |-> I1, Ix), Lx, Px) =  active(I1, Port) .
+  --- eq localEvaluation ([ dst: Id , query: isActive(Port) ],Ix,Lx,Px) =  noValueYet [owise] .
 
   ---if the instance does not yet exist, then the refusing local function: refusing(Id1,Port) = true, otherwise it is the local refusing function within the instance.
-  eq localEvaluation ([ dst: Id , query: isRefusing(Port) ],(Id |-> I1, Ix),Lx,Px) =   refusing(I1,Port) .
-  eq localEvaluation ([ dst: Id , query: isRefusing(Port) ],Ix,Lx,Px) =  noValueYet [owise] .
+  eq localEvaluation ([ dst: Id , query: isRefusing(Port) ], (Id |-> I1, Ix), Lx, Px) = refusing(I1, Port) .
+  ---eq localEvaluation ([ dst: Id , query: isRefusing(Port) ], Ix, Lx, Px) =  noValueYet [owise] .
       
   eq localEvaluation ([ dst: Id , query: isConnected(L) ], Ix,Lx,Px) = L in Lx . 
 
@@ -74,15 +70,8 @@ fmod CONCERTO-D-CONFIGURATION is
   eq localEvaluation ([ dst: Id , query: isCompleted(IdBeh) ], Ix,Lx,Px) =   notPushBProg(Id,IdBeh,Px) [owise] . 
   --- special case the instance doesn't (the instance is not yet added or it is deleted)
 
-  op evaluation(_,_,_,_,_,_) :  Request IdInstances Map{Request,ExpectedValue} Instances Connections Program -> ExpectedValue . 
+  op evaluation(_,_,_,_,_,_) :  Request IdInstances Map{Request, Bool} Instances Connections Program -> Bool . 
   --- gives the evaluation of a function related to Request according to the two cases, the function is local or external
   eq evaluation(R1,Idsx,RcvAnsx, Ix,Lx,Px ) = if (isProcessedLocallyEvaluation(R1,Idsx)) then localEvaluation(R1,Ix,Lx,Px) else externEvaluation(R1,RcvAnsx) fi .
-
-
-  op InQueue(_,_) : Request Qanswer -> Bool .
-  --- determine whether a request is already in the queue of messages received. 
-  eq InQueue(R1,nil) = false .
-  eq InQueue(R1,[ req: R1, value: val ] Bx) = true  .
-  eq InQueue(R1,[ req: R2, value: val ] Bx) =  InQueue(R1, Bx) [owise] .
 
 endfm

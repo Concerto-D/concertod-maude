@@ -15,12 +15,12 @@ fmod PROGRAM is
   var IdBeh : IdBehavior .
   var Beh : Behavior .
 
-  op add(_,_) : IdInstance ComponentType -> Instruction .
-  op del(_) : IdInstance -> Instruction .
-  op pushB(_,_,_) : IdInstance Behavior IdBehavior -> Instruction .
-  op con(_) : Connection -> Instruction .
-  op dcon(_) : Connection -> Instruction .
-  op wait(_,_) : IdInstance IdBehavior -> Instruction .
+  op add(_,_) : IdInstance ComponentType -> Instruction [ctor] .
+  op del(_) : IdInstance -> Instruction [ctor] .
+  op pushB(_,_,_) : IdInstance Behavior IdBehavior -> Instruction [ctor] .
+  op con(_) : Connection -> Instruction [ctor] .
+  op dcon(_) : Connection -> Instruction [ctor] .
+  op wait(_,_) : IdInstance IdBehavior -> Instruction [ctor] .
 
 
 

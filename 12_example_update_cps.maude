@@ -112,7 +112,7 @@ fmod LISTENER-SENSOR-EXAMPLE is
         eq listenerUpdate = b(listenerUpdate1) .
         eq databaseInterrupt = b(databaseInterrupt1) .
         op confNode1 : ->  LocalConfiguration .
-        ops msgsNode1 msgsNode2 msgsNode3 : ->  Map{Request,ExpectedValue} .
+        ops msgsNode1 msgsNode2 msgsNode3 : ->  Map{Request, Bool} .
         eq msgsNode1 = empty .
         eq msgsNode2 = [ dst: mydb0 , query: isConnected(mysys0,systemDbservice,mydb0,databaseService) ] |-> true , [ dst: mydb0 , query: isRefusing(databaseService) ] |-> false .
         eq msgsNode3 = [ dst: listener1 , query: isConnected((sensor1,sensorRcvservice,listener1,listenerRcv)) ] |-> true , [ dst: listener1 , query: isRefusing(listenerRcv) ] |-> false ,[ dst: listener1 , query: isConnected(sensor1,sensorConfigservice,listener1,listenerConfig ) ] |-> true , [ dst: listener1 , query: isRefusing(listenerConfig) ] |-> false .

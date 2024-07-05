@@ -1,7 +1,7 @@
 --------------------------------------------some ops used in the operating rules ------------------------------------------------
 -------------------------------------- rules firing transition and entering place  --------------------------------------------------
 
----   op evaluation(_,_,_,_,_,_) :  Request IdInstances Map{Request,ExpectedValue} Instances Connections Program -> ExpectedValue . 
+---   op evaluation(_,_,_,_,_,_) :  Request IdInstances Map{Request,Bool} Instances Connections Program -> Bool . 
 
 fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
 
@@ -13,26 +13,26 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
   var Use : UsePort .
   var Pro : ProvidePort .
   var Lx : Connections .
-  var RcvAnsx : Map{Request,ExpectedValue} .
+  var RcvAnsx : Map{Request, Bool} .
   var Idsx  : IdInstances .
 
-  op safeToFire(_,_,_,_,_) : IdInstances Marking Instances Map{Request,ExpectedValue} Connections ->  Bool .
+  op safeToFire(_,_,_,_,_) : IdInstances Marking Instances Map{Request, Bool} Connections ->  Bool .
   ---   is used to ensure consistency when firing transitions
   ---   it takes as parameters when used in the firing transition rule: 
   ---   the set of identifiers for all instances of the concerned configuration (concerned by the firing of one of its instances)
   ---   the new marking after firing, 
   ---   the instances of the concerned configuration,
-  ---   Map{Request,ExpectedValue} of messages to use of external functions 
+  ---   Map{Request, Bool} of messages to use of external functions 
   ---   finally, a subset of Connections related to the configuration, where the instance concerned by firing is a provider.
   ---   so for each connection it checks that the firing of the concerned instance (provider) does not affect the corresponding user
   ---   i.e., if the provider for each connection after a firing goes from active to inactive, this implies that the user must be inactive.
-  eq safeToFire(Idsx ,NewMark,Ix,RcvAnsx,(Id1,Use,Id2,Pro),Lx) = safeToFire(Idsx ,NewMark,Ix,RcvAnsx,Lx) and 
+  eq safeToFire(Idsx, NewMark, Ix, RcvAnsx, (Id1, Use, Id2, Pro), Lx) = safeToFire(Idsx, NewMark, Ix, RcvAnsx, Lx) and 
   (
-    ( (evaluation([ dst: Id2 , query: isActive(Pro) ] ,Idsx ,RcvAnsx, Ix,empty,nil ) == true) and 
-    (activeMarking(instanceOfIdent(Ix,Id2),Pro,NewMark) == false )) 
-    implies  (evaluation([ dst: Id1 , query: isActive(Use) ],Idsx ,RcvAnsx, Ix,empty,nil ) == false) 
+    ( (evaluation([ dst: Id2 , query: isActive(Pro) ], Idsx, RcvAnsx, Ix, empty, nil) == true) and 
+    (activeMarking(instanceOfIdent(Ix, Id2), Pro, NewMark) == false)) 
+    implies  (evaluation([ dst: Id1 , query: isActive(Use) ], Idsx, RcvAnsx, Ix, empty, nil ) == false) 
   ) .
-  eq safeToFire(Idsx ,NewMark,Ix,RcvAnsx,empty) = true .
+  eq safeToFire(Idsx, NewMark, Ix, RcvAnsx, empty) = true .
 
 endfm
 
@@ -48,14 +48,14 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   vars I I' : Instance .
   var Is : Instances .
   var Lx : Connections .
-  var RcvAnsx : Map{Request,ExpectedValue} .
+  var RcvAnsx : Map{Request, Bool} .
   vars Use1 Use : UsePort .
   var Pro : ProvidePort .
   vars IdentIns Id1 Id2 : IdInstance .
   var Idsx  : IdInstances .
 
-  op connectedAndAllowed(_,_,_,_,_,_,_,_,_) : IdInstances IdInstance Place GroupUses Instance Instance Instances Connections Map{Request,ExpectedValue} -> Bool . 
-  ---  for the entreing place rule, in addition to the isSatisfiedTransitionEndingStation condition on the choice of a station as an ending for a transition,
+  op connectedAndAllowed(_,_,_,_,_,_,_,_,_) : IdInstances IdInstance Place GroupUses Instance Instance Instances Connections Map{Request, Bool} -> Bool . 
+  ---  for the entering place rule, in addition to the isSatisfiedTransitionEndingStation condition on the choice of a station as an ending for a transition,
   ---  we need the satifaction of ConnectedProvidedAllowed
   ---  this function takes as parameters:
   ---  the set of identifiers for all instances of the concerned configuration (concerned by the firing of one of its instances)
@@ -63,30 +63,30 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   ---  the uses ports of the instance concerned by the rule, 
   ---  the instance itself before the rule is fired
   ---  the instance after the rule is fired 
-  ---  the other instances of the configuration as well as its connections and the tuple Map{Request,ExpectedValue} of communication messages.
+  ---  the other instances of the configuration as well as its connections and the tuple Map{Request,Bool} of communication messages.
   ---  so for each use port of the instance concerned by the rule, we perform the following check:
   ---  if, by applying the rule, the status of this port is changed from inactive to active, 
   ---  knowing that the place of the function belongs to this use port, then
   ---  two conditions must be met Connected and allowed of of its provider ports.
-  eq connectedAndAllowed(Idsx ,Id1,p,empty,I,I',Is,Lx,RcvAnsx) = true .
-  ceq connectedAndAllowed(Idsx ,Id1,p,(Use ! ps),GUx,I,I',Is,Lx,RcvAnsx) = 
-  connected(Idsx ,Use,Id1,Lx,RcvAnsx)  and 
-  allowed(Idsx ,Use,Id1,Is,Lx,RcvAnsx)   and 
+  eq connectedAndAllowed(Idsx, Id1, p, empty, I, I', Is, Lx, RcvAnsx) = true .
+  ceq connectedAndAllowed(Idsx, Id1, p, (Use ! ps), GUx, I, I', Is, Lx, RcvAnsx) = 
+  connected(Idsx, Use, Id1, Lx, RcvAnsx) and 
+  allowed(Idsx, Use, Id1, Is, Lx, RcvAnsx) and 
   connectedAndAllowed(Idsx ,Id1,p,GUx,I,I',Is,Lx,RcvAnsx) 
-  if  ((p in ps) and active(I,Use) == false and active(I',Use) == true  ).     
+  if ((p in ps) and active(I, Use) == false and active(I', Use) == true  ).     
   --- in the previous condition we use active directly since it's a local treatment for the concerned configuration
   eq connectedAndAllowed(Idsx ,Id1,p,(Use ! ps),GUx,I,I',Is,Lx,RcvAnsx) = connectedAndAllowed(Idsx ,Id1,p,GUx,I,I',Is,Lx,RcvAnsx) [owise] .
 
-  op connected(_,_,_,_,_) : IdInstances UsePort IdInstance Connections Map{Request,ExpectedValue} -> Bool . 
+  op connected(_,_,_,_,_) : IdInstances UsePort IdInstance Connections Map{Request, Bool} -> Bool . 
   ---  connection must be verified on noValueYeth user and provider instances
-  ceq connected(Idsx ,Use,Id1,(Id1,Use,Id2,Pro),Lx,RcvAnsx) = true 
-  if(evaluation([ dst: Id2 , query: isConnected(Id1,Use,Id2,Pro) ], Idsx ,RcvAnsx,empty,(Id1,Use,Id2,Pro),Lx,nil )   == true ) .
-  eq connected(Idsx ,Use,Id1,Lx,RcvAnsx) = false [owise] .
+  ceq connected(Idsx, Use, Id1, (Id1, Use, Id2, Pro), Lx, RcvAnsx) = true 
+  if(evaluation([ dst: Id2 , query: isConnected(Id1, Use, Id2, Pro) ], Idsx, RcvAnsx, empty, (Id1, Use, Id2, Pro), Lx, nil )   == true ) .
+  eq connected(Idsx, Use, Id1, Lx, RcvAnsx) = false [owise] .
 
-  op allowed(_,_,_,_,_,_) : IdInstances UsePort  IdInstance Instances Connections Map{Request,ExpectedValue} -> Bool . 
+  op allowed(_,_,_,_,_,_) : IdInstances UsePort  IdInstance Instances Connections Map{Request, Bool} -> Bool . 
   --- also the provide port connected to this use port of the instance must not be refused
-  eq allowed(Idsx ,Use,Id1,Is,(Id1,Use,Id2,Pro),Lx,RcvAnsx) = (evaluation([ dst: Id2 , query: isRefusing(Pro) ],Idsx ,RcvAnsx,Is,empty,nil ) == false) . 
-  eq allowed(Idsx ,Use,Id1,Is,Lx,RcvAnsx) = false [owise] .  ---is not important since connected ensure that there is a connection.
+  eq allowed(Idsx, Use, Id1, Is, (Id1, Use, Id2, Pro), Lx, RcvAnsx) = (evaluation([ dst: Id2 , query: isRefusing(Pro) ], Idsx, RcvAnsx, Is, empty, nil ) == false) . 
+  eq allowed(Idsx, Use, Id1, Is, Lx, RcvAnsx) = false [owise] .  ---is not important since connected ensures that there is a connection.
 
 endfm
 

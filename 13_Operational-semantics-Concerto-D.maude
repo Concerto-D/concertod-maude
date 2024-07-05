@@ -10,17 +10,17 @@ mod OPERATIONAL-SEMANTICS is
   vars Ix Iy : Instances .
   vars Cx Cy : Connections .
   vars Px, Py : Program .
-  vars RcvAnsx RcvAnsy : Map{Request,ExpectedValue} .
-  vars OutAnsx OutAnsy : Qrequest . 
-  vars OutReqx OutReqy : Qrequest .
+  vars RcvAnsx RcvAnsy : Map{Request, Bool} .
+  vars OutAnsx OutAnsy : List{Request} . 
+  vars OutReqx OutReqy : List{Request} .
   vars Hx Hy : Set{Request} .
-  vars Bx By : Qanswer .
-  var Val : ExpectedValue .
+  vars Bx By : List{Message} .
+  var Val : Bool .
   var Ct : ComponentType .
   var Use : UsePort .
   var pro : ProvidePort .
 
-  vars Qb Qb1 : QBehaviorWithId .
+  vars Qb Qb1 : List{BehaviorWithId} .
   var Beh : Behavior .
   var Mrk : Marking .
   var IdBeh : IdBehavior .
@@ -440,10 +440,10 @@ rl [SendRequest] :
       outgoingAnswers:  OutAnsy,
       outgoingRequests: OutReqy,
       history: Hy,
-      buffer: append(By,[ req: [ dst: Dst, query: Q ], value: noValueYet ])     > .
+      buffer: append(By, reqMsg([ dst: Dst, query: Q ]))     > .
     
 
-  crl [SendEvaluationOfRequest] : 
+  crl [SendAnswer] : 
     < nodeInventory: Idsx, 
       instances: Ix, 
       connections: Cx, 
@@ -480,8 +480,8 @@ rl [SendRequest] :
       outgoingAnswers: OutAnsy, 
       outgoingRequests: OutReqy,
       history: (R, Hy),
-      buffer: append(By,[ req: R, value: localEvaluation(R,Ix,Cx,Px) ]) > 
-    if ( not InQueue (R,By) ) .
+      buffer: append(By, ansMsg([ req: R, value: localEvaluation(R,Ix,Cx,Px) ])) > 
+    if (not occurs(reqMsg(R), By)) .
 
     rl [ReceiveRequest] : 
     < nodeInventory: (Dst, Idsx),
@@ -492,7 +492,7 @@ rl [SendRequest] :
       outgoingAnswers: OutAnsx,
       outgoingRequests: OutReqx,
       history: Hx,
-      buffer: [ req: [dst: Dst, query: Q], value: Val ] Bx >   
+      buffer: reqMsg([dst: Dst, query: Q]) Bx >   
     => 
   < nodeInventory: (Dst,Idsx),
     instances: Ix,
@@ -504,7 +504,7 @@ rl [SendRequest] :
     history: Hx,
     buffer: Bx >  .
 
-    rl [ReceiveEvaluation] : 
+    rl [ReceiveAnswer] : 
   < nodeInventory: Idsx,
     instances: Ix,
     connections: Cx,
@@ -513,7 +513,7 @@ rl [SendRequest] :
     outgoingAnswers: OutAnsx, 
     outgoingRequests: OutReqx,
     history: (R,Hx),
-    buffer: [ req: R, value: Val ] Bx >  
+    buffer: ansMsg([ req: R, value: Val ]) Bx >  
       =>
   < nodeInventory: Idsx,
     instances: Ix,

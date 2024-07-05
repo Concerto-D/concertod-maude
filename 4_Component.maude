@@ -25,15 +25,15 @@ fmod COMPONENT-TYPE is
   var Beh  : Behavior .
 
 
-  op (_!_) : UsePort Places -> GroupUse . 
+  op (_!_) : UsePort Places -> GroupUse [ctor] . 
   --- GroupUse is defined as tuple : the use port and a group (set) of places
-  op (_?_) : ProvidePort Places -> GroupProvide . 
+  op (_?_) : ProvidePort Places -> GroupProvide [ctor] . 
   --- GroupProvide is defined as tuple : the Provide port and a group (set) of places
   op { places: _,initial: _,stationPlaces: _,transitions: _,behaviors: _,groupUses: _,groupProvides: _ } : 
-  Places InitialPlace StationPlaces Transitions Behaviors GroupUses GroupProvides -> ComponentType . 
+  Places InitialPlace StationPlaces Transitions Behaviors GroupUses GroupProvides -> ComponentType [ctor] . 
 
   --- some operations related to ComponentType used later
-  op initialPlace(_) : ComponentType -> Place .  
+  op initialPlace(_) : ComponentType -> Place .
   --- to get the initial place of component type
   eq initialPlace ({ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Behs,groupUses: GUx,groupProvides: GPx }) = Q .
 
