@@ -34,13 +34,13 @@ fmod STATION-PLACE is
   var Q : Place .
   var Ps : Places .
 
-  op (_;_) : Station Place -> StationPlace . 
+  op (_;_) : Station Place -> StationPlace [ctor] .
   --- an element StationPlace is a tuple (Station;Place)
 
   op placeOfStation(_,_) : Station StationPlaces -> [Place] .
   op not-found : -> [Place] . 
   --- gives the corresponding place for a station according to the "StationPlaces" set 
-  eq placeOfStation(Ss1, ((Ss1 ; Q),SPs)) = Q  .
+  eq placeOfStation(Ss1, ((Ss1 ; Q),SPs)) = Q .
   eq placeOfStation(Ss1, SPs) = not-found [owise] . 
   
   ---eq placeOfStation(Ss1, ((Ss1 ; Q),SPs)) = Q  .
@@ -167,8 +167,8 @@ fmod TRANSITION-TRANSITION-ENDING is
   pr SET{TransitionEnding} .
   subsort Set{TransitionEnding} < TransitionEndings . 
  
-  op t(_,_) : Place Stations -> Transition .  
-  op te(_,_) : Transition Station -> TransitionEnding . 
+  op t(_,_) : Place Stations -> Transition [ctor] .
+  op te(_,_) : Transition Station -> TransitionEnding [ctor] .
 
   var P1 P2 : Place .
   var Ps : Places .
@@ -237,7 +237,7 @@ fmod MARKING is
   vars Ts1 Ts2 : Transitions .
   vars Tes1 Tes2 : TransitionEndings .
   
-  op m(_,_,_) : Places Transitions TransitionEndings -> Marking .  
+  op m(_,_,_) : Places Transitions TransitionEndings -> Marking [ctor] .
   
   op placesOfMarking : Marking -> Places . 
   ---- gives the places of a marking

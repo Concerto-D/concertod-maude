@@ -36,7 +36,7 @@ fmod CONCERTO-D-CONFIGURATION is
        history: _,buffer: _ > : 
   IdInstances Instances Connections Program 
   Map{Request, Bool} List{Request}  List{Request} 
-  Set{Request} List{Message} -> LocalConfiguration  .   
+  Set{Request} List{Message} -> LocalConfiguration [ctor].
 
   --- some ops on configuration
  op isProcessedLocallyEvaluation(_,_) : Request IdInstances -> Bool .  
@@ -46,7 +46,7 @@ fmod CONCERTO-D-CONFIGURATION is
 
   op externEvaluation(_,_) : Request Map{Request, Bool}  -> Bool .  
   ---obtain the evalaution of an external function related to a Request from Map{Request, Bool}
-  eq externEvaluation(R1, R1 |-> Val, RcvAnsx ) = Val  .
+  eq externEvaluation(R1, R1 |-> Val, RcvAnsx ) = Val .
   --- eq externEvaluation(R1, RcvAnsx ) =  noValueYet [owise] .
 
   op localEvaluation(_,_,_,_) : Request Instances Connections Program -> Bool .  
