@@ -37,6 +37,7 @@ fmod STATION-PLACE is
   op (_;_) : Station Place -> StationPlace [ctor] .
   --- an element StationPlace is a tuple (Station;Place)
 
+  --- TODO Helene change names of operations
   op placeOfStation(_,_) : Station StationPlaces -> [Place] .
   op not-found : -> [Place] . 
   --- gives the corresponding place for a station according to the "StationPlaces" set 
@@ -58,7 +59,7 @@ endfm
 
 
 
-
+--- TODO Helene only one kind of Id
 fmod ID-COMPONENT-BEHAVIOR is
   
   inc DECLARATION-SORTS . 
@@ -94,10 +95,12 @@ fmod CONNECTION is
   var Pro : ProvidePort .   
   vars Id Id1 Id2 : IdInstance .  
 
-
+  --- TODO Helene change the notation of the operation
+  --- adopt a notation close to the graphical notation --o)-- ?
   op (_,_,_,_) : IdInstance UsePort IdInstance ProvidePort -> Connection .  
   --- Define a new operator to create a Connection
 
+  --- TODO Helene check operations with Ident
   --- some operations related to the connections used later
   op inConnectionIdentUsePort(_,_,_) :  IdInstance UsePort Connections -> Bool . 
   --- checks whether an instance is connected via a particular use port
@@ -106,7 +109,8 @@ fmod CONNECTION is
 
   op inConnectionIdent(_,_) :  IdInstance Connections -> Bool .   
   --- checks whether an instance is connected (via use or provide port)
-  ceq inConnectionIdent(Id,((Id1,Use,Id2,Pro),Lx)) = true if (Id1 == Id or Id2 == Id) .  
+  eq inConnectionIdent(Id1,((Id1,Use,Id2,Pro),Lx)) = true .  
+  eq inConnectionIdent(Id2,((Id1,Use,Id2,Pro),Lx)) = true . 
   eq inConnectionIdent(Id,Lx) = false [owise] .  
 
   op connectionProIdent(_,_) :  IdInstance Connections -> Connections .  
@@ -117,7 +121,7 @@ fmod CONNECTION is
 
 endfm
 
-
+--- TODO Fred subsort?
 fmod REQUEST is
 
   inc ID-COMPONENT-BEHAVIOR . 
@@ -129,6 +133,7 @@ fmod REQUEST is
   op isActive(_) :  Port -> Query [ctor] .  
   op isRefusing(_) : Port -> Query [ctor] .    
   op isConnected(_) : Connection -> Query [ctor] .  
+  --- TODO Helene change isDisconnect
   op isDisconnect(_) : Connection -> Query [ctor] .  
   op isCompleted(_) : IdBehavior -> Query [ctor] .  
   
@@ -167,6 +172,7 @@ fmod TRANSITION-TRANSITION-ENDING is
   pr SET{TransitionEnding} .
   subsort Set{TransitionEnding} < TransitionEndings . 
  
+  --- TODO Helene change notations (in particular because Stations is a Set -> (,,,,,)?
   op t(_,_) : Place Stations -> Transition [ctor] .
   op te(_,_) : Transition Station -> TransitionEnding [ctor] .
 
@@ -229,6 +235,7 @@ fmod TRANSITION-TRANSITION-ENDING is
 
 endfm
 
+--- TODO Fred projection to remove
 fmod MARKING is
   inc TRANSITION-TRANSITION-ENDING .
   sort Marking . 

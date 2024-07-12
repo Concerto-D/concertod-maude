@@ -266,6 +266,8 @@ crl [FiringTransitions] :
       >   
     if (isBehaviorOfComponent(Beh,Ct)) .
 
+  --- TODO éventuel (à appliquer partout) Fred manipuler les queues directement dans la règle sans evaluation
+  --- TODO plus de règles (locales et externes)
   crl [Waiting] : 
     < nodeInventory: Idsx,
       instances: ( Id1 |-> { type: Ct,queueBehavior: Qb,marking: Mrk }) , Ix,
