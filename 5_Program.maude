@@ -1,3 +1,5 @@
+--- TODO Fred program structure to specify
+
 fmod PROGRAM is
   
   inc COMPONENT-TYPE .

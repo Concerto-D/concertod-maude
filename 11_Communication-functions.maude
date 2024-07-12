@@ -24,6 +24,8 @@ fmod UPDATE-COMMUNICATION-MESSAGES is
     eq IdInstanceConnectionWhenSendActive(((Id1,Use,Id2,Pro),Cx),[ dst: Id1 , query: isActive(Use) ],false) = Id2 . 
     eq IdInstanceConnectionWhenSendActive(Cx,R,Val) = empty [owise] . 
     
+    --- HELENE only one case is handled (provide ask a use port its activity)
+    --- HELENE not enough time to change this in the current version but future work
     op  upDateReceivedAnswers(_,_) : Map{Request,Bool} IdInstances -> Map{Request,Bool} .  
     --- The update is related only to message related to the refusing function who we know its identifier if exist.
     eq  upDateReceivedAnswers(RcvAnsx,empty) = RcvAnsx .
