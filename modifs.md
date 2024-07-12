@@ -1,0 +1,107 @@
+# fichier 3
+## Notations
+- C/Cs component types
+- Ci/Cis component instances
+- Pl/Pls Places
+- Tr/Trs Transitions
+- Co/Cos Connections
+- Port/Ports
+	- Use
+	- Provide
+- S/Ss Stations
+- Te/Tes Transition endings
+- (_,_)--o)--(_,_) a connection
+- [_](_) a station of a component instance
+- getXofY get X of element Y (X set or element, Y element)
+- getXfromY get X from Y (X set or element and Y set)
+- isXinY is x in y
+- isXonY is x on y
+- minuscule pour les éléments d'un ensemble
+- majuscule pour un ensemble
+- globalement enlever les Ident dans les noms d'opération pour Id
+
+## Discussions
+- messages
+- ceq/eq
+- un seul type d'id
+- 
+
+## Détails :
+- StationPlace
+	- op (_;_) : Station Place -> StationPlace [ctor] .
+	- replace (_;_) with [_](_) to look like graphical notation
+- op placeOfStation(_,_) : Station StationPlaces -> [Place] .
+	- getPlacefStation
+	- eq placeOfStation(Ss1, ((Ss1 ; Q),SPs)) = Q .
+	- replace Q with p (place)
+	- replace Ss1 with s (station)
+	- eq getPlace(s, ([s](p),SPs)) = p .
+- op stationsGroupPlaces(_,_) : Places StationPlaces -> Stations .
+	- getStationsfGroup
+	- ceq stationsGroupPlaces(Ps,((Ss1 ; Q),SPs)) = Ss1, stationsGroupPlaces(Ps,SPs) if(Q in Ps) .
+		- getStationsfGroup(Ps,([s](p),SPs)) = s, getStationsfGroup(Ps,SPs) if(p in Ps) .
+  	- eq stationsGroupPlaces(Ps,((Ss1 ; Q),SPs)) =  stationsGroupPlaces(Ps,SPs) [owise] .
+  		- getStationsfGroup(Ps,([s](p),SPs)) = getStationsfGroup(Ps,SPs) [owise] .
+ - fmod ID-COMPONENT-BEHAVIOR is
+ 	- only one kind of ID, same set for component instances, behaviors and nodes
+ - fmod PORT
+ 	- Use and Provide only
+ - vars questions
+ - op (_,_,_,_) : IdInstance UsePort IdInstance ProvidePort -> Connection .
+	- op (_,_)--o)--(_,_) : ...
+- all operations with Ident -> Id
+- op inConnectionIdentUsePort(_,_,_) :  IdInstance UsePort Connections -> Bool . 
+	- isUseiConnections(_,_,_)
+	- eq inConnectionIdentUsePort(Id,Use,((Id,Use,Id2,Pro),Lx)) = true  .  
+		- eq isUseiConnections(id,u,((id,u)--o)--(id2,p),Cs)) = true  . 
+  		- eq isUseiConnections(id,u,Cs) = false [owise] .
+ - op inConnectionIdent(_,_) :  IdInstance Connections -> Bool .
+ 	- isCInstiConnections
+ - op connectionProIdent(_,_) :  IdInstance Connections -> Connections .
+ 	- getConnectionsfCInst
+ - op isDisconnect(_) : Connection -> Query [ctor] . 
+ 	- si on garde tel quel
+ 	- onDisconnect(_)
+ - REQUEST for me should be MSG_REQ
+ 	- op [ dst: _ , query: _ ] : IdInstance Query -> MsgReq [ctor] .
+ - ANSWER for me should be  MSG_ANS
+ 	- op [ dst: _ , query: _ , value: _] : IdInstance Query Value -> MsgAns [ctor] .
+ - et un sutype MSG
+ - TransitionEnding
+ 	- TrEndings
+ - op t(_,_) : Place Stations -> Transition [ctor] .
+ 	- op (_->_) : Place Stations -> Transition [ctor] .
+ - op te(_,_) : Transition Station -> TransitionEnding [ctor] .
+ 	- op (_-e->_) : Transition Station -> TransitionEnding [ctor] .
+ - op placesSourceOfTransitions(_) : Transitions -> Places .
+ 	- op getTransSources(_)
+ 	- eq getTransSources((p->Ss),Ts)) = p, getTransSources(Ts) .
+ 	- get all places that are sources of transitions???
+ 	- voir utilisation
+ - op restrictTransitionsToPlace(_,_) : Transitions Place -> Transitions . 
+ 	- op getTransitionsfPlace
+ 	- eq getTransitionsfPlace((p->Ss),Ts),p) = (p->Ss), getTransitionsfPlace(Ts,p)  .
+ 	- enlever l197?
+ - op removeTransitionEndingStation(_,_) : TransitionEndings Station -> TransitionEndings . 
+ 	- ? voir utilisation
+ - op transitionsOfPlacesWithRespectToStations(_,_,_) : Places Transitions Stations -> Transitions .
+ 	- ?
+ - op transitionEndingsOfOneTransition(_,_) : Transition Stations -> TransitionEndings .
+ 	- getEndingsfTransition(_,_)
+ - op transitionEndingsOfTransitions(_) : Transitions -> TransitionEndings .
+ 	- getEndingsfTransitions
+ - op isSatisfiedTransitionEndingStation(_,_,_) : Station Transitions TransitionEndings -> Bool .
+ 	- ?
+ - op placesOfMarking : Marking -> Places .
+ 	- getMarkedPlace
+ 	- same for all
+ - op  intersectionMarkings(_,_) : Marking Marking -> Marking . 
+ 	- intersectMarkings
+ - BehaviorWithId
+ 	- est-ce qu'on ne veut pas identifier le push plutôt que le behavior ?
+ - op b(_) : Transitions -> Behavior .
+ 	- getBehaviorfTransition?
+ - op existIdBehaviorehListBeh(_,_) : IdBehavior List{BehaviorWithId} -> Bool .
+ 	- ?
+ 	- check où c'est utilisé
+ 	
