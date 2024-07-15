@@ -28,31 +28,27 @@ fmod STATION-PLACE is
   pr SET{StationPlace} . 
   subsort Set{StationPlace} <  StationPlaces . 
 
-  vars Ss1 Ss2 : Station .
+  vars s1 s2 : Station .
   var S : Stations .
   var SPs : StationPlaces .
-  var Q : Place .
+  var p : Place .
   var Ps : Places .
 
-  op (_;_) : Station Place -> StationPlace [ctor] .
-  --- an element StationPlace is a tuple (Station;Place)
+  op [_](_) : Station Place -> StationPlace [ctor] .
+  --- an element StationPlace
 
   --- TODO Helene change names of operations
-  op placeOfStation(_,_) : Station StationPlaces -> [Place] .
+  op getPlacefromStation(_,_) : Station StationPlaces -> [Place] .
   op not-found : -> [Place] . 
   --- gives the corresponding place for a station according to the "StationPlaces" set 
-  eq placeOfStation(Ss1, ((Ss1 ; Q),SPs)) = Q .
-  eq placeOfStation(Ss1, SPs) = not-found [owise] . 
-  
-  ---eq placeOfStation(Ss1, ((Ss1 ; Q),SPs)) = Q  .
-  ---eq placeOfStation(Ss1, ((Ss2 ; Q),SPs)) = placeOfStation(Ss1,SPs) [owise] . 
-  ---  case not-found not processed, each station has a place and it is in the stationPlaces esnemble. 
+  eq getPlacefromStation(s1, ([s1](p),SPs)) = p .
+  eq getPlacefromStation(s1, SPs) = not-found [owise] . 
 
-  op stationsGroupPlaces(_,_) : Places StationPlaces -> Stations .  
+  op getStationsfromGroup(_,_) : Places StationPlaces -> Stations .  
   --- gives the stations associated to a Places group
-  eq stationsGroupPlaces(Ps,empty) = empty .
-  ceq stationsGroupPlaces(Ps,((Ss1 ; Q),SPs)) = Ss1, stationsGroupPlaces(Ps,SPs) if(Q in Ps) .
-  eq stationsGroupPlaces(Ps,((Ss1 ; Q),SPs)) =  stationsGroupPlaces(Ps,SPs) [owise] .
+  eq getStationsfromGroup(Ps,empty) = empty .
+  ceq getStationsfromGroup(Ps,([s1](p),SPs)) = s1, getStationsfromGroup(Ps,SPs) if(p in Ps) .
+  eq getStationsfromGroup(Ps,([s1](p),SPs)) =  getStationsfromGroup(Ps,SPs) [owise] .
 
 
 endfm

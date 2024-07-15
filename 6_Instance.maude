@@ -88,7 +88,7 @@ fmod INSTANCE is
   --- and all marked places are ready to leave the group of places of the port according to the current behavior.
   ceq refusing({ type: Ct,queueBehavior: Qb,marking: m(Ps,Ts,Tes) },Port) = true if  
   (allPlacesExitGroup(placesOfMarking(intersectionMarkings(markingWithRespectToPlaces(groupPlacesofPort(Port, Ct),Ct),m(Ps,Ts,Tes))),
-  Qb,stationsGroupPlaces(groupPlacesofPort(Port,Ct),getStationPlaces(Ct))) and
+  Qb,getStationsfromGroup(groupPlacesofPort(Port,Ct),getStationPlaces(Ct))) and
   transitionsOfMarking(intersectionMarkings(markingWithRespectToPlaces(groupPlacesofPort(Port,Ct),Ct),m(Ps,Ts,Tes))) == empty and 
   transitionEndingsOfMarking(intersectionMarkings(markingWithRespectToPlaces(groupPlacesofPort(Port,Ct),Ct),m(Ps,Ts,Tes))) == empty 
    )  .
