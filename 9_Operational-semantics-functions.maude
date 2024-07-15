@@ -26,7 +26,7 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
   ---   finally, a subset of Connections related to the configuration, where the instance concerned by firing is a provider.
   ---   so for each connection it checks that the firing of the concerned instance (provider) does not affect the corresponding user
   ---   i.e., if the provider for each connection after a firing goes from active to inactive, this implies that the user must be inactive.
-  eq safeToFire(Idsx, NewMark, Ix, RcvAnsx, (Id1, Use, Id2, Pro), Lx) = safeToFire(Idsx, NewMark, Ix, RcvAnsx, Lx) and 
+  eq safeToFire(Idsx, NewMark, Ix, RcvAnsx, (Id1, Use)--(Id2, Pro), Lx) = safeToFire(Idsx, NewMark, Ix, RcvAnsx, Lx) and 
   (
     ( (evaluation([ dst: Id2 , query: isActive(Pro) ], Idsx, RcvAnsx, Ix, empty, nil) == true) and 
     (activeMarking(instanceOfIdent(Ix, Id2), Pro, NewMark) == false)) 
@@ -79,13 +79,13 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
 
   op connected(_,_,_,_,_) : IdInstances UsePort IdInstance Connections Map{Request, Bool} -> Bool . 
   ---  connection must be verified on noValueYeth user and provider instances
-  ceq connected(Idsx, Use, Id1, (Id1, Use, Id2, Pro), Lx, RcvAnsx) = true 
-  if(evaluation([ dst: Id2 , query: isConnected(Id1, Use, Id2, Pro) ], Idsx, RcvAnsx, empty, (Id1, Use, Id2, Pro), Lx, nil )   == true ) .
+  ceq connected(Idsx, Use, Id1, (Id1, Use)--(Id2, Pro), Lx, RcvAnsx) = true 
+  if(evaluation([ dst: Id2 , query: isConnected((Id1, Use)--(Id2, Pro)) ], Idsx, RcvAnsx, empty, (Id1, Use)--(Id2, Pro), Lx, nil )   == true ) .
   eq connected(Idsx, Use, Id1, Lx, RcvAnsx) = false [owise] .
 
   op allowed(_,_,_,_,_,_) : IdInstances UsePort  IdInstance Instances Connections Map{Request, Bool} -> Bool . 
   --- also the provide port connected to this use port of the instance must not be refused
-  eq allowed(Idsx, Use, Id1, Is, (Id1, Use, Id2, Pro), Lx, RcvAnsx) = (evaluation([ dst: Id2 , query: isRefusing(Pro) ], Idsx, RcvAnsx, Is, empty, nil ) == false) . 
+  eq allowed(Idsx, Use, Id1, Is, (Id1, Use)--(Id2, Pro), Lx, RcvAnsx) = (evaluation([ dst: Id2 , query: isRefusing(Pro) ], Idsx, RcvAnsx, Is, empty, nil ) == false) . 
   eq allowed(Idsx, Use, Id1, Is, Lx, RcvAnsx) = false [owise] .  ---is not important since connected ensures that there is a connection.
 
 endfm

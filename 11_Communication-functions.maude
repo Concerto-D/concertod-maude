@@ -21,7 +21,7 @@ fmod UPDATE-COMMUNICATION-MESSAGES is
     --- which claims the active function which has a false evaluation. 
     --- Note that the expected result of this op is Id2 if it exists, otherwise empty, 
     --- so the result is a set that can contain either an empty element or a single identifier.
-    eq IdInstanceConnectionWhenSendActive(((Id1,Use,Id2,Pro),Cx),[ dst: Id1 , query: isActive(Use) ],false) = Id2 . 
+    eq IdInstanceConnectionWhenSendActive((((Id1,Use)--(Id2,Pro)),Cx),[ dst: Id1 , query: isActive(Use) ],false) = Id2 . 
     eq IdInstanceConnectionWhenSendActive(Cx,R,Val) = empty [owise] . 
     
     --- HELENE only one case is handled (provide ask a use port its activity)?

@@ -70,12 +70,12 @@ fmod LISTENER-SENSOR-EXAMPLE is
         eq systemDeploy13 = t(systemInitiated, stsystemConfigured) .
         eq sensorDeploy2 = t(sensorProvisioned, stsensorInstalled) .
         eq sensorPause1 = t(sensorRunning, stsensorProvisioned) .
-        eq connectionsNode1 = (mysys0,systemDbservice,mydb0,databaseService) .
+        eq connectionsNode1 = (mysys0,systemDbservice)--(mydb0,databaseService) .
         eq systemDeploy11 = t(systemInitiated, stsystemConfigured) .
         eq databasePause = b(databasePause1) .
         eq databaseDeploy = b(databaseDeploy11,databaseDeploy12,databaseDeploy2,databaseDeploy3) .
         eq sensorPause = b(sensorPause1) .
-        eq connectionsNode2 = (mysys0,systemDbservice,mydb0,databaseService), (listener1,listenerSysservice,mysys0,systemService), (sensor1,sensorRcvservice,listener1,listenerRcv), (sensor1,sensorConfigservice,listener1,listenerConfig )  .
+        eq connectionsNode2 = (mysys0,systemDbservice)--(mydb0,databaseService), (listener1,listenerSysservice)--(mysys0,systemService), (sensor1,sensorRcvservice)--(listener1,listenerRcv), (sensor1,sensorConfigservice)--(listener1,listenerConfig )  .
         ---eq instMysys0 = < id: mysys0, type: system, queueBehavior: nil, marking: m(systemDeployed, empty, empty) > .
         eq instMysys0 = { type: system, queueBehavior: nil, marking: m(systemDeployed, empty, empty) } .
        
@@ -90,7 +90,7 @@ fmod LISTENER-SENSOR-EXAMPLE is
         eq listener = { places: listenerRunning,listenerConfigured,listenerPaused,listenerOff, initial: listenerOff, stationPlaces: [stlistenerRunning](listenerRunning), [stlistenerConfigured](listenerConfigured), [stlistenerPaused](listenerPaused), [stlistenerOff](listenerOff), transitions: (listenerDeploy1, listenerDeploy2, listenerDeploy3, listenerUpdate1, listenerDestroy1), behaviors: (listenerDeploy, listenerUpdate, listenerDestroy), groupUses: listenerSysservice ! (listenerConfigured, listenerRunning), 
         groupProvides: listenerRcv ? (listenerRunning), listenerConfig ? (listenerConfigured, listenerRunning) } .
         eq listenerDestroy1 = t(listenerPaused, stlistenerOff) .
-        eq connectionsNode3 = (sensor1,sensorRcvservice,listener1,listenerRcv), (sensor1,sensorConfigservice,listener1,listenerConfig )  .
+        eq connectionsNode3 = (sensor1,sensorRcvservice)--(listener1,listenerRcv), (sensor1,sensorConfigservice)--(listener1,listenerConfig)  .
         eq listenerDeploy3 = t(listenerConfigured, stlistenerRunning) .
         eq listenerDestroy = b(listenerDestroy1) .
         eq databaseDeploy11 = t(databaseInitiated, stdatabaseConfigured) .
@@ -114,8 +114,8 @@ fmod LISTENER-SENSOR-EXAMPLE is
         op confNode1 : ->  LocalConfiguration .
         ops msgsNode1 msgsNode2 msgsNode3 : ->  Map{Request, Bool} .
         eq msgsNode1 = empty .
-        eq msgsNode2 = [ dst: mydb0 , query: isConnected(mysys0,systemDbservice,mydb0,databaseService) ] |-> true , [ dst: mydb0 , query: isRefusing(databaseService) ] |-> false .
-        eq msgsNode3 = [ dst: listener1 , query: isConnected((sensor1,sensorRcvservice,listener1,listenerRcv)) ] |-> true , [ dst: listener1 , query: isRefusing(listenerRcv) ] |-> false ,[ dst: listener1 , query: isConnected(sensor1,sensorConfigservice,listener1,listenerConfig ) ] |-> true , [ dst: listener1 , query: isRefusing(listenerConfig) ] |-> false .
+        eq msgsNode2 = [ dst: mydb0 , query: isConnected((mysys0,systemDbservice)--(mydb0,databaseService)) ] |-> true , [ dst: mydb0 , query: isRefusing(databaseService) ] |-> false .
+        eq msgsNode3 = [ dst: listener1 , query: isConnected((sensor1,sensorRcvservice)--(listener1,listenerRcv)) ] |-> true , [ dst: listener1 , query: isRefusing(listenerRcv) ] |-> false ,[ dst: listener1 , query: isConnected((sensor1,sensorConfigservice)--(listener1,listenerConfig)) ] |-> true , [ dst: listener1 , query: isRefusing(listenerConfig) ] |-> false .
         ops idb0 idb1 idb2 idb3 idb4 idb5 : -> IdBehavior .
         eq confNode1 = < nodeInventory: mydb0, instances: mydb0 |-> instMydb0, connections: connectionsNode1, program: nil , receivedAnswers: msgsNode1, outgoingAnswers: nil, outgoingRequests: nil, history: empty, buffer: nil > .
         op confNode2 : ->  LocalConfiguration .

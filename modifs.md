@@ -42,18 +42,18 @@
 		- getStationsfGroup(Ps,([s](p),SPs)) = s, getStationsfGroup(Ps,SPs) if(p in Ps) .
   	- eq stationsGroupPlaces(Ps,((Ss1 ; Q),SPs)) =  stationsGroupPlaces(Ps,SPs) [owise] .
   		- getStationsfGroup(Ps,([s](p),SPs)) = getStationsfGroup(Ps,SPs) [owise] .
- - fmod ID-COMPONENT-BEHAVIOR is
+ - **fmod ID-COMPONENT-BEHAVIOR is**
  	- only one kind of ID, same set for component instances, behaviors and nodes
  - fmod PORT
  	- Use and Provide only
  - vars questions
  - op (_,_,_,_) : IdInstance UsePort IdInstance ProvidePort -> Connection .
-	- op (_,_)--o)--(_,_) : ...
+	- op (_,_)--(_,_) : ...
 - all operations with Ident -> Id
 - op inConnectionIdentUsePort(_,_,_) :  IdInstance UsePort Connections -> Bool . 
 	- isUseiConnections(_,_,_)
 	- eq inConnectionIdentUsePort(Id,Use,((Id,Use,Id2,Pro),Lx)) = true  .  
-		- eq isUseiConnections(id,u,((id,u)--o)--(id2,p),Cs)) = true  . 
+		- eq isUseiConnections(id,u,((id,u)--(id2,p),Cs)) = true  . 
   		- eq isUseiConnections(id,u,Cs) = false [owise] .
  - op inConnectionIdent(_,_) :  IdInstance Connections -> Bool .
  	- isCInstiConnections

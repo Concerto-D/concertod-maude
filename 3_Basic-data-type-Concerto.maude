@@ -53,9 +53,7 @@ fmod STATION-PLACE is
 
 endfm
 
-
-
---- TODO Helene only one kind of Id
+--- TODO Helene only one kind of Id?
 fmod ID-COMPONENT-BEHAVIOR is
   
   inc DECLARATION-SORTS . 
@@ -86,34 +84,35 @@ fmod CONNECTION is
   pr SET{Connection} .  
   subsort Set{Connection} < Connections . 
 
-  var Lx : Connections .   
-  vars Use Use1 : UsePort .  
-  var Pro : ProvidePort .   
-  vars Id Id1 Id2 : IdInstance .  
+  var Cs : Connections .   
+  vars use use1 : UsePort .  
+  var pr : ProvidePort .   
+  vars id id1 id2 : IdInstance .  
 
   --- TODO Helene change the notation of the operation
   --- adopt a notation close to the graphical notation --o)-- ?
-  op (_,_,_,_) : IdInstance UsePort IdInstance ProvidePort -> Connection .  
+  op (_,_)--(_,_) : IdInstance UsePort IdInstance ProvidePort -> Connection .
+  --- op (_,_,_,_) : IdInstance UsePort IdInstance ProvidePort -> Connection .  
   --- Define a new operator to create a Connection
 
   --- TODO Helene check operations with Ident
   --- some operations related to the connections used later
-  op inConnectionIdentUsePort(_,_,_) :  IdInstance UsePort Connections -> Bool . 
+  op isUseinConnections(_,_,_) :  IdInstance UsePort Connections -> Bool . 
   --- checks whether an instance is connected via a particular use port
-  eq inConnectionIdentUsePort(Id,Use,((Id,Use,Id2,Pro),Lx)) = true  .  
-  eq inConnectionIdentUsePort(Id,Use,Lx) = false [owise] .  
+  eq isUseinConnections(id,use,((id,use)--(id2,pr),Cs)) = true  .  
+  eq isUseinConnections(id,use,Cs) = false [owise] .  
 
-  op inConnectionIdent(_,_) :  IdInstance Connections -> Bool .   
+  op isCInstinConnections(_,_) :  IdInstance Connections -> Bool .   
   --- checks whether an instance is connected (via use or provide port)
-  eq inConnectionIdent(Id1,((Id1,Use,Id2,Pro),Lx)) = true .  
-  eq inConnectionIdent(Id2,((Id1,Use,Id2,Pro),Lx)) = true . 
-  eq inConnectionIdent(Id,Lx) = false [owise] .  
+  eq isCInstinConnections(id1,((id1,use)--(id2,pr),Cs)) = true .  
+  eq isCInstinConnections(id2,((id1,use)--(id2,pr),Cs)) = true . 
+  eq isCInstinConnections(id,Cs) = false [owise] .  
 
-  op connectionProIdent(_,_) :  IdInstance Connections -> Connections .  
+  op getConnectionsofCInst(_,_) :  IdInstance Connections -> Connections .  
   --- checks restriction on connections for an instance which is in role provide Port within connections
-  eq connectionProIdent(Id,empty) = empty .
-  eq connectionProIdent(Id2,((Id1,Use,Id2,Pro),Lx)) = (Id1,Use,Id2,Pro), connectionProIdent(Id2,Lx)  .  
-  eq connectionProIdent(Id,((Id1,Use,Id2,Pro),Lx)) = connectionProIdent(Id,Lx) [owise] .  
+  eq getConnectionsofCInst(id,empty) = empty .
+  eq getConnectionsofCInst(id2,((id1,use)--(id2,pr)),Cs) = ((id1,use)--(id2,pr)), getConnectionsofCInst(id2,Cs)  .  
+  eq getConnectionsofCInst(id,((id1,use)--(id2,pr)),Cs) = getConnectionsofCInst(id,Cs) [owise] .  
 
 endfm
 
