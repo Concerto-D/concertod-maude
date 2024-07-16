@@ -25,15 +25,11 @@
     C- A system module gives the dynamic aspect of CONCERTO-D applications through rewriting rules given in 13_Operational-semantics-Concerto-D 
     Finally, some verification results on the example of 12_example_update_cps are given in the additional file 14_Results-search. 
     )
+
 -------------------------------------------------- Main -------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------
-fmod DECLARATION-SORTS is 
 
-  sorts Place Station StationPlace  IdInstance Send Receive SentHistory Connection Instance LocalConfiguration .
-  sorts Transition TransitionEnding Behavior BehaviorWithId GroupUse GroupProvide Instruction Request Answer Message .
-
-endfm
-
+load 1_Basic-sorts
 load 2_Views 
 load 3_Basic-data-type-Concerto
 load 4_Component
