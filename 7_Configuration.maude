@@ -62,7 +62,7 @@ fmod CONCERTO-D-CONFIGURATION is
       
   eq localEvaluation ([ dst: Id , query: isConnected(L) ], Ix,Lx,Px) = L in Lx . 
 
-  eq localEvaluation ([ dst: Id , query: isDisconnect(L) ], Ix,Lx,Px) = disconnect(L,Px) . 
+  eq localEvaluation ([ dst: Id , query: onDisconnect(L) ], Ix,Lx,Px) = disconnect(L,Px) . 
  
   eq localEvaluation ([ dst: Id , query: isCompleted(IdBeh) ], (Id |-> { type: Ct,queueBehavior: Qb,marking: Mark },Ix),Lx,Px) =  
   (not existIdBehaviorehListBeh(IdBeh,Qb) ) and notPushBProg(Id,IdBeh,Px) .

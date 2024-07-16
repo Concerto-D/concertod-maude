@@ -151,11 +151,11 @@ fmod COLLECT-EXTERNAL-MESSAGES-DISCONNECT is
   eq activeCollect(Id1,Use,RcvAnsx,Hx,OutReqx) = nil [owise] .
 
   op disconCollect(_,_,_,_,_) : IdInstance Connection Map{Request, Bool} Set{Request} List{Request} -> List{Request} .
-  ceq disconCollect(Id1,C,RcvAnsx,Hx,OutReqx) = [ dst: Id1 , query: isDisconnect(C) ] 
+  ceq disconCollect(Id1,C,RcvAnsx,Hx,OutReqx) = [ dst: Id1 , query: onDisconnect(C) ] 
   if(
-    (not ([ dst: Id1 , query: isDisconnect(C) ]   in Hx)) and 
-    (not (occurs([ dst: Id1 , query: isDisconnect(C) ], OutReqx))) and
-    (externEvaluation([ dst: Id1 , query: isDisconnect(C) ], RcvAnsx ) =/= true )
+    (not ([ dst: Id1 , query: onDisconnect(C) ]   in Hx)) and 
+    (not (occurs([ dst: Id1 , query: onDisconnect(C) ], OutReqx))) and
+    (externEvaluation([ dst: Id1 , query: onDisconnect(C) ], RcvAnsx ) =/= true )
     ) .
   eq disconCollect(Id1,C,RcvAnsx,Hx,OutReqx) = nil [owise] .
 

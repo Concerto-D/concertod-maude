@@ -3,7 +3,7 @@
 - C/Cs component types
 - Ci/Cis component instances
 - Pl/Pls Places
-- Tr/Trs Transitions
+- T/Ts Transitions
 - Co/Cos Connections
 - Port/Ports
 	- Use
@@ -62,11 +62,11 @@
  - op isDisconnect(_) : Connection -> Query [ctor] . 
  	- si on garde tel quel
  	- onDisconnect(_)
- - REQUEST for me should be MSG_REQ
+ - **REQUEST for me should be MSG_REQ**
  	- op [ dst: _ , query: _ ] : IdInstance Query -> MsgReq [ctor] .
- - ANSWER for me should be  MSG_ANS
+ - **ANSWER for me should be  MSG_ANS**
  	- op [ dst: _ , query: _ , value: _] : IdInstance Query Value -> MsgAns [ctor] .
- - et un sutype MSG
+ - **et un sutype MSG**
  - TransitionEnding
  	- TrEndings
  - op t(_,_) : Place Stations -> Transition [ctor] .
@@ -74,13 +74,13 @@
  - op te(_,_) : Transition Station -> TransitionEnding [ctor] .
  	- op (_-e->_) : Transition Station -> TransitionEnding [ctor] .
  - op placesSourceOfTransitions(_) : Transitions -> Places .
- 	- op getTransSources(_)
- 	- eq getTransSources((p->Ss),Ts)) = p, getTransSources(Ts) .
+ 	- op getSourcesOfTransitions(_)
+ 	- eq getSourcesOfTransitions((p->Ss),Ts)) = p, getSourcesOfTransitions(Ts) .
  	- get all places that are sources of transitions???
  	- voir utilisation
  - op restrictTransitionsToPlace(_,_) : Transitions Place -> Transitions . 
- 	- op getTransitionsfPlace
- 	- eq getTransitionsfPlace((p->Ss),Ts),p) = (p->Ss), getTransitionsfPlace(Ts,p)  .
+ 	- op getTransitionsofPlace
+ 	- eq getTransitionsofPlace((p->Ss),Ts),p) = (p->Ss), getTransitionsofPlace(Ts,p)  .
  	- enlever l197?
  - op removeTransitionEndingStation(_,_) : TransitionEndings Station -> TransitionEndings . 
  	- ? voir utilisation
