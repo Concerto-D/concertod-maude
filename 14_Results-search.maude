@@ -17,7 +17,7 @@
 ---  The Maude search command is: 
 
 
-search [1] globalsystem =>*  
+search [1] globalsystem =>!  
 < nodeInventory: sensor1, 
   instances: (sensor1 |-> { type: sensortype:ComponentType, queueBehavior: nil:List{BehaviorWithId}, marking: m(sensorRunning, empty, empty) }),
   connections: connectNode3:Connections, 
@@ -37,6 +37,8 @@ search [1] globalsystem =>*
   history: hist2:Set{Request},
   buffer: Buf2:List{Message} >, n:Net .
 
+--- TODO Fred: not exactly what I obtain
+--- TODO Fred: separate the searches into two files
 ---there is a proposed solution for this commend given as follows:
 
 ***(
@@ -96,6 +98,8 @@ sen:Qsend --> (nil).List{send}
 hist:SentHistorys --> (empty).Set{SentHistory}
 Maude>
 )
+
+show path labels 11144 .
 
 ---     the second property attempts to ensure that an undesirable situation regarding the order of listener and sensor behaviors during reconfiguration steps will not occur.
 ---     it expresses: a sensor can only begin its start behavior at the end of the update behavior of the listener. 
