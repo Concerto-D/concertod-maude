@@ -164,7 +164,7 @@ crl [FiringTransitions] :
       history: Hx,
       buffer: Bx 
       >     
-    if (not isUsedIdInstances(Id1,Ix))   .  
+    if (not isInstanceIdUsed(Id1,Ix))   .  
 
   crl [DeleteComponentInstance] : 
     < nodeInventory: Idsx,

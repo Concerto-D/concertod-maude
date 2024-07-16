@@ -34,7 +34,7 @@ fmod COLLECT-EXTERNAL-MESSAGES-FIRING is
   (not (occurs([ dst: Id1 , query: isActive(Use) ], OutReqx)))  and
   (not (Id1 in Idsx)) and
   (evaluation([ dst: Id1 , query: isActive(Use) ], Idsx, RcvAnsx, empty, empty, nil) =/= false) and
-  ((localEvaluation([ dst: Id2 , query: isActive(Pro)], Ix, empty, nil) == true) and (activeMarking(instanceOfIdent(Ix,Id2),Pro,NewMark) == false))
+  ((localEvaluation([ dst: Id2 , query: isActive(Pro)], Ix, empty, nil) == true) and (activeMarking(getInstanceFromId(Ix,Id2),Pro,NewMark) == false))
   ) .
   eq collectRuleFiring(Idsx,NewMark,Ix,(Id1,Use)--(Id2,Pro),Cx,RcvAnsx,Hx,OutReqx) = collectRuleFiring(Idsx,NewMark,Ix,Cx,RcvAnsx,Hx,OutReqx) [owise] .
 

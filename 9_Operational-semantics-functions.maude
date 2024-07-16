@@ -29,7 +29,7 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
   eq safeToFire(Idsx, NewMark, Ix, RcvAnsx, (Id1, Use)--(Id2, Pro), Lx) = safeToFire(Idsx, NewMark, Ix, RcvAnsx, Lx) and 
   (
     ( (evaluation([ dst: Id2 , query: isActive(Pro) ], Idsx, RcvAnsx, Ix, empty, nil) == true) and 
-    (activeMarking(instanceOfIdent(Ix, Id2), Pro, NewMark) == false)) 
+    (activeMarking(getInstanceFromId(Ix, Id2), Pro, NewMark) == false)) 
     implies  (evaluation([ dst: Id1 , query: isActive(Use) ], Idsx, RcvAnsx, Ix, empty, nil ) == false) 
   ) .
   eq safeToFire(Idsx, NewMark, Ix, RcvAnsx, empty) = true .
