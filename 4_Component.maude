@@ -14,15 +14,15 @@ fmod COMPONENT-TYPE is
   subsort Set{GroupProvide} < GroupProvides . 
 
   vars Ps Ps1 : Places .
-  var q : InitialPlace .
+  var Q : InitialPlace .
   var SPs : StationPlaces .
   var Ts  : Transitions . 
   var Bs : Behaviors .
   var GU : GroupUses .
   var GP : GroupProvides .
-  vars use use1 : UsePort .
-  vars pr pr1 : ProvidePort .
-  var beh  : Behavior .
+  vars Use Use1 : UsePort .
+  vars Pr Pr1 : ProvidePort .
+  var Beh  : Behavior .
 
   --- Helene getGroup devrait etre une fonction pour tout type de port
   --- Helene ! et ? ne sont pas informatifs
@@ -36,39 +36,39 @@ fmod COMPONENT-TYPE is
   --- some operations related to ComponentType used later
   op initialPlace(_) : ComponentType -> Place .
   --- to get the initial place of component type
-  eq initialPlace ({ places: Ps,initial: q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = q .
+  eq initialPlace ({ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = Q .
 
   op getStationPlaces(_) : ComponentType -> StationPlaces . 
   --- to get the set of tuples (station; place)
-  eq getStationPlaces ({ places: Ps,initial: q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = SPs .
+  eq getStationPlaces ({ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = SPs .
 
   op getUsePorts(_) : ComponentType -> GroupUses . 
   --- to get the set of the use ports of the component
-  eq getUsePorts ({ places: Ps,initial: q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = GU .
+  eq getUsePorts ({ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = GU .
 
 
   op placesOfUsePort(_,_) : UsePort GroupUses -> Places . 
   --- to get places of a use port from a set of use ports
-  eq placesOfUsePort(use,(use ! Ps),GU) = Ps . 
-  eq placesOfUsePort(use,GU) = empty [owise] . 
+  eq placesOfUsePort(Use,(Use ! Ps),GU) = Ps . 
+  eq placesOfUsePort(Use,GU) = empty [owise] . 
    
   op placesOfProvidePort(_,_) : ProvidePort GroupProvides -> Places . 
   --- to get places of a provide port from a set of use ports
-  eq placesOfProvidePort(pr,((pr ? Ps),GP)) = Ps  . 
-  eq placesOfProvidePort(pr,GP) = empty [owise] . 
+  eq placesOfProvidePort(Pr,((Pr ? Ps),GP)) = Ps  . 
+  eq placesOfProvidePort(Pr,GP) = empty [owise] . 
    
   op groupPlacesofPort(_,_) : Port ComponentType -> Places . 
   --- to get places of a port use or provide
-  eq groupPlacesofPort(use,{ places: Ps,initial: q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = placesOfUsePort(use,GU)  .
-  eq groupPlacesofPort(pr,{ places: Ps,initial: q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP } ) = placesOfProvidePort(pr,GP)  .
+  eq groupPlacesofPort(Use,{ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = placesOfUsePort(Use,GU)  .
+  eq groupPlacesofPort(Pr,{ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP } ) = placesOfProvidePort(Pr,GP)  .
 
   op isBehaviorOfComponent(_,_) : Behavior ComponentType -> Bool . 
   --- to check whether a behavior is used in ComponentType, in particular in its behaviors
-  eq isBehaviorOfComponent(beh,{ places: Ps,initial: q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = beh in Bs .
+  eq isBehaviorOfComponent(Beh,{ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = Beh in Bs .
   
   op markingWithRespectToPlaces(_,_) : Places ComponentType -> Marking .   
   --- gives the elements of Marking (places, transitions, TransitionEndings) of group of places depending a ComponentType
-  eq markingWithRespectToPlaces(Ps1,{ places: Ps,initial: q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = 
+  eq markingWithRespectToPlaces(Ps1,{ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = 
   m(Ps1, transitionsOfPlacesWithRespectToStations(Ps1,Ts,getStationsfromGroup(Ps1,SPs)), 
   getEndingsfTransitions(transitionsOfPlacesWithRespectToStations(Ps1,Ts,getStationsfromGroup(Ps1,SPs)))) .
 

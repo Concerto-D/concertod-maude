@@ -28,10 +28,10 @@ fmod STATION-PLACE is
   pr SET{StationPlace} . 
   subsort Set{StationPlace} <  StationPlaces . 
 
-  vars s1 s2 : Station .
+  vars S1 S2 : Station .
   var S : Stations .
   var SPs : StationPlaces .
-  var p : Place .
+  var P : Place .
   var Ps : Places .
 
   op [_](_) : Station Place -> StationPlace [ctor] .
@@ -40,14 +40,14 @@ fmod STATION-PLACE is
   op getPlacefromStation(_,_) : Station StationPlaces -> [Place] .
   op not-found : -> [Place] . 
   --- get the place associated to a station 
-  eq getPlacefromStation(s1, ([s1](p),SPs)) = p .
-  eq getPlacefromStation(s1, SPs) = not-found [owise] . 
+  eq getPlacefromStation(S1, ([S1](P),SPs)) = P .
+  eq getPlacefromStation(S1, SPs) = not-found [owise] . 
 
   op getStationsfromGroup(_,_) : Places StationPlaces -> Stations .  
   --- get the stations associated to a group of Places
   eq getStationsfromGroup(Ps,empty) = empty .
-  ceq getStationsfromGroup(Ps,([s1](p),SPs)) = s1, getStationsfromGroup(Ps,SPs) if(p in Ps) .
-  eq getStationsfromGroup(Ps,([s1](p),SPs)) =  getStationsfromGroup(Ps,SPs) [owise] .
+  ceq getStationsfromGroup(Ps,([S1](P),SPs)) = S1, getStationsfromGroup(Ps,SPs) if(P in Ps) .
+  eq getStationsfromGroup(Ps,([S1](P),SPs)) =  getStationsfromGroup(Ps,SPs) [owise] .
 
 
 endfm
@@ -84,31 +84,30 @@ fmod CONNECTION is
   subsort Set{Connection} < Connections . 
 
   var Cs : Connections .   
-  vars use use1 : UsePort .  
-  var pr : ProvidePort .   
-  vars id id1 id2 : IdInstance .  
+  vars Use Use1 : UsePort .  
+  var Pr : ProvidePort .   
+  vars Id Id1 Id2 : IdInstance .  
 
-  op (_,_)--(_,_) : IdInstance UsePort IdInstance ProvidePort -> Connection .
-  --- op (_,_,_,_) : IdInstance UsePort IdInstance ProvidePort -> Connection .  
+  op (_,_)--(_,_) : IdInstance UsePort IdInstance ProvidePort -> Connection [ctor] .
   --- Define a new operator to create a Connection
 
   --- some operations related to the connections used later
   op isUseinConnections(_,_,_) :  IdInstance UsePort Connections -> Bool . 
   --- checks whether a component instance is connected via a use port
-  eq isUseinConnections(id,use,((id,use)--(id2,pr),Cs)) = true  .  
-  eq isUseinConnections(id,use,Cs) = false [owise] .  
+  eq isUseinConnections(Id,Use,((Id,Use)--(Id2,Pr),Cs)) = true  .  
+  eq isUseinConnections(Id,Use,Cs) = false [owise] .  
 
   op isCInstinConnections(_,_) :  IdInstance Connections -> Bool .   
   --- checks whether a component instance is connected (via use or provide port)
-  eq isCInstinConnections(id1,((id1,use)--(id2,pr),Cs)) = true .  
-  eq isCInstinConnections(id2,((id1,use)--(id2,pr),Cs)) = true . 
-  eq isCInstinConnections(id,Cs) = false [owise] .  
+  eq isCInstinConnections(Id1,((Id1,Use)--(Id2,Pr),Cs)) = true .  
+  eq isCInstinConnections(Id2,((Id1,Use)--(Id2,Pr),Cs)) = true . 
+  eq isCInstinConnections(Id,Cs) = false [owise] .  
 
   op getPConnectionsofCInst(_,_) :  IdInstance Connections -> Connections .  
   --- get the connections of CInst where CInst is providing a port
-  eq getPConnectionsofCInst(id,empty) = empty .
-  eq getPConnectionsofCInst(id2,((id1,use)--(id2,pr)),Cs) = ((id1,use)--(id2,pr)), getPConnectionsofCInst(id2,Cs)  .  
-  eq getPConnectionsofCInst(id,((id1,use)--(id2,pr)),Cs) = getPConnectionsofCInst(id,Cs) [owise] .  
+  eq getPConnectionsofCInst(Id,empty) = empty .
+  eq getPConnectionsofCInst(Id2,((Id1,Use)--(Id2,Pr)),Cs) = ((Id1,Use)--(Id2,Pr)), getPConnectionsofCInst(Id2,Cs)  .  
+  eq getPConnectionsofCInst(Id,((Id1,Use)--(Id2,Pr)),Cs) = getPConnectionsofCInst(Id,Cs) [owise] .  
 endfm
 
 --- TODO Fred subsort?
@@ -162,14 +161,13 @@ fmod TRANSITION-TRANSITION-ENDING is
   pr SET{TransitionEnding} .
   subsort Set{TransitionEnding} < TransitionEndings . 
  
-  --- TODO Helene change notations (in particular because Stations is a Set -> (,,,,,)?
   op t(_,_) : Place Stations -> Transition [ctor] .
   op te(_,_) : Transition Station -> TransitionEnding [ctor] .
 
-  var p1 p2 : Place .
+  var P1 P2 : Place .
   var Ps : Places .
   vars Ss1 Ss2 : Stations .
-  vars s1 s2 : Station .
+  vars S1 S2 : Station .
   var Ts : Transitions .
   var Tes : TransitionEndings .
 
@@ -177,22 +175,22 @@ fmod TRANSITION-TRANSITION-ENDING is
   op getSourcesOfTransitions(_) : Transitions -> Places .  
   --- get the set of source places of a set of transitions
   eq getSourcesOfTransitions(empty) = empty .
-  eq getSourcesOfTransitions((t(p1,Ss1),Ts)) = p1, getSourcesOfTransitions(Ts) .
+  eq getSourcesOfTransitions((t(P1,Ss1),Ts)) = P1, getSourcesOfTransitions(Ts) .
 
   op getTransitionsofPlace(_,_) : Transitions Place -> Transitions . 
   --- get transitions linked to a place
   
-  eq getTransitionsofPlace(empty,p1) = empty .
-  eq getTransitionsofPlace((t(p1,Ss1),Ts),p1) = t(p1,Ss1), getTransitionsofPlace(Ts,p1)  .
-  eq getTransitionsofPlace((t(p2,Ss1),Ts),p1) = getTransitionsofPlace(Ts,p1) [owise] .
+  eq getTransitionsofPlace(empty,P1) = empty .
+  eq getTransitionsofPlace((t(P1,Ss1),Ts),P1) = t(P1,Ss1), getTransitionsofPlace(Ts,P1)  .
+  eq getTransitionsofPlace((t(P2,Ss1),Ts),P1) = getTransitionsofPlace(Ts,P1) [owise] .
  
   --- HELENE I do not understand this remove function
   op rmTesOfStation(_,_) : TransitionEndings Station -> TransitionEndings .
   --- delete transition endings of a station 
   
-  eq rmTesOfStation(empty,s1) = empty .
-  eq rmTesOfStation((te(t(p1,Ss1),s1),Tes),s1) = rmTesOfStation(Tes,s1) .
-  eq rmTesOfStation((te(t(p1,Ss1),s1),Tes),s2) = te(t(p1,Ss1),s1),rmTesOfStation(Tes,s2) [owise] .
+  eq rmTesOfStation(empty,S1) = empty .
+  eq rmTesOfStation((te(t(P1,Ss1),S1),Tes),S1) = rmTesOfStation(Tes,S1) .
+  eq rmTesOfStation((te(t(P1,Ss1),S1),Tes),S2) = te(t(P1,Ss1),S1),rmTesOfStation(Tes,S2) [owise] .
   --- Helene - owise without ceq?
   
   --- Helene ??? op getTransitionsfrom
@@ -200,19 +198,19 @@ fmod TRANSITION-TRANSITION-ENDING is
  ---retrieve transitions starting from a place of a set of places and ending in stations included in the set of stations of these places.
   
   eq transitionsOfPlacesWithRespectToStations(Ps,empty,Ss1) = empty .
-  ceq transitionsOfPlacesWithRespectToStations(Ps,(t(p1,Ss2),Ts),Ss1) = t(p1,Ss2), transitionsOfPlacesWithRespectToStations(Ps,Ts,Ss1) if ((p1 in Ps) and (Ss2 subset Ss1)) .
-  eq transitionsOfPlacesWithRespectToStations(Ps,(t(p1,Ss2),Ts),Ss1) = transitionsOfPlacesWithRespectToStations(Ps,Ts,Ss1) [owise] .
+  ceq transitionsOfPlacesWithRespectToStations(Ps,(t(P1,Ss2),Ts),Ss1) = t(P1,Ss2), transitionsOfPlacesWithRespectToStations(Ps,Ts,Ss1) if ((P1 in Ps) and (Ss2 subset Ss1)) .
+  eq transitionsOfPlacesWithRespectToStations(Ps,(t(P1,Ss2),Ts),Ss1) = transitionsOfPlacesWithRespectToStations(Ps,Ts,Ss1) [owise] .
  
   op getEndingsofTransition(_,_) : Transition Stations -> TransitionEndings .  
   ---get the transition endings of a transition according to a set of Stations
-  eq getEndingsofTransition(t(p1,Ss2),empty) = empty . 
-  eq getEndingsofTransition(t(p1,Ss2), (s1,Ss1)) = union(te(t(p1,Ss2),s1), getEndingsofTransition(t(p1,Ss2), Ss1) ) .
+  eq getEndingsofTransition(t(P1,Ss2),empty) = empty . 
+  eq getEndingsofTransition(t(P1,Ss2), (S1,Ss1)) = union(te(t(P1,Ss2),S1), getEndingsofTransition(t(P1,Ss2), Ss1) ) .
 
 
   op getEndingsfTransitions(_) : Transitions -> TransitionEndings .  
   --- get the transition endings of a set of transitions
   eq getEndingsfTransitions(empty) = empty .
-  eq getEndingsfTransitions(t(p1,Ss1),Ts) = union(getEndingsofTransition(t(p1,Ss1),Ss1), getEndingsfTransitions(Ts) ) .
+  eq getEndingsfTransitions(t(P1,Ss1),Ts) = union(getEndingsofTransition(t(P1,Ss1),Ss1), getEndingsfTransitions(Ts) ) .
 
 
   --- Helene ???
@@ -222,10 +220,10 @@ fmod TRANSITION-TRANSITION-ENDING is
   --- the principale is : if a station is chosen as a station of the ending of a transition 
   --- then for all transitions of the current behavior for which the chosen station is one of its stations
   --- the transition endings of these transitions according to this station must be included in their trnasition endings.
-  eq isSatisfiedTransitionEndingStation(s1,empty,Tes) = true .
-  ceq isSatisfiedTransitionEndingStation(s1,t(p1,Ss1),Ts,Tes) = isSatisfiedTransitionEndingStation(s1,Ts,Tes) 
-  if(not(s1 in Ss1) or (te(t(p1,Ss1),s1) in Tes) ) .
-  eq isSatisfiedTransitionEndingStation(s1,t(p1,Ss1),Ts,Tes) = false [owise] .
+  eq isSatisfiedTransitionEndingStation(S1,empty,Tes) = true .
+  ceq isSatisfiedTransitionEndingStation(S1,t(P1,Ss1),Ts,Tes) = isSatisfiedTransitionEndingStation(S1,Ts,Tes) 
+  if(not(S1 in Ss1) or (te(t(P1,Ss1),S1) in Tes) ) .
+  eq isSatisfiedTransitionEndingStation(S1,t(P1,Ss1),Ts,Tes) = false [owise] .
 
 endfm
 
