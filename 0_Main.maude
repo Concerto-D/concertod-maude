@@ -32,9 +32,9 @@
 load 1_Basic-sorts
 load 2_Views 
 load 3_Basic-data-type-Concerto
-load 4_Component
+load 4_Component-type
 load 5_Program
-load 6_Instance
+load 6_Component-instance
 load 7_Configuration
 load 8_NetConcerto
 load 9_Operational-semantics-functions

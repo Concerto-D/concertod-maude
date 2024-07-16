@@ -75,22 +75,22 @@ fmod INSTANCE is
   --- active of a port
   ---valid when at least the places, tansitions or transition endings marking is non-empty for a given port
   eq active({ type: Ct,queueBehavior: Qb,marking: m(Ps,Ts,Tes) },Port) = 
-  notEmptyMarking(intersectionMarkings(markingWithRespectToPlaces( groupPlacesofPort(Port,Ct),Ct),m(Ps,Ts,Tes))) .
+  notEmptyMarking(intersectionMarkings(getMarkingOfGroup( getPlacesOfPort(Port,Ct),Ct),m(Ps,Ts,Tes))) .
 
   op activeMarking(_,_,_) : Instance Port Marking -> Bool . 
   --- active depending a marking
   eq activeMarking({ type: Ct,queueBehavior: Qb,marking: m(Ps,Ts,Tes) },Port,Mark) = 
-  notEmptyMarking(intersectionMarkings(markingWithRespectToPlaces(groupPlacesofPort(Port,Ct),Ct),Mark)) .
+  notEmptyMarking(intersectionMarkings(getMarkingOfGroup(getPlacesOfPort(Port,Ct),Ct),Mark)) .
 
   op refusing(_,_) : Instance Port -> Bool .  
   --- refusing port
   --- a port is refused when only places are marked, 
   --- and all marked places are ready to leave the group of places of the port according to the current behavior.
   ceq refusing({ type: Ct,queueBehavior: Qb,marking: m(Ps,Ts,Tes) },Port) = true if  
-  (allPlacesExitGroup(placesOfMarking(intersectionMarkings(markingWithRespectToPlaces(groupPlacesofPort(Port, Ct),Ct),m(Ps,Ts,Tes))),
-  Qb,getStationsfromGroup(groupPlacesofPort(Port,Ct),getStationPlaces(Ct))) and
-  transitionsOfMarking(intersectionMarkings(markingWithRespectToPlaces(groupPlacesofPort(Port,Ct),Ct),m(Ps,Ts,Tes))) == empty and 
-  transitionEndingsOfMarking(intersectionMarkings(markingWithRespectToPlaces(groupPlacesofPort(Port,Ct),Ct),m(Ps,Ts,Tes))) == empty 
+  (allPlacesExitGroup(placesOfMarking(intersectionMarkings(getMarkingOfGroup(getPlacesOfPort(Port, Ct),Ct),m(Ps,Ts,Tes))),
+  Qb,getStationsfromGroup(getPlacesOfPort(Port,Ct),getStationPlaces(Ct))) and
+  transitionsOfMarking(intersectionMarkings(getMarkingOfGroup(getPlacesOfPort(Port,Ct),Ct),m(Ps,Ts,Tes))) == empty and 
+  transitionEndingsOfMarking(intersectionMarkings(getMarkingOfGroup(getPlacesOfPort(Port,Ct),Ct),m(Ps,Ts,Tes))) == empty 
    )  .
   eq refusing({ type: Ct,queueBehavior: Qb,marking: m(Ps,Ts,Tes) },Port) = false [owise] .
 

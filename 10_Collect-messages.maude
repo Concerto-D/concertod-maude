@@ -65,10 +65,10 @@ fmod COLLECT-EXTERNAL-MESSAGES-ENTERING-PLACE is
   op collectRuleEnteringPlace(_,_,_,_,_,_,_,_,_,_,_) : 
   IdInstances IdInstance Place GroupUses Instance Instance Instances Connections Map{Request,Bool} Set{Request} List{Request} -> List{Request} .
   eq collectRuleEnteringPlace(Idsx,Id1,P,empty,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx) = nil .
-  ceq collectRuleEnteringPlace(Idsx,Id1,P,(Use ! Ps),GUx,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx) = 
+  ceq collectRuleEnteringPlace(Idsx,Id1,P,g(Use ? Ps),GUx,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx) = 
   append(collectConnected(Idsx,Use,Id1,Cx,RcvAnsx,Hx,OutReqx),append(collectAllowed(Idsx,Use,Id1,Ix,Cx,RcvAnsx,Hx,OutReqx), collectRuleEnteringPlace(Idsx,Id1,P,GUx,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx))) 
   if  ((P in Ps) and active(I,Use) == false and active(I',Use) == true  ).   
-  eq collectRuleEnteringPlace(Idsx,Id1,P,(Use ! Ps),GUx,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx) = collectRuleEnteringPlace(Idsx,Id1,P,GUx,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx) [owise] .
+  eq collectRuleEnteringPlace(Idsx,Id1,P,g(Use ? Ps),GUx,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx) = collectRuleEnteringPlace(Idsx,Id1,P,GUx,I,I',Ix,Cx,RcvAnsx,Hx,OutReqx) [owise] .
 
   op collectConnected(_,_,_,_,_,_,_) : IdInstances UsePort IdInstance Connections Map{Request,Bool} Set{Request} List{Request} -> List{Request} . 
   ceq collectConnected(Idsx,Use,Id1,(Id1,Use)--(Id2,Pro),Cx,RcvAnsx,Hx,OutReqx) = [ dst: Id2 , query: isConnected((Id1,Use)--(Id2,Pro)) ] 

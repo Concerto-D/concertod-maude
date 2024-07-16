@@ -69,13 +69,13 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   ---  knowing that the place of the function belongs to this use port, then
   ---  two conditions must be met Connected and allowed of of its provider ports.
   eq connectedAndAllowed(Idsx, Id1, p, empty, I, I', Is, Lx, RcvAnsx) = true .
-  ceq connectedAndAllowed(Idsx, Id1, p, (Use ! ps), GUx, I, I', Is, Lx, RcvAnsx) = 
+  ceq connectedAndAllowed(Idsx, Id1, p, g(Use ? ps), GUx, I, I', Is, Lx, RcvAnsx) = 
   connected(Idsx, Use, Id1, Lx, RcvAnsx) and 
   allowed(Idsx, Use, Id1, Is, Lx, RcvAnsx) and 
   connectedAndAllowed(Idsx ,Id1,p,GUx,I,I',Is,Lx,RcvAnsx) 
   if ((p in ps) and active(I, Use) == false and active(I', Use) == true  ).     
   --- in the previous condition we use active directly since it's a local treatment for the concerned configuration
-  eq connectedAndAllowed(Idsx ,Id1,p,(Use ! ps),GUx,I,I',Is,Lx,RcvAnsx) = connectedAndAllowed(Idsx ,Id1,p,GUx,I,I',Is,Lx,RcvAnsx) [owise] .
+  eq connectedAndAllowed(Idsx ,Id1,p,g(Use ? ps),GUx,I,I',Is,Lx,RcvAnsx) = connectedAndAllowed(Idsx ,Id1,p,GUx,I,I',Is,Lx,RcvAnsx) [owise] .
 
   op connected(_,_,_,_,_) : IdInstances UsePort IdInstance Connections Map{Request, Bool} -> Bool . 
   ---  connection must be verified on noValueYeth user and provider instances

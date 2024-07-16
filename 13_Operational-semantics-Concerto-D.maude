@@ -155,7 +155,7 @@ crl [FiringTransitions] :
       >    
     =>
     < nodeInventory: Idsx,
-      instances: insert(Id1, { type: Ct,queueBehavior: nil,marking: m(initialPlace(Ct) ,empty,empty) }, Ix),
+      instances: insert(Id1, { type: Ct,queueBehavior: nil,marking: m(getInitialPlace(Ct) ,empty,empty) }, Ix),
       connections: Cx,
       program: Px,
       receivedAnswers: RcvAnsx,
@@ -264,7 +264,7 @@ crl [FiringTransitions] :
      history: Hx,
      buffer: Bx 
       >   
-    if (isBehaviorOfComponent(Beh,Ct)) .
+    if (isBehaviorInComponent(Beh,Ct)) .
 
   --- TODO éventuel (à appliquer partout) Fred manipuler les queues directement dans la règle sans evaluation
   --- TODO plus de règles (locales et externes)

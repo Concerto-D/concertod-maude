@@ -52,7 +52,7 @@ fmod LISTENER-SENSOR-EXAMPLE is
         eq systemDeploy12 = t(systemInitiated, stsystemConfigured) .
         eq databaseUpdate = b(databaseUpdate) .
         eq database = { places: databaseInitiated,databaseConfigured,databaseBootstrapped,databaseDeployed,databaseRegistered, 
-        initial: databaseInitiated, stationPlaces: [stdatabaseInitiated](databaseInitiated), [stdatabaseConfigured](databaseConfigured), [stdatabaseBootstrapped](databaseBootstrapped), [stdatabaseDeployed](databaseDeployed), [stdatabaseRegistered](databaseRegistered), transitions: (databaseDeploy11, databaseDeploy12, databaseDeploy2, databaseDeploy3, databaseInterrupt1, databasePause1, databaseUpdate, databaseUninstall1), behaviors: (databaseDeploy, databaseInterrupt, databasePause, databaseUpdate, databaseUninstall), groupUses: empty, groupProvides: databaseService ? (databaseDeployed) } .
+        initial: databaseInitiated, stationPlaces: [stdatabaseInitiated](databaseInitiated), [stdatabaseConfigured](databaseConfigured), [stdatabaseBootstrapped](databaseBootstrapped), [stdatabaseDeployed](databaseDeployed), [stdatabaseRegistered](databaseRegistered), transitions: (databaseDeploy11, databaseDeploy12, databaseDeploy2, databaseDeploy3, databaseInterrupt1, databasePause1, databaseUpdate, databaseUninstall1), behaviors: (databaseDeploy, databaseInterrupt, databasePause, databaseUpdate, databaseUninstall), groupUses: empty, groupProvides: g(databaseService ! (databaseDeployed)) } .
         eq databasePause1 = t(databaseRegistered, stdatabaseBootstrapped) .
         ---eq instListener1 = < id: listener1, type: listener, queueBehavior: nil, marking: m(listenerRunning, empty, empty) > .
         eq instListener1 = { type: listener, queueBehavior: nil, marking: m(listenerRunning, empty, empty) } .
@@ -79,16 +79,16 @@ fmod LISTENER-SENSOR-EXAMPLE is
         ---eq instMysys0 = < id: mysys0, type: system, queueBehavior: nil, marking: m(systemDeployed, empty, empty) > .
         eq instMysys0 = { type: system, queueBehavior: nil, marking: m(systemDeployed, empty, empty) } .
        
-        eq sensor = { places: sensorRunning,sensorConfigured,sensorInstalled,sensorProvisioned,sensorOff, initial: sensorOff, stationPlaces: [stsensorRunning](sensorRunning), [stsensorConfigured](sensorConfigured), [stsensorInstalled](sensorInstalled), [stsensorProvisioned](sensorProvisioned), [stsensorOff](sensorOff), transitions: (sensorDeploy11, sensorDeploy12, sensorDeploy13, sensorDeploy2, sensorDeploy3, sensorDeploy4, sensorPause1, sensorStop1), behaviors: (sensorDeploy, sensorPause, sensorStop), groupUses: sensorRcvservice ! (sensorRunning, sensorConfigured), sensorConfigservice ! (sensorConfigured, sensorRunning, sensorInstalled), groupProvides: empty } .
+        eq sensor = { places: sensorRunning,sensorConfigured,sensorInstalled,sensorProvisioned,sensorOff, initial: sensorOff, stationPlaces: [stsensorRunning](sensorRunning), [stsensorConfigured](sensorConfigured), [stsensorInstalled](sensorInstalled), [stsensorProvisioned](sensorProvisioned), [stsensorOff](sensorOff), transitions: (sensorDeploy11, sensorDeploy12, sensorDeploy13, sensorDeploy2, sensorDeploy3, sensorDeploy4, sensorPause1, sensorStop1), behaviors: (sensorDeploy, sensorPause, sensorStop), groupUses: g(sensorRcvservice ? (sensorRunning, sensorConfigured)), g(sensorConfigservice ? (sensorConfigured, sensorRunning, sensorInstalled)), groupProvides: empty } .
         eq listenerDeploy2 = t(listenerPaused, stlistenerConfigured) .
         eq sensorStop = b(sensorStop1) .
         eq sensorDeploy11 = t(sensorOff, stsensorProvisioned) .
         eq systemInterrupt1 = t(systemDeployed, stsystemConfigured) .
         eq system = { places: systemDeployed,systemConfigured,systemInitiated, initial: systemInitiated, stationPlaces: [stsystemDeployed](systemDeployed), [stsystemConfigured](systemConfigured), [stsystemInitiated](systemInitiated), transitions: (systemDeploy11, systemDeploy12, systemDeploy13, systemDeploy2, systemInterrupt1, systemStop1), behaviors: (systemDeploy, systemInterrupt, 
-        systemStop), groupUses: systemDbservice ! (systemConfigured, systemDeployed), groupProvides: systemService ? (systemDeployed) } .
+        systemStop), groupUses: g(systemDbservice ? (systemConfigured, systemDeployed)), groupProvides: g(systemService ! (systemDeployed)) } .
         eq systemInterrupt = b(systemInterrupt1) .
-        eq listener = { places: listenerRunning,listenerConfigured,listenerPaused,listenerOff, initial: listenerOff, stationPlaces: [stlistenerRunning](listenerRunning), [stlistenerConfigured](listenerConfigured), [stlistenerPaused](listenerPaused), [stlistenerOff](listenerOff), transitions: (listenerDeploy1, listenerDeploy2, listenerDeploy3, listenerUpdate1, listenerDestroy1), behaviors: (listenerDeploy, listenerUpdate, listenerDestroy), groupUses: listenerSysservice ! (listenerConfigured, listenerRunning), 
-        groupProvides: listenerRcv ? (listenerRunning), listenerConfig ? (listenerConfigured, listenerRunning) } .
+        eq listener = { places: listenerRunning,listenerConfigured,listenerPaused,listenerOff, initial: listenerOff, stationPlaces: [stlistenerRunning](listenerRunning), [stlistenerConfigured](listenerConfigured), [stlistenerPaused](listenerPaused), [stlistenerOff](listenerOff), transitions: (listenerDeploy1, listenerDeploy2, listenerDeploy3, listenerUpdate1, listenerDestroy1), behaviors: (listenerDeploy, listenerUpdate, listenerDestroy), groupUses: g(listenerSysservice ? (listenerConfigured, listenerRunning)), 
+        groupProvides: g(listenerRcv ! (listenerRunning)), g(listenerConfig ! (listenerConfigured, listenerRunning)) } .
         eq listenerDestroy1 = t(listenerPaused, stlistenerOff) .
         eq connectionsNode3 = (sensor1,sensorRcvservice)--(listener1,listenerRcv), (sensor1,sensorConfigservice)--(listener1,listenerConfig)  .
         eq listenerDeploy3 = t(listenerConfigured, stlistenerRunning) .
