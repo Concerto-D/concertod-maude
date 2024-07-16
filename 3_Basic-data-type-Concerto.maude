@@ -281,13 +281,15 @@ fmod BEHAVIOR is
 
   op b(_) : Transitions -> Behavior .   
   ---a behavoir is a set of transitions
+
+  --- Helene the pushB(id,b) is identified not the behavior itself
   op (_;_) : IdBehavior Behavior -> BehaviorWithId . 
   ---BehaviorWithId is an identified behavior
 
-  op existIdBehaviorehListBeh(_,_) : IdBehavior List{BehaviorWithId} -> Bool .  
-  ---to check if a behavior identifier is used in the behavior list  
-  eq existIdBehaviorehListBeh(IdBehx, nil) = false .
-  eq existIdBehaviorehListBeh(IdBehx, (IdBehx ; Beh) BehL) = true .
-  eq existIdBehaviorehListBeh(IdBehx, (IdBehy ; Beh) BehL) = existIdBehaviorehListBeh(IdBehx,BehL) [owise] .
+  op isBehaviorinList(_,_) : IdBehavior List{BehaviorWithId} -> Bool .
+  ---to check if a behavior identifier exists in the behavior list  
+  eq isBehaviorinList(IdBehx, nil) = false .
+  eq isBehaviorinList(IdBehx, (IdBehx ; Beh) BehL) = true .
+  eq isBehaviorinList(IdBehx, (IdBehy ; Beh) BehL) = isBehaviorinList(IdBehx,BehL) [owise] .
 
 endfm

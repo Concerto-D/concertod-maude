@@ -1,10 +1,10 @@
 # fichier 3
 ## Notations
-- C/Cs component types
+- Ct/Cts component types
 - Ci/Cis component instances
-- Pl/Pls Places
+- P/Ps Places
 - T/Ts Transitions
-- Co/Cos Connections
+- C/Cs Connections
 - Port/Ports
 	- Use
 	- Provide
@@ -83,25 +83,22 @@
  	- eq getTransitionsofPlace((p->Ss),Ts),p) = (p->Ss), getTransitionsofPlace(Ts,p)  .
  	- enlever l197?
  - op removeTransitionEndingStation(_,_) : TransitionEndings Station -> TransitionEndings . 
- 	- ? voir utilisation
- - op transitionsOfPlacesWithRespectToStations(_,_,_) : Places Transitions Stations -> Transitions .
+ 	- rmTesOfStation
+ - **op transitionsOfPlacesWithRespectToStations(_,_,_) : Places Transitions Stations -> Transitions .**
  	- ?
  - op transitionEndingsOfOneTransition(_,_) : Transition Stations -> TransitionEndings .
- 	- getEndingsfTransition(_,_)
+ 	- getEndingsofTransition(_,_)
  - op transitionEndingsOfTransitions(_) : Transitions -> TransitionEndings .
  	- getEndingsfTransitions
- - op isSatisfiedTransitionEndingStation(_,_,_) : Station Transitions TransitionEndings -> Bool .
+ - **op isSatisfiedTransitionEndingStation(_,_,_) : Station Transitions TransitionEndings -> Bool .**
  	- ?
- - op placesOfMarking : Marking -> Places .
+ - **op placesOfMarking : Marking -> Places .**
  	- getMarkedPlace
  	- same for all
  - op  intersectionMarkings(_,_) : Marking Marking -> Marking . 
  	- intersectMarkings
- - BehaviorWithId
+ - **BehaviorWithId**
  	- est-ce qu'on ne veut pas identifier le push plutôt que le behavior ?
- - op b(_) : Transitions -> Behavior .
- 	- getBehaviorfTransition?
  - op existIdBehaviorehListBeh(_,_) : IdBehavior List{BehaviorWithId} -> Bool .
- 	- ?
- 	- check où c'est utilisé
+ 	- isBehaviorinList
  	

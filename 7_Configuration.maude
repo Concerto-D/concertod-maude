@@ -65,7 +65,7 @@ fmod CONCERTO-D-CONFIGURATION is
   eq localEvaluation ([ dst: Id , query: onDisconnect(L) ], Ix,Lx,Px) = disconnect(L,Px) . 
  
   eq localEvaluation ([ dst: Id , query: isCompleted(IdBeh) ], (Id |-> { type: Ct,queueBehavior: Qb,marking: Mark },Ix),Lx,Px) =  
-  (not existIdBehaviorehListBeh(IdBeh,Qb) ) and notPushBProg(Id,IdBeh,Px) .
+  (not isBehaviorinList(IdBeh,Qb) ) and notPushBProg(Id,IdBeh,Px) .
   --- the evaluation of completed of an IdBeh depends on whether the push IdBeh exists in the program or in the behavior list.
   eq localEvaluation ([ dst: Id , query: isCompleted(IdBeh) ], Ix,Lx,Px) =   notPushBProg(Id,IdBeh,Px) [owise] . 
   --- special case the instance doesn't (the instance is not yet added or it is deleted)
