@@ -54,13 +54,11 @@ fmod LISTENER-SENSOR-EXAMPLE is
         eq database = { places: databaseInitiated,databaseConfigured,databaseBootstrapped,databaseDeployed,databaseRegistered, 
         initial: databaseInitiated, stationPlaces: [stdatabaseInitiated](databaseInitiated), [stdatabaseConfigured](databaseConfigured), [stdatabaseBootstrapped](databaseBootstrapped), [stdatabaseDeployed](databaseDeployed), [stdatabaseRegistered](databaseRegistered), transitions: (databaseDeploy11, databaseDeploy12, databaseDeploy2, databaseDeploy3, databaseInterrupt1, databasePause1, databaseUpdate, databaseUninstall1), behaviors: (databaseDeploy, databaseInterrupt, databasePause, databaseUpdate, databaseUninstall), groupUses: empty, groupProvides: g(databaseService ! (databaseDeployed)) } .
         eq databasePause1 = t(databaseRegistered, stdatabaseBootstrapped) .
-        ---eq instListener1 = < id: listener1, type: listener, queueBehavior: nil, marking: m(listenerRunning, empty, empty) > .
         eq instListener1 = { type: listener, queueBehavior: nil, marking: m(listenerRunning, empty, empty) } .
         
         eq listenerDeploy = b(listenerDeploy1,listenerDeploy2,listenerDeploy3) .
         eq systemStop1 = t(systemDeployed, stsystemInitiated) .
         eq databaseUninstall = b(databaseUninstall1) .
-        ---eq instSensor1 = < id: sensor1, type: sensor, queueBehavior: nil, marking: m(sensorRunning, empty, empty) > .
         eq instSensor1 = { type: sensor, queueBehavior: nil, marking: m(sensorRunning, empty, empty) } .
        
         eq sensorDeploy4 = t(sensorConfigured, stsensorRunning) .
@@ -76,7 +74,6 @@ fmod LISTENER-SENSOR-EXAMPLE is
         eq databaseDeploy = b(databaseDeploy11,databaseDeploy12,databaseDeploy2,databaseDeploy3) .
         eq sensorPause = b(sensorPause1) .
         eq connectionsNode2 = (mysys0,systemDbservice)--(mydb0,databaseService), (listener1,listenerSysservice)--(mysys0,systemService), (sensor1,sensorRcvservice)--(listener1,listenerRcv), (sensor1,sensorConfigservice)--(listener1,listenerConfig )  .
-        ---eq instMysys0 = < id: mysys0, type: system, queueBehavior: nil, marking: m(systemDeployed, empty, empty) > .
         eq instMysys0 = { type: system, queueBehavior: nil, marking: m(systemDeployed, empty, empty) } .
        
         eq sensor = { places: sensorRunning,sensorConfigured,sensorInstalled,sensorProvisioned,sensorOff, initial: sensorOff, stationPlaces: [stsensorRunning](sensorRunning), [stsensorConfigured](sensorConfigured), [stsensorInstalled](sensorInstalled), [stsensorProvisioned](sensorProvisioned), [stsensorOff](sensorOff), transitions: (sensorDeploy11, sensorDeploy12, sensorDeploy13, sensorDeploy2, sensorDeploy3, sensorDeploy4, sensorPause1, sensorStop1), behaviors: (sensorDeploy, sensorPause, sensorStop), groupUses: g(sensorRcvservice ? (sensorRunning, sensorConfigured)), g(sensorConfigservice ? (sensorConfigured, sensorRunning, sensorInstalled)), groupProvides: empty } .
@@ -97,7 +94,6 @@ fmod LISTENER-SENSOR-EXAMPLE is
         eq sensorDeploy3 = t(sensorInstalled, stsensorConfigured) .
         eq systemStop = b(systemStop1) .
         eq databaseInterrupt1 = t(databaseDeployed, stdatabaseRegistered) .
-        ---eq instMydb0 = < id: mydb0, type: database, queueBehavior: nil, marking: m(databaseDeployed, empty, empty) > .
         eq instMydb0 = { type: database, queueBehavior: nil, marking: m(databaseDeployed, empty, empty) } .
         eq listenerDeploy1 = t(listenerOff, stlistenerPaused) .
         eq databaseDeploy3 = t(databaseBootstrapped, stdatabaseDeployed) .
@@ -127,11 +123,3 @@ fmod LISTENER-SENSOR-EXAMPLE is
         eq globalsystem = confNode1, confNode2, confNode3 .
 
 endfm
-
-***(
-          op < nodeInventory: _, instances: _, 
-       connections: _, program: _, 
-       receivedAnswers: _, outgoingAnswers: _, outgoingRequests: _, 
-       history: _ > : 
-  IdInstances Instance
-)

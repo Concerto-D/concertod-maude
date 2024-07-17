@@ -3,9 +3,9 @@ fmod UPDATE-COMMUNICATION-MESSAGES is
 
     inc CONCERTO-D-CONFIGURATION .
 
-    var Idsx : IdInstances . 
-    var Cx : Connections .
-    var RcvAnsx : Map{Request,Bool} .
+    var Ids : IdInstances . 
+    var Cs : Connections .
+    var RcvAns : Map{Request,Bool} .
     var Val : Bool .
     var Use : UsePort .
     var Pro : ProvidePort .
@@ -21,17 +21,17 @@ fmod UPDATE-COMMUNICATION-MESSAGES is
     --- which claims the active function which has a false evaluation. 
     --- Note that the expected result of this op is Id2 if it exists, otherwise empty, 
     --- so the result is a set that can contain either an empty element or a single identifier.
-    eq IdInstanceConnectionWhenSendActive((((Id1,Use)--(Id2,Pro)),Cx),[ dst: Id1 , query: isActive(Use) ],false) = Id2 . 
-    eq IdInstanceConnectionWhenSendActive(Cx,R,Val) = empty [owise] . 
+    eq IdInstanceConnectionWhenSendActive((((Id1,Use)--(Id2,Pro)),Cs),[ dst: Id1 , query: isActive(Use) ],false) = Id2 . 
+    eq IdInstanceConnectionWhenSendActive(Cs,R,Val) = empty [owise] . 
     
     --- HELENE only one case is handled (provide ask a use port its activity)?
     --- HELENE not enough time to change this in the current version but future work
     op  upDateReceivedAnswers(_,_) : Map{Request,Bool} IdInstances -> Map{Request,Bool} .  
     --- The update is related only to message related to the refusing function who we know its identifier if exist.
-    eq  upDateReceivedAnswers(RcvAnsx,empty) = RcvAnsx .
-    eq  upDateReceivedAnswers(empty,Idsx) = empty .
-    ceq upDateReceivedAnswers(([ dst: Id1 , query: isRefusing(Pro) ] |-> Val, RcvAnsx), Idsx) = RcvAnsx if (Id1 in Idsx ) .
-    eq  upDateReceivedAnswers((R |-> Val, RcvAnsx), Idsx) = R |-> Val, RcvAnsx [owise] .
+    eq  upDateReceivedAnswers(RcvAns,empty) = RcvAns .
+    eq  upDateReceivedAnswers(empty,Ids) = empty .
+    ceq upDateReceivedAnswers(([ dst: Id1 , query: isRefusing(Pro) ] |-> Val, RcvAns), Ids) = RcvAns if (Id1 in Ids) .
+    eq  upDateReceivedAnswers((R |-> Val, RcvAns), Ids) = R |-> Val, RcvAns [owise] .
     
 endfm
 
