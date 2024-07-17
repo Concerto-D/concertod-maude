@@ -1,4 +1,6 @@
 
+--- Helene voir si on peut simplifier au moins IdInstanceConnectionWhenSendActive
+
 fmod UPDATE-COMMUNICATION-MESSAGES is
 
     inc CONCERTO-D-CONFIGURATION .
