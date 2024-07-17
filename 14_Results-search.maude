@@ -127,7 +127,7 @@ search [1] globalsystem =>*
  outgoingRequests: OutReq2:List{Request},  
  history: hist2:Set{Request},
  buffer: Buf2:List{Message} >, n:Net 
- such that (isBehaviorinList(idb4,qblistener1:List{BehaviorWithId}) or not (noPushB(listener1,idb4,progNode2:Program)) ) .
+ such that (isBehaviorinList(idb4,qblistener1:List{BehaviorWithId}) or not (isCompletedLocal(listener1,idb4,progNode2:Program)) ) .
 
 
 --- the result is as follows:

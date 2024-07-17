@@ -43,10 +43,10 @@ fmod PROGRAM is
   eq onPushB(pushB(Id1,Beh,IdBeh), Id1,IdBeh ) = true .
   eq onPushB(Inst, Id1,IdBeh ) = false [owise] .
 
-  op noPushB(_,_,_) : IdInstance IdBehavior Program -> Bool .  
+  op isCompletedLocal(_,_,_) : IdInstance IdBehavior Program -> Bool .  
   ---checks for a given program if there is a pushB instruction
-  eq noPushB(Id1,IdBeh, nil) = true .
-  ceq noPushB(Id1,IdBeh,Inst Rx) = noPushB(Id1,IdBeh,Rx) if (not onPushB(Inst,Id1,IdBeh)) .
-  eq noPushB(Id1,IdBeh,Inst Rx) = false [owise] .
+  eq isCompletedLocal(Id1,IdBeh, nil) = true .
+  ceq isCompletedLocal(Id1,IdBeh,Inst Rx) = isCompletedLocal(Id1,IdBeh,Rx) if (not onPushB(Inst,Id1,IdBeh)) .
+  eq isCompletedLocal(Id1,IdBeh,Inst Rx) = false [owise] .
   
 endfm

@@ -22,7 +22,7 @@ fmod INSTANCE is
   var Ct : ComponentType .
   var Is : Instances .
 
-  --- Helene TODO check BehaviorWithId with file 3
+  --- Helene ??? TODO check BehaviorWithId with file 3
   --- PushId / QueuedBeh
   op { type: _, queueBehavior: _, marking: _ } : 
   ComponentType List{BehaviorWithId} Marking -> Instance [ctor] .
@@ -88,7 +88,7 @@ fmod INSTANCE is
    )  .
   eq isRefusingLocal({ type: Ct,queueBehavior: Qb,marking: m(Ps,Ts,Tes) },Port) = false [owise] .
 
-  --- Helene ???
+  --- Helene ??? ça me semble bien compliqué
   op activeMarking(_,_,_) : Instance Port Marking -> Bool . 
   --- active depending a marking
   eq activeMarking({ type: Ct,queueBehavior: Qb,marking: m(Ps,Ts,Tes) },Port,M) = 

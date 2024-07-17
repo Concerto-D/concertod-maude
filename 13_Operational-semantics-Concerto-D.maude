@@ -238,9 +238,9 @@ crl [FiringTransitions] :
       > 
     if
     ( 
-    evaluation([ dst: Id1 , query: onDisconnect((Id1,Use)--(Id2,pro)) ],Idsx,RcvAnsx,Ix,Cx,dcon((Id1,Use)--(Id2,pro)) Px) == true and
-    evaluation([ dst: Id2 , query: onDisconnect((Id1,Use)--(Id2,pro)) ],Idsx,RcvAnsx,Ix,Cx,dcon((Id1,Use)--(Id2,pro)) Px) == true and 
-    evaluation([ dst: Id1 , query: isActive(Use) ],Idsx,RcvAnsx,Ix,Cx,dcon((Id1,Use)--(Id2,pro)) Px) == false
+    funCall([ dst: Id1 , query: onDisconnect((Id1,Use)--(Id2,pro)) ],Idsx,RcvAnsx,Ix,Cx,dcon((Id1,Use)--(Id2,pro)) Px) == true and
+    funCall([ dst: Id2 , query: onDisconnect((Id1,Use)--(Id2,pro)) ],Idsx,RcvAnsx,Ix,Cx,dcon((Id1,Use)--(Id2,pro)) Px) == true and 
+    funCall([ dst: Id1 , query: isActive(Use) ],Idsx,RcvAnsx,Ix,Cx,dcon((Id1,Use)--(Id2,pro)) Px) == false
     ) .
   
   crl [PushingBehavior] : 
@@ -290,7 +290,7 @@ crl [FiringTransitions] :
       history: Hx,
       buffer: Bx 
       >  
-    if (evaluation([ dst: Id2 , query: isCompleted(IdBeh) ],Idsx,RcvAnsx,Ix,Cx,wait(Id2,IdBeh) Px) == true ) .
+    if (funCall([ dst: Id2 , query: isCompleted(IdBeh) ],Idsx,RcvAnsx,Ix,Cx,wait(Id2,IdBeh) Px) == true ) .
    
   -----------------------------------------------Rules for collecting messages related to external used functions------------------------------------------
   ---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -469,7 +469,7 @@ rl [SendRequest] :
       instances: Ix, 
       connections: Cx, 
       program: Px, 
-      receivedAnswers: upDateReceivedAnswers(RcvAnsx,IdInstanceConnectionWhenSendActive(Cx,R,localEvaluation(R,Ix,Cx,Px))) ,
+      receivedAnswers: upDateReceivedAnswers(RcvAnsx,IdInstanceConnectionWhenSendActive(Cx,R,localFunCall(R,Ix,Cx,Px))) ,
       outgoingAnswers: OutAnsx, 
       outgoingRequests: OutReqx, 
       history: Hx,
@@ -482,7 +482,7 @@ rl [SendRequest] :
       outgoingAnswers: OutAnsy, 
       outgoingRequests: OutReqy,
       history: (R, Hy),
-      buffer: append(By, ansMsg([ req: R, value: localEvaluation(R,Ix,Cx,Px) ])) > 
+      buffer: append(By, ansMsg([ req: R, value: localFunCall(R,Ix,Cx,Px) ])) > 
     if (not occurs(reqMsg(R), By)) .
 
     rl [ReceiveRequest] : 

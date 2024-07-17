@@ -12,66 +12,71 @@ fmod CONCERTO-D-CONFIGURATION is
   pr LIST{Request} . 
   pr LIST{Message} .
 
-  var Ix : Instances .
+  var Is : Instances .
   var I1 : Instance .
-  var Idsx : IdInstances .
+  var Ids : IdInstances .
   var IdBeh : IdBehavior .
   var Ct : ComponentType .
   var Port : Port .
-  var Lx : Connections .
-  var Px : Program .
-  var L : Connection .
+  var Cs : Connections .
+  var RP : Program .
+  var C : Connection .
   var Qb : List{BehaviorWithId} .
-  var Mark : Marking .
+  var M : Marking .
   var Q : Query .
   var Id : IdInstance .
   vars R1 R2 : Request .
-  var RcvAnsx : Map{Request, Bool} .
+  var RcvAns : Map{Request, Bool} .
   var Val : Bool .
-  var Bx : List{Message} .
  
-  op < nodeInventory: _, instances: _, 
-       connections: _, program: _, 
-       receivedAnswers: _, outgoingAnswers: _, outgoingRequests: _, 
-       history: _,buffer: _ > : 
-  IdInstances Instances Connections Program 
-  Map{Request, Bool} List{Request}  List{Request} 
-  Set{Request} List{Message} -> LocalConfiguration [ctor].
+  op  < nodeInventory: _, 
+        instances: _, 
+        connections: _,
+        program: _,
+        receivedAnswers: _, 
+        outgoingAnswers: _, 
+        outgoingRequests: _, 
+        history: _,
+        buffer: _ 
+      > : 
+      IdInstances Instances Connections Program 
+      Map{Request, Bool} List{Request} List{Request} 
+      Set{Request} List{Message} -> LocalConfiguration [ctor].
 
   --- some ops on configuration
- op isProcessedLocallyEvaluation(_,_) : Request IdInstances -> Bool .  
+
+  op isLocal(_,_) : Request IdInstances -> Bool .  
   --- determine whether a Request is related to a local treatement.
- eq isProcessedLocallyEvaluation([ dst: Id , query: Q ], Idsx) = Id in Idsx .
+  eq isLocal([ dst: Id , query: Q ], Ids) = Id in Ids .
 
+  op externFunCall(_,_) : Request Map{Request, Bool}  -> Bool .  
+  --- get the evalaution of an external function related to a Request from Map{Request, Bool}
+  eq externFunCall(R1, R1 |-> Val, RcvAns ) = Val .
+  --- eq externFunCall(R1, RcvAns ) =  noValueYet [owise] .
 
-  op externEvaluation(_,_) : Request Map{Request, Bool}  -> Bool .  
-  ---obtain the evalaution of an external function related to a Request from Map{Request, Bool}
-  eq externEvaluation(R1, R1 |-> Val, RcvAnsx ) = Val .
-  --- eq externEvaluation(R1, RcvAnsx ) =  noValueYet [owise] .
-
-  op localEvaluation(_,_,_,_) : Request Instances Connections Program -> Bool .  
+  op localFunCall(_,_,_,_) : Request Instances Connections Program -> Bool .  
   ---- gives the evaluation of a local function related to Request according to certain parameters of a given configuration
   
   ---if the instance does not yet exist, then the active local function: isActiveLocal(Id1, Port) = false, otherwise it is the local active function within the instance. 
-  eq localEvaluation ([ dst: Id , query: isActive(Port) ],(Id |-> I1, Ix), Lx, Px) =  isActiveLocal(I1, Port) .
-  --- eq localEvaluation ([ dst: Id , query: isActive(Port) ],Ix,Lx,Px) =  noValueYet [owise] .
+  eq localFunCall ([ dst: Id , query: isActive(Port) ],(Id |-> I1, Is), Cs, RP) =  isActiveLocal(I1, Port) .
+  --- eq localFunCall ([ dst: Id , query: isActive(Port) ],Is,Cs,RP) =  noValueYet [owise] .
 
   ---if the instance does not yet exist, then the refusing local function: isRefusingLocal(Id1,Port) = true, otherwise it is the local refusing function within the instance.
-  eq localEvaluation ([ dst: Id , query: isRefusing(Port) ], (Id |-> I1, Ix), Lx, Px) = isRefusingLocal(I1, Port) .
-  ---eq localEvaluation ([ dst: Id , query: isRefusing(Port) ], Ix, Lx, Px) =  noValueYet [owise] .
+  eq localFunCall ([ dst: Id , query: isRefusing(Port) ], (Id |-> I1, Is), Cs, RP) = isRefusingLocal(I1, Port) .
+  ---eq localFunCall ([ dst: Id , query: isRefusing(Port) ], Ix, Lx, Px) =  noValueYet [owise] .
       
-  eq localEvaluation ([ dst: Id , query: isConnected(L) ], Ix,Lx,Px) = L in Lx . 
+  eq localFunCall ([ dst: Id , query: isConnected(C) ], Is,Cs,RP) = C in Cs . 
 
-  eq localEvaluation ([ dst: Id , query: onDisconnect(L) ], Ix,Lx,Px) = onDisconnectLocal(L,Px) . 
+  eq localFunCall ([ dst: Id , query: onDisconnect(C) ], Is,Cs,RP) = onDisconnectLocal(C,RP) . 
  
-  eq localEvaluation ([ dst: Id , query: isCompleted(IdBeh) ], (Id |-> { type: Ct,queueBehavior: Qb,marking: Mark },Ix),Lx,Px) =  
-  (not isBehaviorinList(IdBeh,Qb) ) and noPushB(Id,IdBeh,Px) .
+  eq localFunCall ([ dst: Id , query: isCompleted(IdBeh) ], (Id |-> { type: Ct,queueBehavior: Qb,marking: M },Is),Cs,RP) =  
+  (not isBehaviorinList(IdBeh,Qb) ) and isCompletedLocal(Id,IdBeh,RP) .
   --- the evaluation of completed of an IdBeh depends on whether the push IdBeh exists in the program or in the behavior list.
-  eq localEvaluation ([ dst: Id , query: isCompleted(IdBeh) ], Ix,Lx,Px) =   noPushB(Id,IdBeh,Px) [owise] . 
+  eq localFunCall ([ dst: Id , query: isCompleted(IdBeh) ], Is,Cs,RP) =  isCompletedLocal(Id,IdBeh,RP) [owise] . 
   --- special case the instance doesn't (the instance is not yet added or it is deleted)
 
-  op evaluation(_,_,_,_,_,_) :  Request IdInstances Map{Request, Bool} Instances Connections Program -> Bool . 
+  op funCall(_,_,_,_,_,_) :  Request IdInstances Map{Request, Bool} Instances Connections Program -> Bool . 
   --- gives the evaluation of a function related to Request according to the two cases, the function is local or external
-  eq evaluation(R1,Idsx,RcvAnsx, Ix,Lx,Px ) = if (isProcessedLocallyEvaluation(R1,Idsx)) then localEvaluation(R1,Ix,Lx,Px) else externEvaluation(R1,RcvAnsx) fi .
+  eq funCall(R1,Ids,RcvAns, Is,Cs,RP ) = if (isLocal(R1,Ids)) then localFunCall(R1,Is,Cs,RP) else externFunCall(R1,RcvAns) fi .
 
 endfm
