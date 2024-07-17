@@ -76,6 +76,9 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   --- in the previous condition we use active directly since it's a local treatment for the concerned configuration
   eq isConnectedAndAllowed(Ids,Id1,P,g(Use ? Ps),GU,I,I',Is,Cs,RcvAns) = isConnectedAndAllowed(Ids,Id1,P,GU,I,I',Is,Cs,RcvAns) [owise] .
 
+  --- Helene I think here it cannot be changed to isConnectedLocal as using funCall
+  --- same for allowed
+
   op connected(_,_,_,_,_) : IdInstances UsePort IdInstance Connections Map{Request, Bool} -> Bool . 
   ---  connection must be verified on noValueYet user and provider instances
   ceq connected(Ids, Use, Id1, (Id1, Use)--(Id2, Pro), Cs, RcvAns) = true 
