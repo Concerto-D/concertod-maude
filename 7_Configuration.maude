@@ -52,17 +52,17 @@ fmod CONCERTO-D-CONFIGURATION is
   op localEvaluation(_,_,_,_) : Request Instances Connections Program -> Bool .  
   ---- gives the evaluation of a local function related to Request according to certain parameters of a given configuration
   
-  ---if the instance does not yet exist, then the active local function: active(Id1, Port) = false, otherwise it is the local active function within the instance. 
-  eq localEvaluation ([ dst: Id , query: isActive(Port) ],(Id |-> I1, Ix), Lx, Px) =  active(I1, Port) .
+  ---if the instance does not yet exist, then the active local function: isActiveLocal(Id1, Port) = false, otherwise it is the local active function within the instance. 
+  eq localEvaluation ([ dst: Id , query: isActive(Port) ],(Id |-> I1, Ix), Lx, Px) =  isActiveLocal(I1, Port) .
   --- eq localEvaluation ([ dst: Id , query: isActive(Port) ],Ix,Lx,Px) =  noValueYet [owise] .
 
-  ---if the instance does not yet exist, then the refusing local function: refusing(Id1,Port) = true, otherwise it is the local refusing function within the instance.
-  eq localEvaluation ([ dst: Id , query: isRefusing(Port) ], (Id |-> I1, Ix), Lx, Px) = refusing(I1, Port) .
+  ---if the instance does not yet exist, then the refusing local function: isRefusingLocal(Id1,Port) = true, otherwise it is the local refusing function within the instance.
+  eq localEvaluation ([ dst: Id , query: isRefusing(Port) ], (Id |-> I1, Ix), Lx, Px) = isRefusingLocal(I1, Port) .
   ---eq localEvaluation ([ dst: Id , query: isRefusing(Port) ], Ix, Lx, Px) =  noValueYet [owise] .
       
   eq localEvaluation ([ dst: Id , query: isConnected(L) ], Ix,Lx,Px) = L in Lx . 
 
-  eq localEvaluation ([ dst: Id , query: onDisconnect(L) ], Ix,Lx,Px) = onDcon(L,Px) . 
+  eq localEvaluation ([ dst: Id , query: onDisconnect(L) ], Ix,Lx,Px) = onDisconnectLocal(L,Px) . 
  
   eq localEvaluation ([ dst: Id , query: isCompleted(IdBeh) ], (Id |-> { type: Ct,queueBehavior: Qb,marking: Mark },Ix),Lx,Px) =  
   (not isBehaviorinList(IdBeh,Qb) ) and noPushB(Id,IdBeh,Px) .

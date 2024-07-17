@@ -73,7 +73,7 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   connected(Idsx, Use, Id1, Lx, RcvAnsx) and 
   allowed(Idsx, Use, Id1, Is, Lx, RcvAnsx) and 
   connectedAndAllowed(Idsx ,Id1,p,GUx,I,I',Is,Lx,RcvAnsx) 
-  if ((p in ps) and active(I, Use) == false and active(I', Use) == true  ).     
+  if ((p in ps) and isActiveLocal(I, Use) == false and isActiveLocal(I', Use) == true  ).     
   --- in the previous condition we use active directly since it's a local treatment for the concerned configuration
   eq connectedAndAllowed(Idsx ,Id1,p,g(Use ? ps),GUx,I,I',Is,Lx,RcvAnsx) = connectedAndAllowed(Idsx ,Id1,p,GUx,I,I',Is,Lx,RcvAnsx) [owise] .
 
