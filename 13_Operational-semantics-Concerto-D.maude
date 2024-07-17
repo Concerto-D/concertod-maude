@@ -59,7 +59,7 @@ crl [FiringTransitions] :
       buffer: Bx 
       >  
     if ( getTransitionsofPlace(TsBeh,P) =/= empty and
-        safeToFire(Idsx,m(Ps,union(Ts, getTransitionsofPlace(TsBeh,P) ),Tes) ,(Id1 |-> { type: Ct,
+        isSafeToFire(Idsx,m(Ps,union(Ts, getTransitionsofPlace(TsBeh,P) ),Tes) ,(Id1 |-> { type: Ct,
         queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(P, Ps,Ts,Tes) } ,Ix),RcvAnsx,getPConnectionsofCInst(Id1, Cx))) . 
 
 
@@ -110,7 +110,7 @@ crl [FiringTransitions] :
       >  
     if 
       (isSatisfiedTransitionEndingStation(S,TsBeh,te(t(P1,S,Ss),S), Tes) and 
-      connectedAndAllowed(Idsx,Id1,getPlacefromStation(S,getStationPlaces(Ct)), getUsePorts(Ct), { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(Ps, Ts, te(t(P1,S,Ss),S), Tes) },
+      isConnectedAndAllowed(Idsx,Id1,getPlacefromStation(S,getStationPlaces(Ct)), getUsePorts(Ct), { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(Ps, Ts, te(t(P1,S,Ss),S), Tes) },
       { type: Ct,queueBehavior: (IdBeh ; b(TsBeh)) Qb,marking: m(getPlacefromStation(S,getStationPlaces(Ct)),Ps, Ts, rmTesOfStation(Tes,S) ) } ,Ix, Cx,RcvAnsx)
       ) .  
 

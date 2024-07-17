@@ -1,4 +1,7 @@
 
+--- Helene NET here is not about internal net of a component
+--- change the name
+
 fmod NET-D-CONFIGURATION is 
 
     --- formalizes a distributed system of several nodes as a set on its local configurations.
