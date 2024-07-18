@@ -45,7 +45,7 @@
 
 load 1_Basic-sorts
 load 2_Views 
-load 3_Basic-data-type-Concerto
+load 3_Basic-types
 load 4_Component-type
 load 5_Program
 load 6_Component-instance
