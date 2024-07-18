@@ -1,5 +1,3 @@
---- TODO Fred program structure to specify
-
 fmod PROGRAM is
   
   inc COMPONENT-TYPE .
@@ -13,18 +11,18 @@ fmod PROGRAM is
   var Rx : Program .
   var L : Connection .
   var Inst : Instruction .
-  var Id1 : IdInstance .
-  var IdBeh : IdBehavior .
+  var Id1 : Id .
+  var IdBeh : Id .
   var Beh : Behavior .
 
-  op add(_,_) : IdInstance ComponentType -> Instruction [ctor] .
-  op del(_) : IdInstance -> Instruction [ctor] .
-  op pushB(_,_,_) : IdInstance Behavior IdBehavior -> Instruction [ctor] .
+  op add(_,_) : Id ComponentType -> Instruction [ctor] .
+  op del(_) : Id -> Instruction [ctor] .
+  op pushB(_,_,_) : Id Behavior Id -> Instruction [ctor] .
   op con(_) : Connection -> Instruction [ctor] .
   op dcon(_) : Connection -> Instruction [ctor] .
-  op wait(_,_) : IdInstance IdBehavior -> Instruction [ctor] .
+  op wait(_,_) : Id Id -> Instruction [ctor] .
 
- --- some operations related to program used later
+  --- some operations related to program used later
   op noDcon(_,_) :  Connection Program -> Bool .  
   ---check for a given connection if there is a dcon instruction in a given program
   eq noDcon(L,nil) = true .
@@ -32,21 +30,25 @@ fmod PROGRAM is
 
   op onDisconnectLocal(_,_) : Connection Program -> Bool .
   op onDisconnectLocal(_,_) : Connection Program -> Bool .  
-  --- used to check that the dcon instruction is the current instruction or has already been executed
-  --- then it is the same as checking that the remaining program does not contain dcon after the current instruction
-  --- this reasoning is correct if we assume that Concerto programs are well constructed.
+  --- used to check that the dcon instruction is the current instruction or has
+  --- already been executed then it is the same as checking that the remaining 
+  --- program does not contain dcon after the current instruction
+  --- this reasoning is correct if we assume that Concerto programs are well 
+  --- formed.
   eq onDisconnectLocal(L,nil) = true .
   eq onDisconnectLocal(L,Inst Rx) = noDcon(L,Rx) .
   
-  op onPushB(_,_,_) : Instruction IdInstance IdBehavior -> Bool .  
-  --- checks whether the current instruction is a push instruction for a given IdInstance and IdBehavior
+  op onPushB(_,_,_) : Instruction Id Id -> Bool .  
+  --- checks whether the current instruction is a push instruction 
+  --- for a given Id and Id
   eq onPushB(pushB(Id1,Beh,IdBeh), Id1,IdBeh ) = true .
   eq onPushB(Inst, Id1,IdBeh ) = false [owise] .
 
-  op isCompletedLocal(_,_,_) : IdInstance IdBehavior Program -> Bool .  
+  op isCompletedLocal(_,_,_) : Id Id Program -> Bool .  
   ---checks for a given program if there is a pushB instruction
   eq isCompletedLocal(Id1,IdBeh, nil) = true .
-  ceq isCompletedLocal(Id1,IdBeh,Inst Rx) = isCompletedLocal(Id1,IdBeh,Rx) if (not onPushB(Inst,Id1,IdBeh)) .
+  ceq isCompletedLocal(Id1,IdBeh,Inst Rx) = 
+    isCompletedLocal(Id1,IdBeh,Rx) if (not onPushB(Inst,Id1,IdBeh)) .
   eq isCompletedLocal(Id1,IdBeh,Inst Rx) = false [owise] .
   
 endfm

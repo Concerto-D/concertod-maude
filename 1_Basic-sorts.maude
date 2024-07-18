@@ -1,6 +1,8 @@
 fmod DECLARATION-SORTS is 
 
-  sorts Place Station StationPlace  IdInstance Send Receive SentHistory Connection Instance LocalConfiguration .
-  sorts Transition TransitionEnding Behavior BehaviorWithId GroupUse GroupProvide Instruction Request Answer Message .
+  sorts Place Station StationPlace Id Send Receive SentHistory  
+        Connection Instance LocalConfiguration Transition TransitionEnding 
+        Behavior PushedBehavior GroupUse GroupProvide 
+        Instruction Question Answer Message .
 
 endfm

@@ -1,139 +1,76 @@
-------------------------------------------Model Checking Invariants Through Search----------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
+mod EXAMPLE is 
+  inc OPERATIONAL-SEMANTICS .
+  inc LISTENER-SENSOR-EXAMPLE . 
+endm 
 
---- this part focuses on a simpler, yet very useful, model-checking capability, 
---- namely, the model checking of invariants, which can be accomplished just by using
---- the search command.
---- we take the case study of reconfiguration program of one listener and one sensor (file: 12_example_update_cps)
---- we can verify some properties on the reconfiguration step of this example. 
---- two examples of properties are given below:
+--- Search for a state of the set of nodes where the programs 
+--- have been fully executed. We look for a maximum of 5 different 
+--- states, which are normal forms (=>! arrow). 
 
----     we can reach the reconfiguration state of the aasembly, i.e., execute update and deploy for the listener, and pasue and start for the sensor. 
----     this reconfiguration state can be specified on the markings of listener and sensor as well as the content of certain of their queues 
----     obtained at the end of the reconfiguration step:
----     places listeneRrunning and sensorRunnung are marked.
----     the behavior queues for the sensor and listener instances are nil, as are the queues for the programs associated with their nodes. 
-
----  The Maude search command is: 
-
-
-search [1] globalsystem =>!  
+search [5] globalsystem =>!
 < nodeInventory: sensor1, 
-  instances: (sensor1 |-> { type: sensortype:ComponentType, queueBehavior: nil:List{BehaviorWithId}, marking: m(sensorRunning, empty, empty) }),
+  instances: (sensor1 |-> { type: sensortype:ComponentType, 
+                            queue: nil:List{PushedBehavior}, 
+                            marking: m(sensorRunning, empty, empty) }),
   connections: connectNode3:Connections, 
   program: nil:Program, 
-  receivedAnswers: receivedAnswersNode3:Map{Request,Bool}, 
-  outgoingAnswers: OutAns3:List{Request}, 
-  outgoingRequests: OutReq3:List{Request}, 
-  history: hist3:Set{Request},
+  receivedAnswers: receivedAnswersNode3:Map{Question,Bool}, 
+  outgoingAnswers: OutAns3:List{Question}, 
+  outgoingRequests: OutReq3:List{Question}, 
+  history: hist3:Set{Question},
   buffer: Buf3:List{Message} >,
-< nodeInventory: listener1,idInst:IdInstances,
-  instances: (listener1 |-> { type: listenertype:ComponentType,queueBehavior: nil:List{BehaviorWithId}, marking: m(listenerRunning,empty,empty) }), Is:Instances,
+< nodeInventory: listener1,idInst:Ids,
+  instances: (listener1 |-> { type: listenertype:ComponentType, 
+                              queue: nil:List{PushedBehavior}, 
+                              marking: m(listenerRunning,empty,empty) }), Is:Instances,
   connections: connectNode2:Connections,
   program: nil:Program,
-  receivedAnswers: receivedAnswersNode2:Map{Request,Bool}, 
-  outgoingAnswers: OutAns2:List{Request}, 
-  outgoingRequests: OutReq2:List{Request}, 
-  history: hist2:Set{Request},
+  receivedAnswers: receivedAnswersNode2:Map{Question,Bool}, 
+  outgoingAnswers: OutAns2:List{Question}, 
+  outgoingRequests: OutReq2:List{Question}, 
+  history: hist2:Set{Question},
   buffer: Buf2:List{Message} >, n:Net .
 
---- TODO Fred: not exactly what I obtain
---- TODO Fred: separate the searches into two files
----there is a proposed solution for this commend given as follows:
-
-***(
-Solution 1 (state 11801)
-states: 11802  rewrites: 18514464 in 3375ms cpu (3384ms real) (5485767 rewrites/second)
-n:Net --> < nodeInventory: mydb0,instances: < id: mydb0,type: {places: databaseInitiated, databaseConfigured,
-    databaseBootstrapped, databaseDeployed, databaseRegistered,initial: databaseInitiated,stationPlaces:
-    stdatabaseInitiated ; databaseInitiated, stdatabaseConfigured ; databaseConfigured, stdatabaseBootstrapped ;
-    databaseBootstrapped, stdatabaseDeployed ; databaseDeployed, stdatabaseRegistered ; databaseRegistered,transitions:
-    t(databaseInitiated,stdatabaseConfigured), t(databaseConfigured,stdatabaseBootstrapped), t(databaseBootstrapped,
-    stdatabaseDeployed), t(databaseDeployed,stdatabaseRegistered), t(databaseRegistered,stdatabaseInitiated), t(
-    databaseRegistered,stdatabaseConfigured), t(databaseRegistered,stdatabaseBootstrapped),behaviors: b(t(
-    databaseInitiated,stdatabaseConfigured), t(databaseConfigured,stdatabaseBootstrapped), t(databaseBootstrapped,
-    stdatabaseDeployed)), b(t(databaseDeployed,stdatabaseRegistered)), b(t(databaseRegistered,stdatabaseInitiated)), b(
-    t(databaseRegistered,stdatabaseConfigured)), b(t(databaseRegistered,stdatabaseBootstrapped)),groupUses: empty,
-    groupProvides: databaseService ? databaseDeployed},queueBehavior: nil,marking: m(databaseDeployed,empty,empty) >,
-    connections: mysys0,systemDbservice,mydb0,databaseService,program: nil,msgs: empty,outgoingAnswers: nil,outgoingRequests: nil,history:
-    empty >, < nodeInventory: listener1, mysys0,instances: < id: listener1,type: {places: listenerRunning, listenerConfigured,
-    listenerPaused, listenerOff,initial: listenerOff,stationPlaces: stlistenerRunning ; listenerRunning,
-    stlistenerConfigured ; listenerConfigured, stlistenerPaused ; listenerPaused, stlistenerOff ; listenerOff,
-    transitions: t(listenerRunning,stlistenerPaused), t(listenerConfigured,stlistenerRunning), t(listenerPaused,
-    stlistenerConfigured), t(listenerPaused,stlistenerOff), t(listenerOff,stlistenerPaused),behaviors: b(t(
-    listenerConfigured,stlistenerRunning), t(listenerPaused,stlistenerConfigured), t(listenerOff,stlistenerPaused)), b(
-    t(listenerRunning,stlistenerPaused)), b(t(listenerPaused,stlistenerOff)),groupUses: listenerSysservice ! (
-    listenerRunning, listenerConfigured),groupProvides: listenerRcv ? listenerRunning, listenerConfig ? (
-    listenerRunning, listenerConfigured)},queueBehavior: idb5 ; b(t(listenerConfigured,stlistenerRunning), t(
-    listenerPaused,stlistenerConfigured), t(listenerOff,stlistenerPaused)),marking: m(listenerRunning,empty,empty) >, <
-    id: mysys0,type: {places: systemDeployed, systemConfigured, systemInitiated,initial: systemInitiated,stationPlaces:
-    stsystemDeployed ; systemDeployed, stsystemConfigured ; systemConfigured, stsystemInitiated ; systemInitiated,
-    transitions: t(systemDeployed,stsystemConfigured), t(systemDeployed,stsystemInitiated), t(systemConfigured,
-    stsystemDeployed), t(systemInitiated,stsystemConfigured),behaviors: b(t(systemConfigured,stsystemDeployed), t(
-    systemInitiated,stsystemConfigured)), b(t(systemDeployed,stsystemConfigured)), b(t(systemDeployed,
-    stsystemInitiated)),groupUses: systemDbservice ! (systemDeployed, systemConfigured),groupProvides: systemService ?
-    systemDeployed},queueBehavior: nil,marking: m(systemDeployed,empty,empty) >,connections: listener1,
-    listenerSysservice,mysys0,systemService, sensor1,sensorRcvservice,listener1,listenerRcv, sensor1,
-    sensorConfigservice,listener1,listenerConfig, mysys0,systemDbservice,mydb0,databaseService,program: nil,msgs:
-    extern(< _; isActive(_) >(sensor1,sensorRcvservice) ; false), extern(< _; isActive(_) >(sensor1,sensorConfigservice) ; false),
-    extern(< _; isRefusing >(mydb0,databaseService) ; false), extern(< _; isConnected >(mydb0,mysys0,systemDbservice,mydb0,
-    databaseService) ; true),outgoingAnswers: nil,outgoingRequests: nil,history: empty >
-sensortype:ComponentType --> {places: sensorRunning, sensorConfigured, sensorInstalled, sensorProvisioned, sensorOff,
-    initial: sensorOff,stationPlaces: stsensorRunning ; sensorRunning, stsensorConfigured ; sensorConfigured,
-    stsensorInstalled ; sensorInstalled, stsensorProvisioned ; sensorProvisioned, stsensorOff ; sensorOff,transitions:
-    t(sensorRunning,stsensorProvisioned), t(sensorConfigured,stsensorRunning), t(sensorInstalled,stsensorConfigured),
-    t(sensorProvisioned,stsensorInstalled), t(sensorProvisioned,stsensorOff), t(sensorOff,stsensorProvisioned),
-    behaviors: b(t(sensorConfigured,stsensorRunning), t(sensorInstalled,stsensorConfigured), t(sensorProvisioned,
-    stsensorInstalled), t(sensorOff,stsensorProvisioned)), b(t(sensorRunning,stsensorProvisioned)), b(t(
-    sensorProvisioned,stsensorOff)),groupUses: sensorRcvservice ! (sensorRunning, sensorConfigured),
-    sensorConfigservice ! (sensorRunning, sensorConfigured, sensorInstalled),groupProvides: empty}
-connectionsNode:Connections --> sensor1,sensorRcvservice,listener1,listenerRcv, sensor1,sensorConfigservice,listener1,
-    listenerConfig
-msgsNode:Map{Request,Bool} --> extern(< _; isRefusing >(listener1,listenerRcv) ; false), extern(< _; isRefusing >(listener1,
-    listenerConfig) ; false), extern(< _; isConnected >(listener1,sensor1,sensorRcvservice,listener1,listenerRcv) ; true),
-    extern(< _; isConnected >(listener1,sensor1,sensorConfigservice,listener1,listenerConfig) ; true), extern(
-    exprCompleted(listener1,idb4) ; true)
-rec:QoutgoingAnswers --> (nil).List{outgoingAnswers}
-sen:Qsend --> (nil).List{send}
-hist:SentHistorys --> (empty).Set{SentHistory}
-Maude>
-)
-
+--- This displays the sequence of rules applied to reach 
+--- the final state found by the previous search command. 
 show path labels 11144 .
 
----     the second property attempts to ensure that an undesirable situation regarding the order of listener and sensor behaviors during reconfiguration steps will not occur.
----     it expresses: a sensor can only begin its start behavior at the end of the update behavior of the listener. 
----     formally, we will never find a solution that models the case where the sensor queue contains transitions related to start behavior
----     such that the update behavior of listener may be in its behavoirs queue or not yet pushed into this queue.
+--- We have the following property: a sensor can only begin its start behavior 
+--- at the end of the update behavior of the listener. 
+--- Formally, we will never find a solution that models the case where the 
+--- sensor queue contains transitions related to the `start' behavior 
+--- such that the `update' behavior of listener may be in its behavoirs queue 
+--- or not yet pushed into this queue.
 
 ---     The Maude search command is: 
-search [1] globalsystem =>*  
+search [1]  globalsystem =>*  
 < nodeInventory: sensor1, 
-  instances: (sensor1 |-> { type: sensortype:ComponentType, queueBehavior: (idb1 ; b(t(sensorConfigured,stsensorRunning), t(sensorInstalled,stsensorConfigured), t(sensorProvisioned,stsensorInstalled), 
-  t(sensorOff,stsensorProvisioned))) qsensor:List{BehaviorWithId}, marking: marksensor1:Marking }) , 
+  instances: (sensor1 |-> { type: sensortype:ComponentType, 
+                            queue: (idb1 ; 
+                                    b(t(sensorConfigured,stsensorRunning), 
+                                      t(sensorInstalled,stsensorConfigured), 
+                                      t(sensorProvisioned,stsensorInstalled), 
+                                      t(sensorOff,stsensorProvisioned)))
+                                    qsensor:List{PushedBehavior}, 
+                            marking: marksensor1:Marking }) , 
   connections: connectNode3:Connections, 
   program: progNode3:Program, 
-  receivedAnswers: receivedAnswersNode3:Map{Request,Bool}, 
-  outgoingAnswers: OutAns3:List{Request}, 
-  outgoingRequests: OutReq3:List{Request}, 
-  history: hist3:Set{Request},
+  receivedAnswers: receivedAnswersNode3:Map{Question,Bool}, 
+  outgoingAnswers: OutAns3:List{Question}, 
+  outgoingRequests: OutReq3:List{Question}, 
+  history: hist3:Set{Question},
   buffer: Buf3:List{Message} >, 
-< nodeInventory: listener1, idInst:IdInstances,
-  instances: (listener1 |-> { type: listenertype:ComponentType,queueBehavior: qblistener1:List{BehaviorWithId}, marking: marklistener1:Marking }), Is:Instances  ,
+< nodeInventory: listener1, idInst:Ids,
+  instances: (listener1 |-> { type: listenertype:ComponentType, 
+                              queue: qblistener1:List{PushedBehavior}, 
+                              marking: marklistener1:Marking }), Is:Instances,
   connections: connectNode2:Connections,
   program: progNode2:Program,
-  receivedAnswers: receivedAnswersNode2:Map{Request, Bool}, 
- outgoingAnswers: OutAns2:List{Request}, 
- outgoingRequests: OutReq2:List{Request},  
- history: hist2:Set{Request},
- buffer: Buf2:List{Message} >, n:Net 
- such that (isBehaviorinList(idb4,qblistener1:List{BehaviorWithId}) or not (isCompletedLocal(listener1,idb4,progNode2:Program)) ) .
-
-
---- the result is as follows:
-
-***(
-No solution.
-states: 11805  rewrites: 18526544 in 3312ms cpu (3405ms real) (5592918 rewrites/second)
-Maude>
-)
+  receivedAnswers: receivedAnswersNode2:Map{Question, Bool}, 
+  outgoingAnswers: OutAns2:List{Question}, 
+  outgoingRequests: OutReq2:List{Question},  
+  history: hist2:Set{Question},
+  buffer: Buf2:List{Message} >, n:Net 
+ such that 
+   (isBehaviorinList(idb4,qblistener1:List{PushedBehavior}) 
+   or not (isCompletedLocal(listener1,idb4,progNode2:Program))) .

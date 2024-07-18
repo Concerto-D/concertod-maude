@@ -1,10 +1,10 @@
 fmod COMPONENT-TYPE is
-  
+
+  inc DECLARATION-SORTS .   
   inc STATION-PLACE .
   inc TRANSITION-TRANSITION-ENDING .
   inc BEHAVIOR .
   inc PORT .
-  inc DECLARATION-SORTS . 
   inc MARKING . 
   
   sorts ComponentType GroupUses GroupProvides .  
@@ -16,33 +16,62 @@ fmod COMPONENT-TYPE is
   vars Ps Ps1 : Places .
   var Q : InitialPlace .
   var SPs : StationPlaces .
-  var Ts  : Transitions . 
+  var Ts : Transitions . 
   var Bs : Behaviors .
   var GU : GroupUses .
   var GP : GroupProvides .
   vars Use Use1 : UsePort .
   vars Pr Pr1 : ProvidePort .
   var Beh  : Behavior .
+  var Ct : ComponentType .
 
   op g(_?_) : UsePort Places -> GroupUse [ctor] . 
   --- GroupUse is defined as tuple : the use port and a group (set) of places
   op g(_!_) : ProvidePort Places -> GroupProvide [ctor] . 
-  --- GroupProvide is defined as tuple : the Provide port and a group (set) of places
-  op { places: _,initial: _,stationPlaces: _,transitions: _,behaviors: _,groupUses: _,groupProvides: _ } : 
-  Places InitialPlace StationPlaces Transitions Behaviors GroupUses GroupProvides -> ComponentType [ctor] . 
+  --- GroupProvide is defined as tuple : the Provide port and a 
+  --- group (set) of places
+  op { places: _, 
+       initial: _, 
+       stationPlaces: _, 
+       transitions: _, 
+       behaviors: _, 
+       groupUses: _,
+       groupProvides: _ } : 
+  Places InitialPlace StationPlaces Transitions Behaviors 
+  GroupUses GroupProvides -> ComponentType 
+  [ctor format(n++i s s d n++i s d ni s d ni s d ni 
+              s d ni s d ni s s s----i) ] . 
 
   --- some operations related to ComponentType used later
-  op getInitialPlace(_) : ComponentType -> Place .
+  op _ .initial : ComponentType -> Place .
   --- get the initial place of component type
-  eq getInitialPlace ({ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = Q .
+  eq { places: Ps, initial: Q, stationPlaces: SPs, 
+       transitions: Ts, behaviors: Bs, groupUses: GU,
+       groupProvides: GP }.initial = Q .
 
-  op getStationPlaces(_) : ComponentType -> StationPlaces . 
+  op _ .stationPlaces : ComponentType -> StationPlaces . 
   --- get the set of tuples (station; place)
-  eq getStationPlaces ({ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = SPs .
+  eq { places: Ps, initial: Q, stationPlaces: SPs,
+       transitions: Ts, behaviors: Bs, groupUses: GU,
+       groupProvides: GP }.stationPlaces = SPs .
 
-  op getUsePorts(_) : ComponentType -> GroupUses . 
+  op _ .groupUses : ComponentType -> GroupUses . 
   --- get the set of the use ports of the component
-  eq getUsePorts ({ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = GU .
+  eq { places: Ps, initial: Q, stationPlaces: SPs,
+       transitions: Ts, behaviors: Bs, groupUses: GU,
+       groupProvides: GP }.groupUses = GU .
+
+  op _ .groupProvides : ComponentType -> GroupProvides . 
+  --- get the set of the provide ports of the component
+  eq { places: Ps, initial: Q, stationPlaces: SPs,
+       transitions: Ts, behaviors: Bs, groupUses: GU,
+       groupProvides: GP }.groupProvides = GP .
+
+  op _ .behaviors : ComponentType -> Behaviors . 
+  --- get the set of the provide ports of the component
+  eq { places: Ps, initial: Q, stationPlaces: SPs,
+       transitions: Ts, behaviors: Bs, groupUses: GU,
+       groupProvides: GP }.behaviors = Bs .
 
   op getPlacesOfUse(_,_) : UsePort GroupUses -> Places . 
   --- get places bound to a use port
@@ -54,20 +83,23 @@ fmod COMPONENT-TYPE is
   eq getPlacesOfProvide(Pr,(g(Pr ! Ps),GP)) = Ps  . 
   eq getPlacesOfProvide(Pr,GP) = empty [owise] . 
    
-  op getPlacesOfPort(_,_) : Port ComponentType -> Places . 
+  op _ .getPlacesOfPort(_) : ComponentType Port -> Places . 
   --- to get places bound to a port use or provide
-  eq getPlacesOfPort(Use,{ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = getPlacesOfUse(Use,GU)  .
-  eq getPlacesOfPort(Pr,{ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP } ) = getPlacesOfProvide(Pr,GP)  .
-
-  op isBehaviorInComponent(_,_) : Behavior ComponentType -> Bool . 
-  --- check whether a behavior is used in a ComponentType
-  eq isBehaviorInComponent(Beh,{ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = Beh in Bs .
+  eq Ct .getPlacesOfPort(Use) = getPlacesOfUse(Use, (Ct).groupUses)  .
+  eq Ct .getPlacesOfPort(Pr)  = getPlacesOfProvide(Pr, (Ct).groupProvides) .
   
-  op getMarkingOfGroup(_,_) : Places ComponentType -> Marking .   
-  --- gives marked elements (places, transitions, TransitionEndings) of a group of places
-  eq getMarkingOfGroup(Ps1,{ places: Ps,initial: Q,stationPlaces: SPs,transitions: Ts,behaviors: Bs,groupUses: GU,groupProvides: GP }) = 
-  m(Ps1, transitionsOfPlacesWithRespectToStations(Ps1,Ts,getStationsfromGroup(Ps1,SPs)), 
-  getEndingsfTransitions(transitionsOfPlacesWithRespectToStations(Ps1,Ts,getStationsfromGroup(Ps1,SPs)))) .
+  op _ .getMarkingOfGroup(_) : ComponentType Places -> Marking .   
+  --- give marked elements (places, transitions, TransitionEndings) 
+  --- of a group of places
+  eq { places: Ps, initial: Q, stationPlaces: SPs, transitions: Ts, 
+       behaviors: Bs, groupUses: GU, groupProvides: GP }
+       .getMarkingOfGroup(Ps1) = 
+  m(Ps1, 
+    transitionsOfPlacesWithRespectToStations(Ps1, Ts, 
+      getStationsfromGroup(Ps1,SPs)), 
+    getEndingsfTransitions(
+      transitionsOfPlacesWithRespectToStations(Ps1,Ts,
+        getStationsfromGroup(Ps1,SPs)))) .
 
 endfm
 

@@ -11,7 +11,6 @@ endfm
 fmod STATION is
   
   inc DECLARATION-SORTS .
-  
   sort Stations .
   pr SET{Station} .   
   subsort Set{Station} <  Stations  . 
@@ -46,20 +45,20 @@ fmod STATION-PLACE is
   op getStationsfromGroup(_,_) : Places StationPlaces -> Stations .  
   --- get the stations associated to a group of Places
   eq getStationsfromGroup(Ps,empty) = empty .
-  ceq getStationsfromGroup(Ps,([S1](P),SPs)) = S1, getStationsfromGroup(Ps,SPs) if(P in Ps) .
-  eq getStationsfromGroup(Ps,([S1](P),SPs)) =  getStationsfromGroup(Ps,SPs) [owise] .
-
+  ceq getStationsfromGroup(Ps,([S1](P),SPs)) = 
+    S1, getStationsfromGroup(Ps,SPs) if(P in Ps) . --- FL: eq instead
+  eq getStationsfromGroup(Ps,([S1](P),SPs)) = 
+    getStationsfromGroup(Ps,SPs) [owise] .
 
 endfm
 
---- TODO Helene only one kind of Id?
 fmod ID-COMPONENT-BEHAVIOR is
   
   inc DECLARATION-SORTS . 
   
-  sorts IdInstances IdBehavior  . 
-  pr SET{IdInstance} .
-  subsort Set{IdInstance} < IdInstances . 
+  sorts Ids . 
+  pr SET{Id} .
+  subsort Set{Id} < Ids . 
   
 endfm
 
@@ -70,8 +69,6 @@ fmod PORT is
   subsorts UsePort ProvidePort < Port .
 
 endfm
-
-
 
 fmod CONNECTION is
   
@@ -86,32 +83,35 @@ fmod CONNECTION is
   var Cs : Connections .   
   vars Use Use1 : UsePort .  
   var Pr : ProvidePort .   
-  vars Id Id1 Id2 : IdInstance .  
+  vars Id Id1 Id2 : Id .  
 
-  op (_,_)--(_,_) : IdInstance UsePort IdInstance ProvidePort -> Connection [ctor] .
+  op (_,_)--(_,_) : Id UsePort Id ProvidePort -> Connection 
+    [ctor] .
   --- Define a new operator to create a Connection
 
   --- some operations related to the connections used later
-  op isUseinConnections(_,_,_) :  IdInstance UsePort Connections -> Bool . 
+  op isUseinConnections(_,_,_) :  Id UsePort Connections -> Bool . 
   --- checks whether a component instance is connected via a use port
   eq isUseinConnections(Id,Use,((Id,Use)--(Id2,Pr),Cs)) = true  .  
   eq isUseinConnections(Id,Use,Cs) = false [owise] .  
 
-  op isCInstinConnections(_,_) :  IdInstance Connections -> Bool .   
+  op isCInstinConnections(_,_) :  Id Connections -> Bool .   
   --- checks whether a component instance is connected (via use or provide port)
   eq isCInstinConnections(Id1,((Id1,Use)--(Id2,Pr),Cs)) = true .  
   eq isCInstinConnections(Id2,((Id1,Use)--(Id2,Pr),Cs)) = true . 
   eq isCInstinConnections(Id,Cs) = false [owise] .  
 
-  op getPConnectionsofCInst(_,_) :  IdInstance Connections -> Connections .  
+  op getPConnectionsofCInst(_,_) :  Id Connections -> Connections .  
   --- get the connections of CInst where CInst is providing a port
   eq getPConnectionsofCInst(Id,empty) = empty .
-  eq getPConnectionsofCInst(Id2,((Id1,Use)--(Id2,Pr)),Cs) = ((Id1,Use)--(Id2,Pr)), getPConnectionsofCInst(Id2,Cs)  .  
-  eq getPConnectionsofCInst(Id,((Id1,Use)--(Id2,Pr)),Cs) = getPConnectionsofCInst(Id,Cs) [owise] .  
+  eq getPConnectionsofCInst(Id2,((Id1,Use)--(Id2,Pr)),Cs) = 
+    ((Id1,Use)--(Id2,Pr)), getPConnectionsofCInst(Id2,Cs)  .  
+  eq getPConnectionsofCInst(Id,((Id1,Use)--(Id2,Pr)),Cs) =   
+    getPConnectionsofCInst(Id,Cs) [owise] .  
+
 endfm
 
---- TODO Fred subsort?
-fmod REQUEST is
+fmod MESSAGE is
 
   inc ID-COMPONENT-BEHAVIOR . 
   inc PORT .
@@ -122,32 +122,16 @@ fmod REQUEST is
   op isActive(_) :  Port -> Query [ctor] .  
   op isRefusing(_) : Port -> Query [ctor] .    
   op isConnected(_) : Connection -> Query [ctor] .
-  op isCompleted(_) : IdBehavior -> Query [ctor] .
+  op isCompleted(_) : Id -> Query [ctor] .
   op onDisconnect(_) : Connection -> Query [ctor] . 
   --- to synchronize the disconnection of reconfiguration programs  
   
-  op [ dst: _ , query: _ ] : IdInstance Query -> Request [ctor] .
-
-  
-endfm
-
-
-fmod ANSWER is 
-  inc REQUEST . 
-
-  op [ req: _, value: _ ] : Request Bool -> Answer [ctor] .
-endfm
-
-
-fmod MESSAGE is
-   inc REQUEST .
-   inc ANSWER .
-
-   op reqMsg : Request -> Message [ctor] .
-   op ansMsg : Answer -> Message [ctor] .
+  op [ dst: _ , query: _ ] : Id Query -> Question [ctor] .
+  op [ question: _, value: _ ] : Question Bool -> Answer [ctor] .
+  op mkMsg : Question -> Message [ctor] .
+  op mkMsg : Answer   -> Message [ctor] .
 
 endfm
-
 
 fmod TRANSITION-TRANSITION-ENDING is
   inc PLACE .
@@ -181,8 +165,10 @@ fmod TRANSITION-TRANSITION-ENDING is
   --- get transitions linked to a place
   
   eq getTransitionsofPlace(empty,P1) = empty .
-  eq getTransitionsofPlace((t(P1,Ss1),Ts),P1) = t(P1,Ss1), getTransitionsofPlace(Ts,P1)  .
-  eq getTransitionsofPlace((t(P2,Ss1),Ts),P1) = getTransitionsofPlace(Ts,P1) [owise] .
+  eq getTransitionsofPlace((t(P1,Ss1),Ts),P1) = 
+    t(P1,Ss1), getTransitionsofPlace(Ts,P1)  .
+  eq getTransitionsofPlace((t(P2,Ss1),Ts),P1) = 
+    getTransitionsofPlace(Ts,P1) [owise] .
  
   --- HELENE I do not understand this remove function
   op rmTesOfStation(_,_) : TransitionEndings Station -> TransitionEndings .
@@ -190,48 +176,64 @@ fmod TRANSITION-TRANSITION-ENDING is
   
   eq rmTesOfStation(empty,S1) = empty .
   eq rmTesOfStation((te(t(P1,Ss1),S1),Tes),S1) = rmTesOfStation(Tes,S1) .
-  eq rmTesOfStation((te(t(P1,Ss1),S1),Tes),S2) = te(t(P1,Ss1),S1),rmTesOfStation(Tes,S2) [owise] .
-  --- Helene - owise without ceq?
+  eq rmTesOfStation((te(t(P1,Ss1),S1),Tes),S2) =
+    te(t(P1,Ss1),S1),rmTesOfStation(Tes,S2) [owise] .
+  --- Helene - owise without ceq? Fred: yes, ceq iff there's a if
   
   --- Helene ??? op getTransitionsfrom
-  op transitionsOfPlacesWithRespectToStations(_,_,_) : Places Transitions Stations -> Transitions .   
- ---retrieve transitions starting from a place of a set of places and ending in stations included in the set of stations of these places.
+  op transitionsOfPlacesWithRespectToStations(_,_,_) : 
+    Places Transitions Stations -> Transitions .   
+ --- retrieve transitions starting from a place of a set of places and ending 
+ --- in stations included in the set of stations of these places.
   
   eq transitionsOfPlacesWithRespectToStations(Ps,empty,Ss1) = empty .
-  ceq transitionsOfPlacesWithRespectToStations(Ps,(t(P1,Ss2),Ts),Ss1) = t(P1,Ss2), transitionsOfPlacesWithRespectToStations(Ps,Ts,Ss1) if ((P1 in Ps) and (Ss2 subset Ss1)) .
-  eq transitionsOfPlacesWithRespectToStations(Ps,(t(P1,Ss2),Ts),Ss1) = transitionsOfPlacesWithRespectToStations(Ps,Ts,Ss1) [owise] .
+  ceq transitionsOfPlacesWithRespectToStations(Ps,(t(P1,Ss2),Ts),Ss1) = 
+    t(P1,Ss2), transitionsOfPlacesWithRespectToStations(Ps,Ts,Ss1) 
+    if ((P1 in Ps) and (Ss2 subset Ss1)) .
+  eq transitionsOfPlacesWithRespectToStations(Ps,(t(P1,Ss2),Ts),Ss1) = 
+    transitionsOfPlacesWithRespectToStations(Ps,Ts,Ss1) [owise] .
  
-  op getEndingsofTransition(_,_) : Transition Stations -> TransitionEndings .  
+  op getEndingsOfTransition(_,_) : Transition Stations -> TransitionEndings .  
   ---get the transition endings of a transition according to a set of Stations
-  eq getEndingsofTransition(t(P1,Ss2),empty) = empty . 
-  eq getEndingsofTransition(t(P1,Ss2), (S1,Ss1)) = union(te(t(P1,Ss2),S1), getEndingsofTransition(t(P1,Ss2), Ss1) ) .
-
+  eq getEndingsOfTransition(t(P1,Ss2),empty) = empty . 
+  eq getEndingsOfTransition(t(P1,Ss2), (S1,Ss1)) = 
+    union(te(t(P1,Ss2),S1), getEndingsOfTransition(t(P1,Ss2), Ss1) ) .
 
   op getEndingsfTransitions(_) : Transitions -> TransitionEndings .  
   --- get the transition endings of a set of transitions
   eq getEndingsfTransitions(empty) = empty .
-  eq getEndingsfTransitions(t(P1,Ss1),Ts) = union(getEndingsofTransition(t(P1,Ss1),Ss1), getEndingsfTransitions(Ts) ) .
-
+  eq getEndingsfTransitions(t(P1,Ss1),Ts) = 
+    union(getEndingsOfTransition(t(P1,Ss1),Ss1), getEndingsfTransitions(Ts) ) .
 
   --- Helene ???
-  op isSatisfiedTransitionEndingStation(_,_,_) : Station Transitions TransitionEndings -> Bool .
-  --- is used in the entering place rule
-  --- the parameters used are : a chosen station, the current transitions of a behavior and the transition endings of the instance concerned
-  --- the principale is : if a station is chosen as a station of the ending of a transition 
-  --- then for all transitions of the current behavior for which the chosen station is one of its stations
-  --- the transition endings of these transitions according to this station must be included in their trnasition endings.
+  op isSatisfiedTransitionEndingStation(_,_,_) : 
+      Station Transitions TransitionEndings -> Bool .
+  ***( is used in the EnteringPlace rule.
+    The parameters used are : 
+    * a chosen station,
+    * the current transitions of a behavior, 
+    * the transition endings of the concerned instance.
+    The principle is: if a station is chosen as a station of the ending of a
+    transition then for all transitions of the current behavior for which the
+    chosen station is one of its stations the transition endings of these 
+    transitions according to this station must be included in their transition
+    endings. 
+  )
   eq isSatisfiedTransitionEndingStation(S1,empty,Tes) = true .
-  ceq isSatisfiedTransitionEndingStation(S1,t(P1,Ss1),Ts,Tes) = isSatisfiedTransitionEndingStation(S1,Ts,Tes) 
-  if(not(S1 in Ss1) or (te(t(P1,Ss1),S1) in Tes) ) .
+  ceq isSatisfiedTransitionEndingStation(S1,t(P1,Ss1),Ts,Tes) = 
+    isSatisfiedTransitionEndingStation(S1,Ts,Tes) 
+    if(not(S1 in Ss1) or (te(t(P1,Ss1),S1) in Tes) ) .
   eq isSatisfiedTransitionEndingStation(S1,t(P1,Ss1),Ts,Tes) = false [owise] .
 
 endfm
 
---- TODO Fred projection to remove
 fmod MARKING is
   inc TRANSITION-TRANSITION-ENDING .
   sort Marking . 
   
+  var P1 : Place .
+  var T1 : Transition . 
+  var Te1 : TransitionEnding .
   vars Ps1 Ps2 : Places .
   vars Ts1 Ts2 : Transitions .
   vars Tes1 Tes2 : TransitionEndings .
@@ -257,7 +259,10 @@ fmod MARKING is
 
   op notEmptyMarking(_) : Marking -> Bool .  
   ---to check if a given Marking is empty
-  eq notEmptyMarking(m(Ps1,Ts1,Tes1)) = (Ps1 =/= empty or Ts1 =/= empty or Tes1 =/= empty ) .
+  eq notEmptyMarking(m((P1,Ps1), Ts1, Tes1))  = true . 
+  eq notEmptyMarking(m(Ps1, (T1,Ts1), Tes1))  = true .
+  eq notEmptyMarking(m(Ps1, Ts1, (Te1,Tes1))) = true .
+  eq notEmptyMarking(m(Ps1,Ts1,Tes1))         = false [owise] .
 
 endfm
 
@@ -270,24 +275,24 @@ fmod BEHAVIOR is
   sorts Behaviors .  
   pr SET{Behavior} .
   subsort Set{Behavior} < Behaviors .  
-  pr LIST{BehaviorWithId} .
-  --- List{BehaviorWithId} est une liste pour les element de sort BehaviorWithId 
+  pr LIST{PushedBehavior} .
 
-  vars IdBehx IdBehy : IdBehavior .
-  var BehL : List{BehaviorWithId} .
+  vars IdBehx IdBehy : Id .
+  var BehL : List{PushedBehavior} .
   var Beh : Behavior .
 
   op b(_) : Transitions -> Behavior .   
   ---a behavoir is a set of transitions
 
   --- Helene the pushB(id,b) is identified not the behavior itself
-  op (_;_) : IdBehavior Behavior -> BehaviorWithId . 
-  ---BehaviorWithId is an identified behavior
+  op (_;_) : Id Behavior -> PushedBehavior . 
+  ---PushedBehavior is an identified behavior
 
-  op isBehaviorinList(_,_) : IdBehavior List{BehaviorWithId} -> Bool .
+  op isBehaviorinList(_,_) : Id List{PushedBehavior} -> Bool .
   ---to check if a behavior identifier exists in the behavior list  
   eq isBehaviorinList(IdBehx, nil) = false .
   eq isBehaviorinList(IdBehx, (IdBehx ; Beh) BehL) = true .
-  eq isBehaviorinList(IdBehx, (IdBehy ; Beh) BehL) = isBehaviorinList(IdBehx,BehL) [owise] .
+  eq isBehaviorinList(IdBehx, (IdBehy ; Beh) BehL) = 
+    isBehaviorinList(IdBehx,BehL) [owise] .
 
 endfm

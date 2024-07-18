@@ -1,3 +1,25 @@
+# FL: Modifications un peu partout 
+
+- Formatage du code avec indentation et lignes pas trop longues : je ne suis pas encore passé partout
+- J’ai rajouté un format pour les constructeurs de type de composant, instance de composant et configuration.
+- Reprise légère de certains commentaires 
+- TODO dans 3 qui consistait à supprimer les projections : pas possible car ce n’est pas appliqué directement à un marquage qu’on pourrait donner en extension, mais au résultat de l’application d’une intersection de deux marquages 
+- Fusion de REQUEST, ANSWER dans MESSAGE + un seul nom de constructeur (mkMsg)
+- Renommage BehaviorWithId -> PushedBehavior
+- Renommage Request -> Question 
+- Une seule sorte d’identifiant : Id
+- isInstanceIdUsed supprimé : doublon avec $hasMapping dans le module paramétré Map
+- isBehaviorInComponent supprimé : doublon avec l’accès ou champ behaviors et le in de List
+- isInstanceIdUsed supprimé : pas utilisé et de toute façon doublon
+- getInstanceFromId supprimé : doublon avec ce qu’offre Map
+- Dans 4_Component-type, j’ai essayé de faire des notations style objet: 
+    - pour la plupart des champs qu’on a dans un type de composant, plutôt que d’écrire getTheField(Ct), on peut écrire maintenant Ct .theField ou (Ct).theField (en général j’utilise la deuxième forme pour les appels et la première pour la définition)
+    - Pour des get qui prennent un argument en plus de Ct, c’est une notation « méthode », par exemple getPlacesOfPort(Port, Ct) s’écrit (Ct).getPlacesOfPort(Port)
+    - Je ne l’ai fait que pour les types de composants car c’est la seule sorte où on accède aux champs par des appels d’opérations
+- Il y avait un truc bizarre: la sémantique opérationnelle générique dépendait… de l’exemple ! J’ai cassé cette dépendance et ai donc renommé les fichiers pour changer l’ordre entre la sémantique et l’exemple. 
+
+
+
 # fichier 3
 ## Notations
 - Ct/Cts component types

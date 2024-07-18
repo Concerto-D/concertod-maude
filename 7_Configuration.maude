@@ -7,26 +7,26 @@ fmod CONCERTO-D-CONFIGURATION is
   inc CONNECTION .
   inc DECLARATION-SORTS . 
 
-  pr SET{Request} . 
-  pr MAP{Request, Bool} .
-  pr LIST{Request} . 
+  pr SET{Question} . 
+  pr MAP{Question, Bool} .
+  pr LIST{Question} . 
   pr LIST{Message} .
 
   var Is : Instances .
   var I1 : Instance .
-  var Ids : IdInstances .
-  var IdBeh : IdBehavior .
+  var Ids : Ids .
+  var IdBeh : Id .
   var Ct : ComponentType .
   var Port : Port .
   var Cs : Connections .
   var RP : Program .
   var C : Connection .
-  var Qb : List{BehaviorWithId} .
+  var Qb : List{PushedBehavior} .
   var M : Marking .
   var Q : Query .
-  var Id : IdInstance .
-  vars R1 R2 : Request .
-  var RcvAns : Map{Request, Bool} .
+  var Id : Id .
+  vars R1 R2 : Question .
+  var RcvAns : Map{Question, Bool} .
   var Val : Bool .
  
   op  < nodeInventory: _, 
@@ -39,23 +39,24 @@ fmod CONCERTO-D-CONFIGURATION is
         history: _,
         buffer: _ 
       > : 
-      IdInstances Instances Connections Program 
-      Map{Request, Bool} List{Request} List{Request} 
-      Set{Request} List{Message} -> LocalConfiguration [ctor].
+      Ids Instances Connections Program 
+      Map{Question, Bool} List{Question} List{Question} 
+      Set{Question} List{Message} -> LocalConfiguration 
+      [ctor format(n++i s s d n++i s d ni s d ni s d ni s d ni s d ni s d ni s d ni s d s----i)].
 
   --- some ops on configuration
 
-  op isLocal(_,_) : Request IdInstances -> Bool .  
-  --- determine whether a Request is related to a local treatement.
+  op isLocal(_,_) : Question Ids -> Bool .  
+  --- determine whether a Question is related to a local treatement.
   eq isLocal([ dst: Id , query: Q ], Ids) = Id in Ids .
 
-  op externFunCall(_,_) : Request Map{Request, Bool}  -> Bool .  
-  --- get the evalaution of an external function related to a Request from Map{Request, Bool}
+  op externFunCall(_,_) : Question Map{Question, Bool}  -> Bool .  
+  --- get the evalaution of an external function related to a Question from Map{Question, Bool}
   eq externFunCall(R1, R1 |-> Val, RcvAns ) = Val .
   --- eq externFunCall(R1, RcvAns ) =  noValueYet [owise] .
 
-  op localFunCall(_,_,_,_) : Request Instances Connections Program -> Bool .  
-  ---- gives the evaluation of a local function related to Request according to certain parameters of a given configuration
+  op localFunCall(_,_,_,_) : Question Instances Connections Program -> Bool .  
+  ---- gives the evaluation of a local function related to Question according to certain parameters of a given configuration
   
   ---if the instance does not yet exist, then the active local function: isActiveLocal(Id1, Port) = false, otherwise it is the local active function within the instance. 
   eq localFunCall ([ dst: Id , query: isActive(Port) ],(Id |-> I1, Is), Cs, RP) =  isActiveLocal(I1, Port) .
@@ -69,14 +70,14 @@ fmod CONCERTO-D-CONFIGURATION is
 
   eq localFunCall ([ dst: Id , query: onDisconnect(C) ], Is,Cs,RP) = onDisconnectLocal(C,RP) . 
  
-  eq localFunCall ([ dst: Id , query: isCompleted(IdBeh) ], (Id |-> { type: Ct,queueBehavior: Qb,marking: M },Is),Cs,RP) =  
+  eq localFunCall ([ dst: Id , query: isCompleted(IdBeh) ], (Id |-> { type: Ct, queue: Qb, marking: M },Is),Cs,RP) =  
   (not isBehaviorinList(IdBeh,Qb) ) and isCompletedLocal(Id,IdBeh,RP) .
   --- the evaluation of completed of an IdBeh depends on whether the push IdBeh exists in the program or in the behavior list.
   eq localFunCall ([ dst: Id , query: isCompleted(IdBeh) ], Is,Cs,RP) =  isCompletedLocal(Id,IdBeh,RP) [owise] . 
   --- special case the instance doesn't (the instance is not yet added or it is deleted)
 
-  op funCall(_,_,_,_,_,_) :  Request IdInstances Map{Request, Bool} Instances Connections Program -> Bool . 
-  --- gives the evaluation of a function related to Request according to the two cases, the function is local or external
+  op funCall(_,_,_,_,_,_) :  Question Ids Map{Question, Bool} Instances Connections Program -> Bool . 
+  --- gives the evaluation of a function related to Question according to the two cases, the function is local or external
   eq funCall(R1,Ids,RcvAns, Is,Cs,RP ) = if (isLocal(R1,Ids)) then localFunCall(R1,Is,Cs,RP) else externFunCall(R1,RcvAns) fi .
 
 endfm

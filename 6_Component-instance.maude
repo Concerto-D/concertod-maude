@@ -6,15 +6,15 @@ fmod INSTANCE is
   inc MARKING . 
   inc DECLARATION-SORTS . 
   sort Instances .
-  pr MAP{IdInstance,Instance} .
-  subsort Map{IdInstance,Instance} < Instances .
+  pr MAP{Id,Instance} .
+  subsort Map{Id,Instance} < Instances .
 
   vars P Q : Place . 
   var Ps : Places .
-  vars  Id1 Id2 : IdInstance .
-  var IdBeh : IdBehavior .
+  vars  Id1 Id2 : Id .
+  var IdBeh : Id .
   vars Ss1 Ss2 : Stations .
-  var Qb : List{BehaviorWithId} .
+  var Qb : List{PushedBehavior} .
   var M : Marking .
   var Port : Port . 
   vars Ts : Transitions .
@@ -22,27 +22,12 @@ fmod INSTANCE is
   var Ct : ComponentType .
   var Is : Instances .
 
-  --- Helene ??? TODO check BehaviorWithId with file 3
+  --- Helene ??? TODO check PushedBehavior with file 3
   --- PushId / QueuedBeh
-  op { type: _, queueBehavior: _, marking: _ } : 
-  ComponentType List{BehaviorWithId} Marking -> Instance [ctor] .
+  op { type: _, queue: _, marking: _ } : 
+  ComponentType List{PushedBehavior} Marking -> Instance 
+  [ctor format(n++i s s d n++i s d ni s s s----i) ] .
 
-  ---op identOfInstance(_) : Instance -> IdInstance .  
-  --- gives the id of an instance
-  ----eq identOfInstance(< id: Id1,type: Ct,queueBehavior: Qb,marking: Mark > ) = Id1 .
-
-  op isInstanceIdUsed(_,_) : IdInstance Instances -> Bool . 
-  ---to check if a component instance id is used in the set of instances
-  eq isInstanceIdUsed(Id1, (Id1 |-> { type: Ct,queueBehavior: Qb,marking: M }, Is)) = true  .
-  eq isInstanceIdUsed(Id1, Is) = false [owise] .
-
-  op getInstanceFromId(_,_) : Instances IdInstance -> [Instance] . 
-  op not-found : -> [Instance] . 
-  --- get the instance identified by a given id
-  --- applied only when we are sure that the instance exists. 
-  --- So the problem of empty instances doesn't occur.
-  eq  getInstanceFromId((Id1 |-> { type: Ct,queueBehavior: Qb,marking: M }, Is) , Id1 ) = { type: Ct,queueBehavior: Qb,marking: M }  .
-  eq  getInstanceFromId(Is, Id1 ) =  not-found [owise] .
 
   op existsTransFromPlace(_,_) : Place Transitions -> Bool .  
   --- check whether there is a transition whose source place is the given place
@@ -56,15 +41,16 @@ fmod INSTANCE is
   ceq areTransOfPlaceExitGroup(P,(t(Q,Ss1),Ts),Ss2) = areTransOfPlaceExitGroup(P,Ts,Ss2) if ((P =/= Q)  or   intersection(Ss1,Ss2) == empty ) .  
   eq  areTransOfPlaceExitGroup(P,Ts,Ss2) = false [owise] .
 
-  op isPlaceExitGroup(_,_,_) : Place List{BehaviorWithId} Stations -> Bool .  
+  op isPlaceExitGroup(_,_,_) : Place List{PushedBehavior} Stations -> Bool .  
   --- check if a place leaves a group of places according to the current behavior and with respect to the stations associated with the places of the group.
   eq isPlaceExitGroup(P,nil,Ss1) = false . 
   ---because the behavior is nil, a place does not leave the group 
   eq isPlaceExitGroup(P,(IdBeh ; b(Ts)) Qb,Ss1) = existsTransFromPlace(P,Ts) and areTransOfPlaceExitGroup(P,Ts,Ss1) . 
   --- there is transitions started from P  and all these transitions leave the group
 
-  op arePlacesExitGroup(_,_,_) : Places List{BehaviorWithId} Stations -> Bool .  
-  --- check whether for certain places and according to the current transitions in the behavior list 
+  op arePlacesExitGroup(_,_,_) : Places List{PushedBehavior} Stations -> Bool .  
+  --- check whether for certain places and according to the current 
+  --- transitions in the behavior list 
   --- the transitions of these places necessarily leave the group. 
   --- this last condition is determined on the stations associated with the places (3rd parameter).
   eq arePlacesExitGroup(empty,Qb,Ss1) = true .  
@@ -74,25 +60,46 @@ fmod INSTANCE is
   op isActiveLocal(_,_) : Instance Port -> Bool .   
   --- checks locally if a port is active (isActive in file 3_ can be a remote call)
   ---valid when at least the places, tansitions or transition endings marking is non-empty for a given port
-  eq isActiveLocal({ type: Ct,queueBehavior: Qb,marking: m(Ps,Ts,Tes) },Port) = 
-  notEmptyMarking(intersectionMarkings(getMarkingOfGroup( getPlacesOfPort(Port,Ct),Ct),m(Ps,Ts,Tes))) .
+  eq isActiveLocal({ type: Ct, queue: Qb, marking: m(Ps,Ts,Tes) }, 
+                   Port) = 
+  notEmptyMarking(
+    intersectionMarkings((Ct).getMarkingOfGroup((Ct).getPlacesOfPort(Port)), 
+                         m(Ps,Ts,Tes))) .
 
   op isRefusingLocal(_,_) : Instance Port -> Bool .  
-  --- checks locally if a new use connection is refused (isRefusing in file 3_ can correspond to this local call or a remote call)
-  --- a port is refused when only places are marked, and all marked places are ready to leave the group of places of the port according to the current behavior.
-  ceq isRefusingLocal({ type: Ct,queueBehavior: Qb,marking: m(Ps,Ts,Tes) },Port) = true if  
-  (arePlacesExitGroup(placesOfMarking(intersectionMarkings(getMarkingOfGroup(getPlacesOfPort(Port, Ct),Ct),m(Ps,Ts,Tes))),
-  Qb,getStationsfromGroup(getPlacesOfPort(Port,Ct),getStationPlaces(Ct))) and
-  transitionsOfMarking(intersectionMarkings(getMarkingOfGroup(getPlacesOfPort(Port,Ct),Ct),m(Ps,Ts,Tes))) == empty and 
-  transitionEndingsOfMarking(intersectionMarkings(getMarkingOfGroup(getPlacesOfPort(Port,Ct),Ct),m(Ps,Ts,Tes))) == empty 
+  ***( checks locally if a new use connection is refused (isRefusing in file 3_ 
+    can correspond to this local call or a remote call).
+    A port is refused when only places are marked, and all marked places are 
+    ready to leave the group of places of the port according to the current 
+    behavior. )
+  ceq isRefusingLocal({ type: Ct, queue: Qb, marking: m(Ps,Ts,Tes) },    
+                      Port) = true if  
+  (arePlacesExitGroup(
+    placesOfMarking(
+      intersectionMarkings((Ct).getMarkingOfGroup((Ct).getPlacesOfPort(Port)),
+                           m(Ps,Ts,Tes))),
+    Qb,
+    getStationsfromGroup((Ct).getPlacesOfPort(Port),(Ct).stationPlaces)) 
+  and
+  transitionsOfMarking(
+    intersectionMarkings((Ct).getMarkingOfGroup((Ct).getPlacesOfPort(Port)), 
+                         m(Ps,Ts,Tes))) == empty 
+  and 
+  transitionEndingsOfMarking(
+    intersectionMarkings((Ct).getMarkingOfGroup((Ct).getPlacesOfPort(Port)), 
+                         m(Ps,Ts,Tes))) == empty 
    )  .
-  eq isRefusingLocal({ type: Ct,queueBehavior: Qb,marking: m(Ps,Ts,Tes) },Port) = false [owise] .
+  eq isRefusingLocal({ type: Ct, queue: Qb, marking: m(Ps,Ts,Tes) },
+                     Port) = false [owise] .
 
   --- Helene ??? ça me semble bien compliqué
   op activeMarking(_,_,_) : Instance Port Marking -> Bool . 
   --- active depending a marking
-  eq activeMarking({ type: Ct,queueBehavior: Qb,marking: m(Ps,Ts,Tes) },Port,M) = 
-  notEmptyMarking(intersectionMarkings(getMarkingOfGroup(getPlacesOfPort(Port,Ct),Ct),M)) .
+  eq activeMarking({ type: Ct, queue: Qb, marking: m(Ps,Ts,Tes) },
+                    Port, M) = 
+  notEmptyMarking(
+    intersectionMarkings((Ct).getMarkingOfGroup((Ct).getPlacesOfPort(Port)),
+                         M)) .
 
 endfm
 
