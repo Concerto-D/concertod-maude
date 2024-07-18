@@ -1,5 +1,5 @@
 fmod LISTENER-SENSOR-EXAMPLE is 
-        inc NET-D-CONFIGURATION .
+        inc CONCERTO-D-SYSTEM .
         inc CONSISTENCY-PORTS-FIRING-TRANSITION .
         inc CONSISTENCY-PORTS-ENTERING-PLACE .
         inc COLLECT-EXTERNAL-MESSAGES-FIRING .
@@ -119,7 +119,7 @@ fmod LISTENER-SENSOR-EXAMPLE is
         pushB(listener1, listenerUpdate, idb4) pushB(listener1, listenerDeploy, idb5), receivedAnswers: msgsNode2, outgoingAnswers: nil, outgoingRequests: nil, history: empty, buffer: nil > .      
         op confNode3 : ->  LocalConfiguration .
         eq confNode3 = < nodeInventory: sensor1, instances: sensor1 |-> instSensor1, connections: connectionsNode3, program: pushB(sensor1, sensorPause, idb0) wait(listener1, idb4) pushB(sensor1, sensorDeploy, idb1), receivedAnswers: msgsNode3, outgoingAnswers: nil, outgoingRequests: nil, history: empty, buffer: nil > .
-        op globalsystem : -> Net .
+        op globalsystem : -> System .
         eq globalsystem = confNode1, confNode2, confNode3 .
 
 endfm

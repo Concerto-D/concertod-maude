@@ -50,7 +50,7 @@ load 4_Component-type
 load 5_Program
 load 6_Component-instance
 load 7_Configuration
-load 8_Internal-net
+load 8_System
 load 9_Operational-semantics-functions
 load 10_Collect-messages
 load 11_Communication-functions

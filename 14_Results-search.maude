@@ -29,7 +29,7 @@ search [5] globalsystem =>!
   outgoingAnswers: OutAns2:List{Question}, 
   outgoingRequests: OutReq2:List{Question}, 
   history: hist2:Set{Question},
-  buffer: Buf2:List{Message} >, n:Net .
+  buffer: Buf2:List{Message} >, s:System .
 
 --- This displays the sequence of rules applied to reach 
 --- the final state found by the previous search command. 
@@ -70,7 +70,7 @@ search [1]  globalsystem =>*
   outgoingAnswers: OutAns2:List{Question}, 
   outgoingRequests: OutReq2:List{Question},  
   history: hist2:Set{Question},
-  buffer: Buf2:List{Message} >, n:Net 
+  buffer: Buf2:List{Message} >, s:System 
  such that 
    (isBehaviorinList(idb4,qblistener1:List{PushedBehavior}) 
    or not (isCompletedLocal(listener1,idb4,progNode2:Program))) .
