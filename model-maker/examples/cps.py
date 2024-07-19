@@ -117,7 +117,7 @@ def sys_deploy(n):
         ]
     program += [PushB("mysys0", "deploy", "bsys1")]
     program += [
-        PushB(f"listener{i}", "deploy", f"b{i}lst1")
+        PushB(f"listener{i}", "deploy", f"idb{i}lst1")
         for i in range(1,n+1)
     ]
     return Program(program)
@@ -139,16 +139,16 @@ def sys_update_listeners(n):
     program = []
     for i in range(1,n+1): 
         program += [
-            PushB(f"listener{i}", "update", f"b{2+i*2}"),
-            PushB(f"listener{i}", "deploy", f"b{3+i*2}")
+            PushB(f"listener{i}", "update", f"idb{2+i*2}"),
+            PushB(f"listener{i}", "deploy", f"idb{3+i*2}")
         ]
     return Program(program)
 
 def sensor_update_listeners(i):
     progr = [
-        PushB(f"sensor{i}", "pause", f"b0"),
-        Wait(f"listener{i}", f"b{2+i*2}"),
-        PushB(f"sensor{i}", "start", f"b1")
+        PushB(f"sensor{i}", "pause", f"idb0"),
+        Wait(f"listener{i}", f"idb{2+i*2}"),
+        PushB(f"sensor{i}", "start", f"idb1")
     ]
     return Program(progr)
 
