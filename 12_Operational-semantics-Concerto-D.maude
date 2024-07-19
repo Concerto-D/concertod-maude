@@ -1,0 +1,542 @@
+--- Concerto-D Operational Semantics ---
+
+mod OPERATIONAL-SEMANTICS is
+
+        inc CONCERTO-D-SYSTEM .
+        inc CONSISTENCY-PORTS-FIRING-TRANSITION .
+        inc CONSISTENCY-PORTS-ENTERING-PLACE .
+        inc COLLECT-EXTERNAL-MESSAGES-FIRING .
+        inc COLLECT-EXTERNAL-MESSAGES-WAIT .
+        inc COLLECT-EXTERNAL-MESSAGES-DISCONNECT .
+        inc COLLECT-EXTERNAL-MESSAGES-ENTERING-PLACE .
+        inc UPDATE-COMMUNICATION-MESSAGES .
+
+  --- Considering two nodes x and y
+
+  vars Dst Id1 Id2 : Id .
+  var Idsx Idsy : Ids .
+  var QY : Query .
+  var Q : Question .
+  vars Isx Isy : Instances .
+  vars Csx Csy : Connections .
+  vars RPx, RPy : Program .
+  vars eStatex eStatey : Map{Question, Bool} .
+  vars pendingQx pendingQy : List{Question} . 
+  vars OutReqx OutReqy : List{Question} .
+  vars Hx Hy : Set{Question} .
+  vars iMsgsx iMsgsy : List{Message} .
+  var Val : Bool .
+  var Ct : ComponentType .
+  var Use : UsePort .
+  var Pro : ProvidePort .
+
+  vars Qb : List{PushedBehavior} .
+  var B : Behavior .
+  var M : Marking .
+  var IdB : Id .
+
+  vars P P1 : Place .
+  var Ps : Places .
+  vars Ts : Transitions .
+  var TsB : Transitions .
+  var Tes : TransitionEndings .
+  var Ss : Stations .
+  var S : Station .
+
+  -------------------------------------------------Rules for component evolution------------------------------------------------------
+  ------------------------------------------------------------------------------------------------------------------------------------
+
+crl [FiringTransitions] : 
+    < nodeInventory: Idsx,
+      instances: (Id1 |-> { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m((P, Ps),Ts,Tes) }) , Isx,
+      connections: Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      > 
+    =>
+    < nodeInventory: Idsx,
+      instances:  (Id1 |-> { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m(Ps,union(Ts, getTransitionsofPlace(TsB,P) ),Tes) }), Isx , 
+      connections: Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >  
+    if ( getTransitionsofPlace(TsB,P) =/= empty and
+        isSafeToFire(Idsx,m(Ps,union(Ts, getTransitionsofPlace(TsB,P) ),Tes) ,(Id1 |-> { type: Ct,
+        queue: (IdB ; b(TsB)) Qb, marking: m(P, Ps,Ts,Tes) } ,Isx),eStatex,getPConnectionsofCInst(Id1, Csx))) . 
+
+
+  rl [EndingTransition] : 
+    < nodeInventory: Idsx,
+      instances: (Id1 |-> { type: Ct, queue: Qb, marking: m(Ps, t(P1,S,Ss), Ts,Tes) }) , Isx,
+      connections: Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      > 
+    =>
+    < nodeInventory: Idsx,
+      instances: (Id1 |-> { type: Ct, queue: Qb, marking: m(Ps, Ts, te(t(P1,S,Ss),S), Tes ) }) , Isx,
+      connections: Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx  >   .
+
+  crl [EnteringPlace] : 
+    < nodeInventory: Idsx,
+      instances: (Id1 |-> { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m(Ps, Ts, te(t(P1,S,Ss),S), Tes  ) }), Isx,
+      connections: Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >   
+    =>
+    < nodeInventory: Idsx,
+      instances: (Id1 |-> { type: Ct, queue: (IdB ; b(TsB)) Qb,
+      marking: m(getPlacefromStation(S,(Ct).stationPlaces),Ps, Ts, rmTesOfStation(Tes,S) ) }) , Isx,
+      connections: Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >  
+    if 
+      (isSatisfiedTransitionEndingStation(S,TsB,te(t(P1,S,Ss),S), Tes) and 
+      isConnectedAndAllowed(Idsx,Id1,getPlacefromStation(S,(Ct).stationPlaces), (Ct).groupUses, { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m(Ps, Ts, te(t(P1,S,Ss),S), Tes) },
+      { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m(getPlacefromStation(S,(Ct).stationPlaces),Ps, Ts, rmTesOfStation(Tes,S) ) } ,Isx, Csx,eStatex)
+      ) .  
+
+  crl [FinishingBehavior] : 
+    < nodeInventory: Idsx,
+      instances: (Id1 |-> { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m(Ps,empty,empty) }) , Isx,
+      connections: Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >  
+    =>
+    < nodeInventory: Idsx,
+      instances: (Id1 |-> { type: Ct, queue: Qb, marking: m(Ps,empty,empty) })  , Isx,
+      connections: Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >  
+    if (intersection(Ps,getSourcesOfTransitions(TsB)) == empty) .
+
+  -------------------------------------------------- Rules for program instructions------------------------------------------------------------
+  ---------------------------------------------------------------------------------------------------------------------------------------------
+ 
+
+  crl [AddComponentInstance] :   
+    < nodeInventory: Idsx,
+      instances: Isx,
+      connections: Csx,
+      program: add(Id1, Ct) RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >    
+    =>
+    < nodeInventory: Idsx,
+      instances: insert(Id1, { type: Ct, queue: nil, 
+                               marking: m((Ct).initial, empty, empty) }, Isx),
+      connections: Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >     
+    if (not $hasMapping(Isx, Id1))   .  
+
+  crl [DeleteComponentInstance] : 
+    < nodeInventory: Idsx,
+      instances: (Id1 |-> { type: Ct, queue: Qb, marking: M }) ,Isx,
+      connections: Csx,
+      program: del(Id1) RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >   
+    =>   
+    < nodeInventory: Idsx,
+      instances: Isx,
+      connections: Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >   
+    if (not isCInstinConnections(Id1,Csx) ) . 
+
+  crl [ConnectPorts] : 
+    < nodeInventory: Idsx,
+      instances: (Dst |-> { type: Ct, queue: Qb, marking: M }) , Isx,
+      connections: Csx,
+      program: con((Id1,Use)--(Id2,Pro)) RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >     
+    =>   
+    < nodeInventory: Idsx,
+      instances: (Dst |-> { type: Ct, queue: Qb, marking: M }) , Isx,
+      connections: (Id1,Use)--(Id2,Pro), Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      > 
+    if (Id1 =/= Id2 and ((Dst == Id1) or (Dst == Id2)) and (not isUseinConnections(Id1,Use,Csx)) ) . 
+
+  crl [disconnectPorts] : 
+    < nodeInventory: Idsx,
+      instances: Isx,
+      connections: (Id1,Use)--(Id2,Pro), Csx, 
+      program: dcon((Id1,Use)--(Id2,Pro)) RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >     
+    =>  
+    < nodeInventory: Idsx,
+      instances: Isx,
+      connections: Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      > 
+    if
+    ( 
+    question([ dst: Id1 , query: onDisconnect((Id1,Use)--(Id2,Pro)) ],Idsx,eStatex,Isx,Csx,dcon((Id1,Use)--(Id2,Pro)) RPx) and
+    question([ dst: Id2 , query: onDisconnect((Id1,Use)--(Id2,Pro)) ],Idsx,eStatex,Isx,Csx,dcon((Id1,Use)--(Id2,Pro)) RPx) and 
+    not(question([ dst: Id1 , query: isActive(Use) ],Idsx,eStatex,Isx,Csx,dcon((Id1,Use)--(Id2,Pro)) RPx))
+    ) .
+  
+  crl [PushingBehavior] : 
+   < nodeInventory: Idsx,
+     instances: (Id1 |-> { type: Ct, queue: Qb, marking: M }) , Isx,
+     connections: Csx, 
+     program: pushB(Id1, B, IdB) RPx,
+     externState: eStatex,
+     pendingQuestions: pendingQx,
+     outgoingQuestions: OutReqx,
+     history: Hx,
+     incomingMsgs: iMsgsx >  
+    =>   
+   < nodeInventory: Idsx,
+     instances: ( Id1 |-> { type: Ct, queue: append(Qb,(IdB ; B)), marking: M } ), Isx,
+     connections: Csx,
+     program: RPx,
+     externState: eStatex,
+     pendingQuestions: pendingQx,
+     outgoingQuestions: OutReqx,
+     history: Hx,
+     incomingMsgs: iMsgsx 
+      >   
+    if (B in (Ct).behaviors) .
+
+  --- TODO éventuel (à appliquer partout) Fred manipuler les queues directement dans la règle sans evaluation
+  --- TODO plus de règles (locales et externes)
+  crl [Waiting] : 
+    < nodeInventory: Idsx,
+      instances: ( Id1 |-> { type: Ct, queue: Qb, marking: M }), Isx,
+      connections: Csx, 
+      program: wait(Id2,IdB) RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >  
+    =>   
+    < nodeInventory: Idsx,
+      instances: (Id1 |-> { type: Ct, queue: Qb, marking: M }), Isx,
+      connections: Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >  
+    if (question([ dst: Id2 , query: isCompleted(IdB) ],Idsx,eStatex,Isx,Csx,wait(Id2,IdB) RPx)) .
+   
+  -----------------------------------------------Rules for collecting messages related to external used functions------------------------------------------
+  ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  crl [AskQuestionForFiringTransitions] : 
+    < nodeInventory: Idsx,
+      instances: (Id1 |-> { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m((P, Ps),Ts,Tes) }) , Isx,
+      connections: Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >   
+    =>
+    < nodeInventory: Idsx, 
+      instances:  (Id1 |-> { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m((P, Ps),Ts,Tes) }) , Isx ,
+      connections: Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: append(OutReqx,collectMsgFiring(Idsx,m(Ps,union(Ts, getTransitionsofPlace(TsB,P) ),Tes),
+      (Id1 |-> { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m((P, Ps),Ts,Tes) }) , Isx,getPConnectionsofCInst(Id1,Csx),eStatex,Hx,OutReqx)),
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >   
+    if (getTransitionsofPlace(TsB,P) =/= empty and collectMsgFiring(Idsx,m(Ps,union(Ts, getTransitionsofPlace(TsB,P) ),Tes),
+    (Id1 |-> { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m((P, Ps),Ts,Tes) }) , Isx,getPConnectionsofCInst(Id1,Csx ),eStatex,Hx,OutReqx) =/= nil) . 
+
+  crl [AskQuestionForEnteringPlace] : 
+    < nodeInventory: Idsx,
+      instances: (Id1 |-> { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m(Ps, Ts, te(t(P,S,Ss),S), Tes) })  , Isx,
+      connections: Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      > 
+    => 
+    < nodeInventory: Idsx,
+      instances: (Id1 |-> { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m(Ps, Ts, te(t(P,S,Ss),S), Tes  ) })  , Isx,
+      connections: Csx,
+      program: RPx, 
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: append(OutReqx,collectMsgEnteringPlace(Idsx,Id1,getPlacefromStation(S,(Ct).stationPlaces), (Ct).groupUses, 
+      { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m(Ps, Ts, te(t(P,S,Ss),S), Tes  ) },
+      { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m(getPlacefromStation(S,(Ct).stationPlaces),Ps, Ts, rmTesOfStation(Tes,S) ) },
+      Isx,Csx,eStatex,Hx,OutReqx)), 
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >  
+    if 
+    ( isSatisfiedTransitionEndingStation(S,TsB,te(t(P,S,Ss),S), Tes)  and
+      (collectMsgEnteringPlace(Idsx,Id1,getPlacefromStation(S,(Ct).stationPlaces), (Ct).groupUses, 
+      { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m(Ps, Ts, te(t(P,S,Ss),S), Tes) },
+      { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m(getPlacefromStation(S,(Ct).stationPlaces),Ps, Ts, rmTesOfStation(Tes,S) ) },
+      Isx, Csx,eStatex,Hx,OutReqx) =/= nil )
+    ) .
+
+  crl [AskQuestionForDisconnectPorts] : 
+    < nodeInventory: Idsx,
+      instances: Isx,
+      connections: ((Id1,Use)--(Id2,Pro)), Csx,
+      program: dcon((Id1,Use)--(Id2,Pro)) RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >     
+    =>  
+    < nodeInventory: Idsx,
+      instances: Isx,
+      connections: ((Id1,Use)--(Id2,Pro)), Csx,
+      program: dcon((Id1,Use)--(Id2,Pro)) RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: append(OutReqx,collectMsgDisconnect(Idsx,((Id1,Use)--(Id2,Pro)),eStatex,Hx,OutReqx)),
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >    
+    if ( (collectMsgDisconnect(Idsx,(Id1,Use)--(Id2,Pro),eStatex,Hx,OutReqx) =/= nil) ) .
+
+  crl [AskQuestionForWait] :
+    < nodeInventory: Idsx,
+      instances: Isx,
+      connections: Csx,
+      program: wait(Id1,IdB) RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >     
+    =>  
+    < nodeInventory: Idsx,
+      instances: Isx,
+      connections: Csx,
+      program: wait(Id1,IdB) RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx, 
+      outgoingQuestions: append(OutReqx,collectMsgWait(Idsx,Id1,IdB,eStatex,Hx,OutReqx)),
+      history: Hx,
+      incomingMsgs: iMsgsx 
+      >     
+    if (collectMsgWait(Idsx,Id1,IdB,eStatex,Hx,OutReqx) =/= nil ) .
+
+  --------------------------------------------------------------Rules for communication---------------------------------------------------------------------
+  ----------------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+rl [SendQuestion] : 
+    < nodeInventory: Idsx, 
+      instances: Isx, 
+      connections: Csx, 
+      program: RPx, 
+      externState: eStatex, 
+      pendingQuestions: pendingQx, 
+      outgoingQuestions: [ dst: Dst, query: QY ] OutReqx, 
+      history: Hx,
+      incomingMsgs: iMsgsx > , 
+    < nodeInventory: (Dst, Idsy), 
+      instances: Isy, 
+      connections: Csy, 
+      program: RPy, 
+      externState: eStatey, 
+      pendingQuestions: pendingQy, 
+      outgoingQuestions: OutReqy, 
+      history: Hy,
+      incomingMsgs: iMsgsy >
+    => 
+    < nodeInventory: Idsx, 
+      instances: Isx, 
+      connections: Csx, 
+      program: RPx, 
+      externState: eStatex,
+      pendingQuestions: pendingQx, 
+      outgoingQuestions: OutReqx, 
+      history: [ dst: Dst, query: QY ], Hx,
+      incomingMsgs: iMsgsx > ,
+    < nodeInventory: (Dst, Idsy), 
+      instances: Isy, 
+      connections: Csy, 
+      program: RPy, 
+      externState: eStatey, 
+      pendingQuestions:  pendingQy,
+      outgoingQuestions: OutReqy,
+      history: Hy,
+      incomingMsgs: append(iMsgsy, mkMsg([ dst: Dst, query: QY ]))     > .
+    
+
+  crl [SendAnswer] : 
+    < nodeInventory: Idsx, 
+      instances: Isx, 
+      connections: Csx, 
+      program: RPx, 
+      externState: eStatex, 
+      pendingQuestions: Q pendingQx,  
+      outgoingQuestions: OutReqx, 
+      history: Hx,
+      incomingMsgs: iMsgsx > , 
+    < nodeInventory: Idsy, 
+      instances: Isy, 
+      connections: Csy, 
+      program: RPy, 
+      externState: eStatey, 
+      pendingQuestions: pendingQy, 
+      outgoingQuestions: OutReqy, 
+      history: Q, Hy,
+      incomingMsgs: iMsgsy >
+    => 
+    < nodeInventory: Idsx, 
+      instances: Isx, 
+      connections: Csx, 
+      program: RPx, 
+      externState: resetState(eStatex,getIdsForReset(Csx,Q,localQuestion(Q,Isx,Csx,RPx))) ,
+      pendingQuestions: pendingQx, 
+      outgoingQuestions: OutReqx, 
+      history: Hx,
+      incomingMsgs: iMsgsx > ,
+    < nodeInventory: Idsy, 
+      instances: Isy, 
+      connections: Csy, 
+      program: RPy, 
+      externState: eStatey,
+      pendingQuestions: pendingQy, 
+      outgoingQuestions: OutReqy,
+      history: (Q, Hy),
+      incomingMsgs: append(iMsgsy, mkMsg([ question: Q, value: localQuestion(Q,Isx,Csx,RPx) ])) > 
+    if (not occurs(mkMsg(Q), iMsgsy)) .
+
+    rl [ReceiveQuestion] : 
+    < nodeInventory: (Dst, Idsx),
+      instances: Isx,
+      connections: Csx,
+      program: RPx,
+      externState: eStatex,
+      pendingQuestions: pendingQx,
+      outgoingQuestions: OutReqx,
+      history: Hx,
+      incomingMsgs: mkMsg([dst: Dst, query: QY]) iMsgsx >   
+    => 
+  < nodeInventory: (Dst,Idsx),
+    instances: Isx,
+    connections: Csx,
+    program: RPx,
+    externState: eStatex,
+    pendingQuestions: append(pendingQx,[ dst: Dst, query: QY ]), 
+    outgoingQuestions: OutReqx,
+    history: Hx,
+    incomingMsgs: iMsgsx >  .
+
+    rl [ReceiveAnswer] : 
+  < nodeInventory: Idsx,
+    instances: Isx,
+    connections: Csx,
+    program: RPx,
+    externState: eStatex,
+    pendingQuestions: pendingQx, 
+    outgoingQuestions: OutReqx,
+    history: (Q,Hx),
+    incomingMsgs: mkMsg([ question: Q, value: Val ]) iMsgsx >  
+      =>
+  < nodeInventory: Idsx,
+    instances: Isx,
+    connections: Csx,
+    program: RPx,
+    externState: insert(Q,Val,eStatex),
+    pendingQuestions: pendingQx, 
+    outgoingQuestions: OutReqx,
+    history: Hx,
+    incomingMsgs: iMsgsx > .
+    
+endm
+

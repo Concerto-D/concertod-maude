@@ -1,0 +1,118 @@
+--- Concerto-D Component Types ---
+
+fmod COMPONENT-TYPE is
+
+  inc DECLARATION-SORTS .   
+  inc STATION-PLACE .
+  inc TRANSITION-TRANSITION-ENDING .
+  inc BEHAVIOR .
+  inc PORT .
+  inc MARKING . 
+  
+  sorts ComponentType GroupUses GroupProvides .  
+  pr SET{GroupUse} .
+  subsort Set{GroupUse} < GroupUses . 
+  pr SET{GroupProvide} .
+  subsort Set{GroupProvide} < GroupProvides . 
+
+  vars Ps Ps1 : Places .
+  var InitPl : InitialPlace .
+  var SPs : StationPlaces .
+  var Ts : Transitions . 
+  var Bs : Behaviors .
+  var GU : GroupUses .
+  var GP : GroupProvides .
+  vars Use Use1 : UsePort .
+  vars Pr Pr1 : ProvidePort .
+  var Beh  : Behavior .
+  var Ct : ComponentType .
+
+  op g(_?_) : UsePort Places -> GroupUse [ctor] . 
+  --- GroupUse is defined as tuple : the use port and a group (set) of places
+  op g(_!_) : ProvidePort Places -> GroupProvide [ctor] . 
+  --- GroupProvide is defined as tuple : the Provide port and a 
+  --- group (set) of places
+  op { places: _, 
+       initial: _, 
+       stationPlaces: _, 
+       transitions: _, 
+       behaviors: _, 
+       groupUses: _,
+       groupProvides: _ } : 
+  Places InitialPlace StationPlaces Transitions Behaviors 
+  GroupUses GroupProvides -> ComponentType 
+  [ctor format(n++i s s d n++i s d ni s d ni s d ni 
+              s d ni s d ni s s s----i) ] . 
+
+  
+  ---Auxiliariy operations on groups 
+
+  op getPlacesOfUse(_,_) : UsePort GroupUses -> Places . 
+  --- get places bound to a use port
+  eq getPlacesOfUse(Use,g(Use ? Ps),GU) = Ps . 
+  eq getPlacesOfUse(Use,GU) = empty [owise] . 
+   
+  op getPlacesOfProvide(_,_) : ProvidePort GroupProvides -> Places . 
+  --- get places bound to a provide port
+  eq getPlacesOfProvide(Pr,(g(Pr ! Ps),GP)) = Ps  . 
+  eq getPlacesOfProvide(Pr,GP) = empty [owise] . 
+
+
+  --- Accessor operations in an object-oriented style
+
+  op _ .initial : ComponentType -> Place .
+  --- get the initial place of component type
+  eq { places: Ps, initial: InitPl, stationPlaces: SPs, 
+       transitions: Ts, behaviors: Bs, groupUses: GU,
+       groupProvides: GP }.initial = InitPl .
+
+  op _ .stationPlaces : ComponentType -> StationPlaces . 
+  --- get the set of tuples (station; place)
+  eq { places: Ps, initial: InitPl, stationPlaces: SPs,
+       transitions: Ts, behaviors: Bs, groupUses: GU,
+       groupProvides: GP }.stationPlaces = SPs .
+
+  op _ .groupUses : ComponentType -> GroupUses . 
+  --- get the set of the use ports of the component
+  eq { places: Ps, initial: InitPl, stationPlaces: SPs,
+       transitions: Ts, behaviors: Bs, groupUses: GU,
+       groupProvides: GP }.groupUses = GU .
+
+  op _ .groupProvides : ComponentType -> GroupProvides . 
+  --- get the set of the provide ports of the component
+  eq { places: Ps, initial: InitPl, stationPlaces: SPs,
+       transitions: Ts, behaviors: Bs, groupUses: GU,
+       groupProvides: GP }.groupProvides = GP .
+
+  op _ .behaviors : ComponentType -> Behaviors . 
+  --- get the set of the provide ports of the component
+  eq { places: Ps, initial: InitPl, stationPlaces: SPs,
+       transitions: Ts, behaviors: Bs, groupUses: GU,
+       groupProvides: GP }.behaviors = Bs .
+
+
+  --- A few `methods' for components types
+
+  op _ .getPlacesOfPort(_) : ComponentType Port -> Places . 
+  --- to get places bound to a port use or provide
+  eq Ct .getPlacesOfPort(Use) = getPlacesOfUse(Use, (Ct).groupUses)  .
+  eq Ct .getPlacesOfPort(Pr)  = getPlacesOfProvide(Pr, (Ct).groupProvides) .
+  
+  op _ .getMarkingOfGroup(_) : ComponentType Places -> Marking .   
+  --- give marked elements (places, transitions, TransitionEndings) 
+  --- of a group of places
+  eq { places: Ps, initial: InitPl, stationPlaces: SPs, transitions: Ts, 
+       behaviors: Bs, groupUses: GU, groupProvides: GP }
+       .getMarkingOfGroup(Ps1) = 
+  m(Ps1, 
+    transitionsOfPlacesWithRespectToStations(Ps1, Ts, 
+      getStationsfromGroup(Ps1,SPs)), 
+    getEndingsfTransitions(
+      transitionsOfPlacesWithRespectToStations(Ps1,Ts,
+        getStationsfromGroup(Ps1,SPs)))) .
+
+endfm
+
+
+
+

@@ -1,12 +1,13 @@
+--- Concerto-D Whole System State ---
 
-fmod NET-D-CONFIGURATION is 
+fmod CONCERTO-D-SYSTEM is 
 
     --- formalizes a distributed system of several nodes as a set on its local configurations.
     inc CONCERTO-D-CONFIGURATION .
 
-    sorts Net .
+    sorts System .
     pr SET{LocalConfiguration} .
-    subsort Set{LocalConfiguration} < Net .
+    subsort Set{LocalConfiguration} < System .
 
 endfm
 

@@ -1,5 +1,5 @@
------------------------------------view definitions -----------------------------------------------------
----------------------------------------------------------------------------------------------------------
+--- Views ---
+
 view Place from TRIV to DECLARATION-SORTS is
   sort Elt to Place .
 endv
@@ -12,13 +12,8 @@ view Station from TRIV to DECLARATION-SORTS is
   sort Elt to Station .
 endv
 
-view IdentInstance from TRIV to DECLARATION-SORTS is
- sort Elt to IdentInstance .
-endv
-
-
-view MsgToUse from TRIV to DECLARATION-SORTS is
-  sort Elt to MsgToUse .
+view Id from TRIV to DECLARATION-SORTS is
+ sort Elt to Id .
 endv
 
 view Send from TRIV to DECLARATION-SORTS is
@@ -33,7 +28,6 @@ view SentHistory from TRIV to DECLARATION-SORTS is
   sort Elt to SentHistory .
 endv
 
-
 view Connection from TRIV to DECLARATION-SORTS is
  sort Elt to Connection .
 endv
@@ -46,7 +40,6 @@ view Transition from TRIV to DECLARATION-SORTS is
   sort Elt to Transition .
 endv
 
-
 view TransitionEnding from TRIV to DECLARATION-SORTS is
   sort Elt to TransitionEnding .
 endv
@@ -55,8 +48,8 @@ view Behavior from TRIV to DECLARATION-SORTS is
   sort Elt to Behavior .
 endv
 
-view BehaviorWithId from TRIV to DECLARATION-SORTS is
-  sort Elt to BehaviorWithId .
+view PushedBehavior from TRIV to DECLARATION-SORTS is
+  sort Elt to PushedBehavior .
 endv
 
 view GroupUse from TRIV to DECLARATION-SORTS is
@@ -71,10 +64,14 @@ view LocalConfiguration from TRIV to DECLARATION-SORTS is
  sort Elt to LocalConfiguration .
 endv
 
-view Instruction from TRIV to DECLARATION-SORTS is
- sort Elt to Instruction .
+view Action from TRIV to DECLARATION-SORTS is
+ sort Elt to Action .
 endv
 
----view Request from TRIV to REQUEST is
- --- sort Elt to Request .
----endv
+view Question from TRIV to DECLARATION-SORTS is 
+  sort Elt to Question .
+endv
+
+view Message from TRIV to DECLARATION-SORTS is 
+  sort Elt to Message .
+endv
