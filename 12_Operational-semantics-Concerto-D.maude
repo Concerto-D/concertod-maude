@@ -248,9 +248,9 @@ crl [FiringTransitions] :
       > 
     if
     ( 
-    question([ dst: Id1 , query: onDisconnect((Id1,Use)--(Id2,Pro)) ],Idsx,eStatex,Isx,Csx,dcon((Id1,Use)--(Id2,Pro)) RPx) == true and
-    question([ dst: Id2 , query: onDisconnect((Id1,Use)--(Id2,Pro)) ],Idsx,eStatex,Isx,Csx,dcon((Id1,Use)--(Id2,Pro)) RPx) == true and 
-    question([ dst: Id1 , query: isActive(Use) ],Idsx,eStatex,Isx,Csx,dcon((Id1,Use)--(Id2,Pro)) RPx) == false
+    question([ dst: Id1 , query: onDisconnect((Id1,Use)--(Id2,Pro)) ],Idsx,eStatex,Isx,Csx,dcon((Id1,Use)--(Id2,Pro)) RPx) and
+    question([ dst: Id2 , query: onDisconnect((Id1,Use)--(Id2,Pro)) ],Idsx,eStatex,Isx,Csx,dcon((Id1,Use)--(Id2,Pro)) RPx) and 
+    not(question([ dst: Id1 , query: isActive(Use) ],Idsx,eStatex,Isx,Csx,dcon((Id1,Use)--(Id2,Pro)) RPx))
     ) .
   
   crl [PushingBehavior] : 
@@ -300,7 +300,7 @@ crl [FiringTransitions] :
       history: Hx,
       incomingMsgs: iMsgsx 
       >  
-    if (question([ dst: Id2 , query: isCompleted(IdB) ],Idsx,eStatex,Isx,Csx,wait(Id2,IdB) RPx) == true ) .
+    if (question([ dst: Id2 , query: isCompleted(IdB) ],Idsx,eStatex,Isx,Csx,wait(Id2,IdB) RPx)) .
    
   -----------------------------------------------Rules for collecting messages related to external used functions------------------------------------------
   ---------------------------------------------------------------------------------------------------------------------------------------------------------
