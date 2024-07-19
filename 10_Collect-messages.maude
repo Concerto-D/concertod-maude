@@ -34,8 +34,8 @@ fmod COLLECT-EXTERNAL-MESSAGES-FIRING is
   (not [ dst: Id1 , query: isActive(Use) ]  in H) and 
   (not (occurs([ dst: Id1 , query: isActive(Use) ], OutReq)))  and
   (not (Id1 in Ids)) and
-  (funCall([ dst: Id1 , query: isActive(Use) ], Ids, RcvAns, empty, empty, nil) =/= false) and
-  ((localFunCall([ dst: Id2 , query: isActive(Pro)], Is, empty, nil) == true) and (activeMarking(Is[Id2],Pro,NewM) == false))
+  (question([ dst: Id1 , query: isActive(Use) ], Ids, RcvAns, empty, empty, nil) =/= false) and
+  ((localQuestion([ dst: Id2 , query: isActive(Pro)], Is, empty, nil) == true) and (activeMarking(Is[Id2],Pro,NewM) == false))
   ) .
   eq collectMsgFiring(Ids,NewM,Is,(Id1,Use)--(Id2,Pro),Cs,RcvAns,H,OutReq) = collectMsgFiring(Ids,NewM,Is,Cs,RcvAns,H,OutReq) [owise] .
 
@@ -77,7 +77,7 @@ fmod COLLECT-EXTERNAL-MESSAGES-ENTERING-PLACE is
     (not ([ dst: Id2 , query: isConnected((Id1,Use)--(Id2,Pro)) ]  in H)) and 
     (not (occurs([ dst: Id2 , query: isConnected((Id1,Use)--(Id2,Pro)) ],OutReq)))  and
     (not (Id2 in Ids)) and
-    ( externFunCall([ dst: Id2 , query: isConnected((Id1,Use)--(Id2,Pro)) ],RcvAns )   =/= true )
+    ( externQuestion([ dst: Id2 , query: isConnected((Id1,Use)--(Id2,Pro)) ],RcvAns )   =/= true )
     ) .
   eq collectConnected(Ids,Use,Id1,Cs,RcvAns,H,OutReq) = nil [owise] .
 
@@ -87,7 +87,7 @@ fmod COLLECT-EXTERNAL-MESSAGES-ENTERING-PLACE is
       (not [ dst: Id2 , query:  isRefusing(Pro) ] in H) and 
       (not (occurs([ dst: Id2 , query:  isRefusing(Pro) ],OutReq)))  and
       (not (Id2 in Ids)) and  
-      ( externFunCall([ dst: Id2 , query:  isRefusing(Pro) ],RcvAns)   =/= false)   
+      ( externQuestion([ dst: Id2 , query:  isRefusing(Pro) ],RcvAns)   =/= false)   
     ) .
   eq collectAllowed(Ids,Use,Id1,Is,Cs,RcvAns,H,OutReq) = nil [owise] .
 
@@ -112,7 +112,7 @@ fmod COLLECT-EXTERNAL-MESSAGES-WAIT is
     (not ([ dst: Id1 , query:  isCompleted(IdB) ]   in H)) and 
     (not (occurs([ dst: Id1 , query:  isCompleted(IdB) ] ,OutReq)))  and
     (not (Id1 in Ids)) and
-    (externFunCall([ dst: Id1 , query:  isCompleted(IdB) ],RcvAns)   =/= true )
+    (externQuestion([ dst: Id1 , query:  isCompleted(IdB) ],RcvAns)   =/= true )
     ) .
   eq collectMsgWait(Ids,Id1,IdB,RcvAns,H,OutReq) = nil [owise] .
 
@@ -147,7 +147,7 @@ fmod COLLECT-EXTERNAL-MESSAGES-DISCONNECT is
   if(
     (not ([ dst: Id1 , query: isActive(Use) ]   in H)) and 
     (not (occurs([ dst: Id1 , query: isActive(Use) ] ,OutReq)))  and
-    (externFunCall([ dst: Id1 , query: isActive(Use) ],RcvAns )  =/= false )
+    (externQuestion([ dst: Id1 , query: isActive(Use) ],RcvAns )  =/= false )
     ) .
   eq collectActive(Id1,Use,RcvAns,H,OutReq) = nil [owise] .
 
@@ -156,7 +156,7 @@ fmod COLLECT-EXTERNAL-MESSAGES-DISCONNECT is
   if(
     (not ([ dst: Id1 , query: onDisconnect(C) ]   in H)) and 
     (not (occurs([ dst: Id1 , query: onDisconnect(C) ], OutReq))) and
-    (externFunCall([ dst: Id1 , query: onDisconnect(C) ], RcvAns ) =/= true )
+    (externQuestion([ dst: Id1 , query: onDisconnect(C) ], RcvAns ) =/= true )
     ) .
   eq collectDisconnect(Id1,C,RcvAns,H,OutReq) = nil [owise] .
 
