@@ -1,3 +1,5 @@
+--- Concerto-D Reconfiguration Programs ---
+
 fmod PROGRAM is
   
   inc COMPONENT-TYPE .
@@ -24,7 +26,8 @@ fmod PROGRAM is
 
   --- some operations related to program used later
   op noDcon(_,_) :  Connection Program -> Bool .  
-  ---check for a given connection if there is a dcon instruction in a given program
+  --- checks for a given connection whether there is a dcon instruction
+  --- in a given program
   eq noDcon(C,nil) = true .
   eq noDcon(C,A  RP) = (A =/= dcon(C) and noDcon(C,RP)) .
 
@@ -45,7 +48,7 @@ fmod PROGRAM is
   eq onPushB(A, Id1,IdBeh ) = false [owise] .
 
   op isCompletedLocal(_,_,_) : Id Id Program -> Bool .  
-  ---checks for a given program if there is a pushB instruction
+  --- checks for a given program if there is a pushB instruction
   eq isCompletedLocal(Id1,IdBeh, nil) = true .
   ceq isCompletedLocal(Id1,IdBeh,A RP) = 
     isCompletedLocal(Id1,IdBeh,RP) if (not onPushB(A,Id1,IdBeh)) .

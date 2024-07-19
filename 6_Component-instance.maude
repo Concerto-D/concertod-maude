@@ -1,3 +1,5 @@
+--- Concerto-D Component Instances ---
+
 fmod INSTANCE is
   
   inc COMPONENT-TYPE .
@@ -54,8 +56,9 @@ fmod INSTANCE is
   eq arePlacesExitGroup((P1,Ps),Qb,Ss1)  = isPlaceExitGroup(P1,Qb,Ss1) and arePlacesExitGroup(Ps,Qb,Ss1) .  
 
   op isActiveLocal(_,_) : Instance Port -> Bool .   
-  --- checks locally if a port is active (isActive in file 3_ can be a remote call)
-  ---valid when at least the places, tansitions or transition endings marking is non-empty for a given port
+  --- checks locally if a port is active (isActive in file 3_ can be 
+  --- par of a remote question). 
+  --- valid when at least the places, tansitions or transition endings markings --- are non-empty for a given port
   eq isActiveLocal({ type: Ct, queue: Qb, marking: m(Ps,Ts,Tes) }, 
                    Port) = 
   notEmptyMarking(
@@ -64,7 +67,7 @@ fmod INSTANCE is
 
   op isRefusingLocal(_,_) : Instance Port -> Bool .  
   ***( checks locally if a new use connection is refused (isRefusing in file 3_ 
-    can correspond to this local call or a remote call).
+    can correspond to this local call or a remote question).
     A port is refused when only places are marked, and all marked places are 
     ready to leave the group of places of the port according to the current 
     behavior. )

@@ -1,3 +1,5 @@
+--- Concerto-D Component Types ---
+
 fmod COMPONENT-TYPE is
 
   inc DECLARATION-SORTS .   
@@ -42,7 +44,22 @@ fmod COMPONENT-TYPE is
   [ctor format(n++i s s d n++i s d ni s d ni s d ni 
               s d ni s d ni s s s----i) ] . 
 
-  --- some operations related to ComponentType used later
+  
+  ---Auxiliariy operations on groups 
+
+  op getPlacesOfUse(_,_) : UsePort GroupUses -> Places . 
+  --- get places bound to a use port
+  eq getPlacesOfUse(Use,g(Use ? Ps),GU) = Ps . 
+  eq getPlacesOfUse(Use,GU) = empty [owise] . 
+   
+  op getPlacesOfProvide(_,_) : ProvidePort GroupProvides -> Places . 
+  --- get places bound to a provide port
+  eq getPlacesOfProvide(Pr,(g(Pr ! Ps),GP)) = Ps  . 
+  eq getPlacesOfProvide(Pr,GP) = empty [owise] . 
+
+
+  --- Accessor operations in an object-oriented style
+
   op _ .initial : ComponentType -> Place .
   --- get the initial place of component type
   eq { places: Ps, initial: InitPl, stationPlaces: SPs, 
@@ -73,16 +90,9 @@ fmod COMPONENT-TYPE is
        transitions: Ts, behaviors: Bs, groupUses: GU,
        groupProvides: GP }.behaviors = Bs .
 
-  op getPlacesOfUse(_,_) : UsePort GroupUses -> Places . 
-  --- get places bound to a use port
-  eq getPlacesOfUse(Use,g(Use ? Ps),GU) = Ps . 
-  eq getPlacesOfUse(Use,GU) = empty [owise] . 
-   
-  op getPlacesOfProvide(_,_) : ProvidePort GroupProvides -> Places . 
-  --- get places bound to a provide port
-  eq getPlacesOfProvide(Pr,(g(Pr ! Ps),GP)) = Ps  . 
-  eq getPlacesOfProvide(Pr,GP) = empty [owise] . 
-   
+
+  --- A few `methods' for components types
+
   op _ .getPlacesOfPort(_) : ComponentType Port -> Places . 
   --- to get places bound to a port use or provide
   eq Ct .getPlacesOfPort(Use) = getPlacesOfUse(Use, (Ct).groupUses)  .

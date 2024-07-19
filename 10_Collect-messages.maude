@@ -1,6 +1,5 @@
-------- some ops used in the operating rules to determine messages 
-------- related to the remote evaluation of queries whose result 
-------- is used locally
+--- Auxiliary Operations for the Operational Semantics --- 
+--- Operations related to messages ---
 
 fmod COLLECT-EXTERNAL-MESSAGES-FIRING is
 
@@ -18,32 +17,42 @@ fmod COLLECT-EXTERNAL-MESSAGES-FIRING is
   var OutQs : List{Question} .
 
   op collectMsgFiring(_,_,_,_,_,_,_) : Ids Marking Instances Connections Map{Question,Bool} Set{Question} List{Question} -> List{Question} .
-  --- used to determine msg related to external functions that allow to apply the rule firing transition. 
-  --- it aims to build a queue of external [ dst: Id1 , query: isActive(Use) ]  messages for use ports whose current valuation in Map{Question,Bool} does not allow the rule to be applied; 
-  --- in other words, the evaluation of these messages is true or unknown 
-  --- knowing that the provide port linked to thier use port wants to change the status of its provide port from active to inactive.
-  --- in this case, we add the message [ dst: Id1 , query: isActive(Use) ]  of each use port to the queue of external information, 
-  --- on condition that the question for this message is not currently being processed.
-  --- this last condition is verified if [ dst: Id1 , query: isActive(Use) ]  doesn't belong to either Set{Question} or List{Question}.
+  ***(used to determine msg related to remote questions that allow to apply
+    the rule firing transition. 
+    It aims to build a queue of external [ dst: Id1 , query: isActive(Use) ]  
+    messages for use ports whose current valuation in Map{Question,Bool} does 
+    not allow the rule to be applied.
+    Knowing that the provide port linked to their use port wants to change the
+    status of its provide port from active to inactive, we add the message:
+    [ dst: Id1 , query: isActive(Use) ] of each use port to the queue of
+    questions, on condition that the question for this message is not currently 
+    being processed.
+    This last condition is verified if [ dst: Id1 , query: isActive(Use) ]  
+    doesn't belong to either Set{Question} or List{Question}.)
   eq collectMsgFiring(Ids, M, Is, empty, eState, H, OutQs) = nil .
-  ceq collectMsgFiring(Ids, M, Is, (Id1, Use)--(Id2, Pro), Cs, eState, H, OutQs) = 
-  append([ dst: Id1 , query: isActive(Use) ], collectMsgFiring(Ids,M,Is,Cs,eState,H,OutQs))
-  if
-  (   
-  (not [ dst: Id1 , query: isActive(Use) ]  in H) and 
-  (not (occurs([ dst: Id1 , query: isActive(Use) ], OutQs)))  and
-  (not (Id1 in Ids)) and
-  (question([ dst: Id1 , query: isActive(Use) ], Ids, eState, empty, empty, nil) =/= false) and
-  ((localQuestion([ dst: Id2 , query: isActive(Pro)], Is, empty, nil)) and (not(activeMarking(Is[Id2],Pro,M))))
-  ) .
-  eq collectMsgFiring(Ids,M,Is,(Id1,Use)--(Id2,Pro),Cs,eState,H,OutQs) = collectMsgFiring(Ids,M,Is,Cs,eState,H,OutQs) [owise] .
-
+  ceq collectMsgFiring(Ids, M, Is, 
+                       (Id1, Use)--(Id2, Pro), Cs, eState, H, OutQs) = 
+    append([ dst: Id1 , query: isActive(Use) ], 
+           collectMsgFiring(Ids,M,Is,Cs,eState,H,OutQs))
+  if ((not [dst: Id1 , query: isActive(Use)] in H) and 
+      (not (occurs([dst: Id1, query: isActive(Use)], OutQs))) and
+      (not (Id1 in Ids)) and
+      (question([ dst: Id1, query: isActive(Use) ], 
+                Ids, eState, empty, empty, nil) =/= false) and
+      localQuestion([ dst: Id2 , query: isActive(Pro)], Is, empty, nil) and   
+      not(activeMarking(Is[Id2],Pro,M))) .
+  eq collectMsgFiring(Ids,M,Is,(Id1,Use)--(Id2,Pro),Cs,eState,H,OutQs) = 
+    collectMsgFiring(Ids,M,Is,Cs,eState,H,OutQs) [owise] .
 
 endfm
 
 
---- we follow a similar reasoning to construct the messages for the external functions 
---- needed to apply the rules: entering place, wait and disconnect.
+***(We follow a similar reasoning to construct the messages needed 
+  to apply the rules: 
+  - AskQuestionForEnteringPlace, 
+  - AskQuestionForDisconnectPorts, 
+  - AskQuestionForWait. )
+
 fmod COLLECT-EXTERNAL-MESSAGES-ENTERING-PLACE is
 
   inc CONCERTO-D-CONFIGURATION .
@@ -156,6 +165,3 @@ fmod COLLECT-EXTERNAL-MESSAGES-DISCONNECT is
   eq collectDisconnect(Id1,C,eState,H,OutQs) = nil [owise] .
 
 endfm
-
-
-

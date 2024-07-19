@@ -281,9 +281,8 @@ fmod BEHAVIOR is
   var Beh : Behavior .
 
   op b(_) : Transitions -> Behavior .   
-  ---a behavoir is a set of transitions
+  ---a behavior is a set of transitions
 
-  --- Helene the pushB(id,b) is identified not the behavior itself
   op (_;_) : Id Behavior -> PushedBehavior . 
   ---PushedBehavior is an identified behavior
 
