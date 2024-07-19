@@ -14,22 +14,22 @@ search [5] globalsystem =>!
                             marking: m(sensorRunning, empty, empty) }),
   connections: connectNode3:Connections, 
   program: nil:Program, 
-  externState: externStateNode3:Map{Question,Bool}, 
-  pendingQuestions: OutAns3:List{Question}, 
-  outgoingQuestions: OutReq3:List{Question}, 
+  externState: eStateNode3:Map{Question,Bool}, 
+  pendingQuestions: pendingQ3:List{Question}, 
+  outgoingQuestions: outReq3:List{Question}, 
   history: hist3:Set{Question},
-  incomingMsgs: Buf3:List{Message} >,
+  incomingMsgs: iMsgs3:List{Message} >,
 < nodeInventory: listener1,idInst:Ids,
   instances: (listener1 |-> { type: listenertype:ComponentType, 
                               queue: nil:List{PushedBehavior}, 
                               marking: m(listenerRunning,empty,empty) }), Is:Instances,
   connections: connectNode2:Connections,
   program: nil:Program,
-  externState: externStateNode2:Map{Question,Bool}, 
-  pendingQuestions: OutAns2:List{Question}, 
-  outgoingQuestions: OutReq2:List{Question}, 
+  externState: eStateNode2:Map{Question,Bool}, 
+  pendingQuestions: pendingQ2:List{Question}, 
+  outgoingQuestions: outReq2:List{Question}, 
   history: hist2:Set{Question},
-  incomingMsgs: Buf2:List{Message} >, s:System .
+  incomingMsgs: iMsgs2:List{Message} >, s:System .
 
 --- This displays the sequence of rules applied to reach 
 --- the final state found by the previous search command. 
@@ -55,22 +55,22 @@ search [1]  globalsystem =>*
                             marking: marksensor1:Marking }) , 
   connections: connectNode3:Connections, 
   program: progNode3:Program, 
-  externState: externStateNode3:Map{Question,Bool}, 
-  pendingQuestions: OutAns3:List{Question}, 
-  outgoingQuestions: OutReq3:List{Question}, 
+  externState: eStateNode3:Map{Question,Bool}, 
+  pendingQuestions: pendingQ3:List{Question}, 
+  outgoingQuestions: outReq3:List{Question}, 
   history: hist3:Set{Question},
-  incomingMsgs: Buf3:List{Message} >, 
+  incomingMsgs: iMsgs3:List{Message} >, 
 < nodeInventory: listener1, idInst:Ids,
   instances: (listener1 |-> { type: listenertype:ComponentType, 
                               queue: qblistener1:List{PushedBehavior}, 
                               marking: marklistener1:Marking }), Is:Instances,
   connections: connectNode2:Connections,
   program: progNode2:Program,
-  externState: externStateNode2:Map{Question, Bool}, 
-  pendingQuestions: OutAns2:List{Question}, 
-  outgoingQuestions: OutReq2:List{Question},  
+  externState: eStateNode2:Map{Question, Bool}, 
+  pendingQuestions: pendingQ2:List{Question}, 
+  outgoingQuestions: outReq2:List{Question},  
   history: hist2:Set{Question},
-  incomingMsgs: Buf2:List{Message} >, s:System 
+  incomingMsgs: iMsgs2:List{Message} >, s:System 
  such that 
    (isBehaviorinList(idb4,qblistener1:List{PushedBehavior}) 
    or not (isCompletedLocal(listener1,idb4,progNode2:Program))) .
