@@ -284,8 +284,8 @@ def gen_maude(example_name, inventory):
         eq_confs_lines.append(f"op {eq_conf_name} : ->  LocalConfiguration .")
         eq_confs_lines.append(eq_conf_line)
         net_confs.append(eq_conf_name)
-    net_op = "op globalSystem : -> System ."
-    net_eq = f"eq globalSystem = {', '.join(net_confs)} . "
+    net_op = "op globalsystem : -> System ."
+    net_eq = f"eq globalsystem = {', '.join(net_confs)} . "
     all_lines = all_lines + eq_confs_lines + [net_op, net_eq]
     indented_lines = ['\t' + line for line in all_lines]
     indented_maude = '\n'.join(indented_lines)
