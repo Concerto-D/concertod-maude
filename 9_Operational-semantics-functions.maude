@@ -12,7 +12,7 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
   var Use : UsePort .
   var Pro : ProvidePort .
   var Cs : Connections .
-  var RcvAns : Map{Question, Bool} .
+  var eState : Map{Question, Bool} .
   var Ids  : Ids .
 
   op isSafeToFire(_,_,_,_,_) : Ids Marking Instances Map{Question, Bool} Connections ->  Bool .
@@ -27,15 +27,15 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
     instance (provider) does not affect the corresponding user i.e., if the
     provider for each connection after a firing goes from active to inactive,
     this implies that the user must be inactive. )
-  eq isSafeToFire(Ids, NewM, Is, RcvAns, (Id1, Use)--(Id2, Pro), Cs) = isSafeToFire(Ids, NewM, Is, RcvAns, Cs) and 
+  eq isSafeToFire(Ids, NewM, Is, eState, (Id1, Use)--(Id2, Pro), Cs) = isSafeToFire(Ids, NewM, Is, eState, Cs) and 
   (
     ( (question([ dst: Id2 , query: isActive(Pro) ], 
-               Ids, RcvAns, Is, empty, nil) == true) and 
+               Ids, eState, Is, empty, nil) == true) and 
     (activeMarking(Is[Id2], Pro, NewM) == false)) 
     implies  (question([ dst: Id1 , query: isActive(Use) ], 
-                      Ids, RcvAns, Is, empty, nil ) == false) 
+                      Ids, eState, Is, empty, nil ) == false) 
   ) .
-  eq isSafeToFire(Ids, NewM, Is, RcvAns, empty) = true .
+  eq isSafeToFire(Ids, NewM, Is, eState, empty) = true .
 
 endfm
 
@@ -51,7 +51,7 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   vars I I' : Instance .
   var Is : Instances .
   var Cs : Connections .
-  var RcvAns : Map{Question, Bool} .
+  var eState : Map{Question, Bool} .
   vars Use1 Use : UsePort .
   var Pro : ProvidePort .
   vars Id Id1 Id2 : Id .
@@ -78,29 +78,29 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   ---  knowing that the place of the function belongs to this use port, then
   ---  two conditions must be met Connected and allowed of of its provider 
   ---  ports.
-  eq isConnectedAndAllowed(Ids, Id1, P, empty, I, I', Is, Cs, RcvAns) = true .
+  eq isConnectedAndAllowed(Ids, Id1, P, empty, I, I', Is, Cs, eState) = true .
   ceq isConnectedAndAllowed(Ids, Id1, P, 
-                            g(Use ? Ps), GU, I, I', Is, Cs, RcvAns) = 
-  connected(Ids, Use, Id1, Cs, RcvAns) and 
-  allowed(Ids, Use, Id1, Is, Cs, RcvAns) and 
-  isConnectedAndAllowed(Ids ,Id1,P,GU,I,I',Is,Cs,RcvAns) 
+                            g(Use ? Ps), GU, I, I', Is, Cs, eState) = 
+  connected(Ids, Use, Id1, Cs, eState) and 
+  allowed(Ids, Use, Id1, Is, Cs, eState) and 
+  isConnectedAndAllowed(Ids ,Id1,P,GU,I,I',Is,Cs,eState) 
   if ((P in Ps) and isActiveLocal(I, Use) == false and isActiveLocal(I', Use) == true).     
   --- in the previous condition we use active directly since it's a local 
   --- treatment for the concerned configuration
-  eq isConnectedAndAllowed(Ids,Id1,P,g(Use ? Ps),GU,I,I',Is,Cs,RcvAns) = isConnectedAndAllowed(Ids,Id1,P,GU,I,I',Is,Cs,RcvAns) [owise] .
+  eq isConnectedAndAllowed(Ids,Id1,P,g(Use ? Ps),GU,I,I',Is,Cs,eState) = isConnectedAndAllowed(Ids,Id1,P,GU,I,I',Is,Cs,eState) [owise] .
 
   --- Helene I think here it cannot be changed to isConnectedLocal as using question
   --- same for allowed
 
   op connected(_,_,_,_,_) : Ids UsePort Id Connections Map{Question, Bool} -> Bool . 
   ---  connection must be verified on noValueYet user and provider instances
-  ceq connected(Ids, Use, Id1, (Id1, Use)--(Id2, Pro), Cs, RcvAns) = true 
-  if(question([ dst: Id2 , query: isConnected((Id1, Use)--(Id2, Pro)) ], Ids, RcvAns, empty, (Id1, Use)--(Id2, Pro), Cs, nil )   == true ) .
-  eq connected(Ids, Use, Id1, Cs, RcvAns) = false [owise] .
+  ceq connected(Ids, Use, Id1, (Id1, Use)--(Id2, Pro), Cs, eState) = true 
+  if(question([ dst: Id2 , query: isConnected((Id1, Use)--(Id2, Pro)) ], Ids, eState, empty, (Id1, Use)--(Id2, Pro), Cs, nil )   == true ) .
+  eq connected(Ids, Use, Id1, Cs, eState) = false [owise] .
 
   op allowed(_,_,_,_,_,_) : Ids UsePort  Id Instances Connections Map{Question, Bool} -> Bool . 
   --- also the provide port connected to this use port of the instance must not be refused
-  eq allowed(Ids, Use, Id1, Is, (Id1, Use)--(Id2, Pro), Cs, RcvAns) = (question([ dst: Id2 , query: isRefusing(Pro) ], Ids, RcvAns, Is, empty, nil) == false) . 
-  eq allowed(Ids, Use, Id1, Is, Cs, RcvAns) = false [owise] .  ---is not important since connected ensures that there is a connection.
+  eq allowed(Ids, Use, Id1, Is, (Id1, Use)--(Id2, Pro), Cs, eState) = (question([ dst: Id2 , query: isRefusing(Pro) ], Ids, eState, Is, empty, nil) == false) . 
+  eq allowed(Ids, Use, Id1, Is, Cs, eState) = false [owise] .  ---is not important since connected ensures that there is a connection.
 
 endfm

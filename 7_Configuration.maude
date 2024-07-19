@@ -26,7 +26,7 @@ fmod CONCERTO-D-CONFIGURATION is
   var Q : Query .
   var Id : Id .
   vars R1 R2 : Question .
-  var RcvAns : Map{Question, Bool} .
+  var eState : Map{Question, Bool} .
   var Val : Bool .
  
   op  < nodeInventory: _, 
@@ -52,8 +52,8 @@ fmod CONCERTO-D-CONFIGURATION is
 
   op externQuestion(_,_) : Question Map{Question, Bool}  -> Bool .  
   --- get the evalaution of an external function related to a Question from Map{Question, Bool}
-  eq externQuestion(R1, R1 |-> Val, RcvAns ) = Val .
-  --- eq externFunCall(R1, RcvAns ) =  noValueYet [owise] .
+  eq externQuestion(R1, R1 |-> Val, eState ) = Val .
+  --- eq externFunCall(R1, eState ) =  noValueYet [owise] .
 
   op localQuestion(_,_,_,_) : Question Instances Connections Program -> Bool .  
   ---- gives the evaluation of a local function related to Question according to certain parameters of a given configuration
@@ -78,6 +78,6 @@ fmod CONCERTO-D-CONFIGURATION is
 
   op question(_,_,_,_,_,_) :  Question Ids Map{Question, Bool} Instances Connections Program -> Bool . 
   --- gives the evaluation of a function related to Question according to the two cases, the function is local or external
-  eq question(R1,Ids,RcvAns, Is,Cs,RP ) = if (isLocal(R1,Ids)) then localQuestion(R1,Is,Cs,RP) else externQuestion(R1,RcvAns) fi .
+  eq question(R1,Ids,eState, Is,Cs,RP ) = if (isLocal(R1,Ids)) then localQuestion(R1,Is,Cs,RP) else externQuestion(R1,eState) fi .
 
 endfm

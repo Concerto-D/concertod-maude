@@ -18,10 +18,7 @@
     - Je ne l’ai fait que pour les types de composants car c’est la seule sorte où on accède aux champs par des appels d’opérations
 - Il y avait un truc bizarre: la sémantique opérationnelle générique dépendait… de l’exemple ! J’ai cassé cette dépendance et ai donc renommé les fichiers pour changer l’ordre entre la sémantique et l’exemple. 
 
-
-
-# fichier 3
-## Notations
+# Notations un peu partout
 - Ct/Cts component types
 - Ci/Cis component instances
 - P/Ps Places
@@ -38,17 +35,10 @@
 - getXfromY get X from Y (X set or element and Y set)
 - isXinY is x in y
 - isXonY is x on y
-- minuscule pour les éléments d'un ensemble
-- majuscule pour un ensemble
 - globalement enlever les Ident dans les noms d'opération pour Id
 
-## Discussions
-- messages
-- ceq/eq
-- un seul type d'id
-- 
+# fichier 3
 
-## Détails :
 - StationPlace
 	- op (_;_) : Station Place -> StationPlace [ctor] .
 	- replace (_;_) with [_](_) to look like graphical notation
@@ -124,3 +114,8 @@
  - op existIdBehaviorehListBeh(_,_) : IdBehavior List{BehaviorWithId} -> Bool .
  	- isBehaviorinList
  	
+# configuration
+
+receivedAnswers -> externState
+outgoingRequests -> outgoingQuestions 
+buffer -> incomingMsgs 

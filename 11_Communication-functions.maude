@@ -7,7 +7,7 @@ fmod UPDATE-COMMUNICATION-MESSAGES is
 
     var Ids : Ids . 
     var Cs : Connections .
-    var RcvAns : Map{Question,Bool} .
+    var eState : Map{Question,Bool} .
     var Val : Bool .
     var Use : UsePort .
     var Pro : ProvidePort .
@@ -30,10 +30,10 @@ fmod UPDATE-COMMUNICATION-MESSAGES is
     --- HELENE not enough time to change this in the current version but future work
     op  upDateReceivedAnswers(_,_) : Map{Question,Bool} Ids -> Map{Question,Bool} .  
     --- The update is related only to message related to the refusing function who we know its identifier if exist.
-    eq  upDateReceivedAnswers(RcvAns,empty) = RcvAns .
+    eq  upDateReceivedAnswers(eState,empty) = eState .
     eq  upDateReceivedAnswers(empty,Ids) = empty .
-    ceq upDateReceivedAnswers(([ dst: Id1 , query: isRefusing(Pro) ] |-> Val, RcvAns), Ids) = RcvAns if (Id1 in Ids) .
-    eq  upDateReceivedAnswers((R |-> Val, RcvAns), Ids) = R |-> Val, RcvAns [owise] .
+    ceq upDateReceivedAnswers(([ dst: Id1 , query: isRefusing(Pro) ] |-> Val, eState), Ids) = eState if (Id1 in Ids) .
+    eq  upDateReceivedAnswers((R |-> Val, eState), Ids) = R |-> Val, eState [owise] .
     
 endfm
 
