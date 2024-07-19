@@ -51,7 +51,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -62,7 +62,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -78,7 +78,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -89,7 +89,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx  >   .
@@ -100,7 +100,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -112,7 +112,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -129,7 +129,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -140,7 +140,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -157,7 +157,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: add(Id1, Ct) RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -169,7 +169,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -182,7 +182,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: del(Id1) RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -193,7 +193,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -206,7 +206,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: con((Id1,Use)--(Id2,Pro)) RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -217,7 +217,7 @@ crl [FiringTransitions] :
       connections: (Id1,Use)--(Id2,Pro), Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -230,7 +230,7 @@ crl [FiringTransitions] :
       connections: (Id1,Use)--(Id2,Pro), Csx, 
       program: dcon((Id1,Use)--(Id2,Pro)) RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -241,7 +241,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -259,7 +259,7 @@ crl [FiringTransitions] :
      connections: Csx, 
      program: pushB(Id1, B, IdB) RPx,
      externState: eStatex,
-     outgoingAnswers: OutAnsx,
+     pendingQuestions: OutAnsx,
      outgoingQuestions: OutReqx,
      history: Hx,
      incomingMsgs: iMsgsx >  
@@ -269,7 +269,7 @@ crl [FiringTransitions] :
      connections: Csx,
      program: RPx,
      externState: eStatex,
-     outgoingAnswers: OutAnsx,
+     pendingQuestions: OutAnsx,
      outgoingQuestions: OutReqx,
      history: Hx,
      incomingMsgs: iMsgsx 
@@ -284,7 +284,7 @@ crl [FiringTransitions] :
       connections: Csx, 
       program: wait(Id2,IdB) RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -295,7 +295,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -311,7 +311,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -322,7 +322,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: append(OutReqx,collectMsgFiring(Idsx,m(Ps,union(Ts, getTransitionsofPlace(TsB,P) ),Tes),
       (Id1 |-> { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m((P, Ps),Ts,Tes) }) , Isx,getPConnectionsofCInst(Id1,Csx),eStatex,Hx,OutReqx)),
       history: Hx,
@@ -337,7 +337,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -348,7 +348,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: RPx, 
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: append(OutReqx,collectMsgEnteringPlace(Idsx,Id1,getPlacefromStation(S,(Ct).stationPlaces), (Ct).groupUses, 
       { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m(Ps, Ts, te(t(P,S,Ss),S), Tes  ) },
       { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m(getPlacefromStation(S,(Ct).stationPlaces),Ps, Ts, rmTesOfStation(Tes,S) ) },
@@ -370,7 +370,7 @@ crl [FiringTransitions] :
       connections: ((Id1,Use)--(Id2,Pro)), Csx,
       program: dcon((Id1,Use)--(Id2,Pro)) RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -381,7 +381,7 @@ crl [FiringTransitions] :
       connections: ((Id1,Use)--(Id2,Pro)), Csx,
       program: dcon((Id1,Use)--(Id2,Pro)) RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: append(OutReqx,collectMsgDisconnect(Idsx,((Id1,Use)--(Id2,Pro)),eStatex,Hx,OutReqx)),
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -394,7 +394,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: wait(Id1,IdB) RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -405,7 +405,7 @@ crl [FiringTransitions] :
       connections: Csx,
       program: wait(Id1,IdB) RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx, 
+      pendingQuestions: OutAnsx, 
       outgoingQuestions: append(OutReqx,collectMsgWait(Idsx,Id1,IdB,eStatex,Hx,OutReqx)),
       history: Hx,
       incomingMsgs: iMsgsx 
@@ -421,7 +421,7 @@ rl [SendRequest] :
       connections: Csx, 
       program: RPx, 
       externState: eStatex, 
-      outgoingAnswers: OutAnsx, 
+      pendingQuestions: OutAnsx, 
       outgoingQuestions: [ dst: Dst, query: Q ] OutReqx, 
       history: Hx,
       incomingMsgs: iMsgsx > , 
@@ -430,7 +430,7 @@ rl [SendRequest] :
       connections: Csy, 
       program: RPy, 
       externState: eStatey, 
-      outgoingAnswers: OutAnsy, 
+      pendingQuestions: OutAnsy, 
       outgoingQuestions: OutReqy, 
       history: Hy,
       incomingMsgs: iMsgsy >
@@ -440,7 +440,7 @@ rl [SendRequest] :
       connections: Csx, 
       program: RPx, 
       externState: eStatex,
-      outgoingAnswers: OutAnsx, 
+      pendingQuestions: OutAnsx, 
       outgoingQuestions: OutReqx, 
       history: [ dst: Dst, query: Q ], Hx,
       incomingMsgs: iMsgsx > ,
@@ -449,7 +449,7 @@ rl [SendRequest] :
       connections: Csy, 
       program: RPy, 
       externState: eStatey, 
-      outgoingAnswers:  OutAnsy,
+      pendingQuestions:  OutAnsy,
       outgoingQuestions: OutReqy,
       history: Hy,
       incomingMsgs: append(iMsgsy, mkMsg([ dst: Dst, query: Q ]))     > .
@@ -461,7 +461,7 @@ rl [SendRequest] :
       connections: Csx, 
       program: RPx, 
       externState: eStatex, 
-      outgoingAnswers: R OutAnsx,  
+      pendingQuestions: R OutAnsx,  
       outgoingQuestions: OutReqx, 
       history: Hx,
       incomingMsgs: iMsgsx > , 
@@ -470,7 +470,7 @@ rl [SendRequest] :
       connections: Csy, 
       program: RPy, 
       externState: eStatey, 
-      outgoingAnswers: OutAnsy, 
+      pendingQuestions: OutAnsy, 
       outgoingQuestions: OutReqy, 
       history: R, Hy,
       incomingMsgs: iMsgsy >
@@ -480,7 +480,7 @@ rl [SendRequest] :
       connections: Csx, 
       program: RPx, 
       externState: resetState(eStatex,getIdsForReset(Csx,R,localQuestion(R,Isx,Csx,RPx))) ,
-      outgoingAnswers: OutAnsx, 
+      pendingQuestions: OutAnsx, 
       outgoingQuestions: OutReqx, 
       history: Hx,
       incomingMsgs: iMsgsx > ,
@@ -489,7 +489,7 @@ rl [SendRequest] :
       connections: Csy, 
       program: RPy, 
       externState: eStatey,
-      outgoingAnswers: OutAnsy, 
+      pendingQuestions: OutAnsy, 
       outgoingQuestions: OutReqy,
       history: (R, Hy),
       incomingMsgs: append(iMsgsy, mkMsg([ question: R, value: localQuestion(R,Isx,Csx,RPx) ])) > 
@@ -501,7 +501,7 @@ rl [SendRequest] :
       connections: Csx,
       program: RPx,
       externState: eStatex,
-      outgoingAnswers: OutAnsx,
+      pendingQuestions: OutAnsx,
       outgoingQuestions: OutReqx,
       history: Hx,
       incomingMsgs: mkMsg([dst: Dst, query: Q]) iMsgsx >   
@@ -511,7 +511,7 @@ rl [SendRequest] :
     connections: Csx,
     program: RPx,
     externState: eStatex,
-    outgoingAnswers: append(OutAnsx,[ dst: Dst, query: Q ]), 
+    pendingQuestions: append(OutAnsx,[ dst: Dst, query: Q ]), 
     outgoingQuestions: OutReqx,
     history: Hx,
     incomingMsgs: iMsgsx >  .
@@ -522,7 +522,7 @@ rl [SendRequest] :
     connections: Csx,
     program: RPx,
     externState: eStatex,
-    outgoingAnswers: OutAnsx, 
+    pendingQuestions: OutAnsx, 
     outgoingQuestions: OutReqx,
     history: (R,Hx),
     incomingMsgs: mkMsg([ question: R, value: Val ]) iMsgsx >  
@@ -532,7 +532,7 @@ rl [SendRequest] :
     connections: Csx,
     program: RPx,
     externState: insert(R,Val,eStatex),
-    outgoingAnswers: OutAnsx, 
+    pendingQuestions: OutAnsx, 
     outgoingQuestions: OutReqx,
     history: Hx,
     incomingMsgs: iMsgsx > .

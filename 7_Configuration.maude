@@ -34,7 +34,7 @@ fmod CONCERTO-D-CONFIGURATION is
         connections: _,
         program: _,
         externState: _,
-        outgoingAnswers: _, 
+        pendingQuestions: _, 
         outgoingQuestions: _, 
         history: _,
         incomingMsgs: _ 

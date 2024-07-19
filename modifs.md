@@ -117,5 +117,11 @@
 # configuration
 
 receivedAnswers -> externState
-outgoingRequests -> outgoingQuestions 
-buffer -> incomingMsgs 
+outgoingRequests -> outgoingQuestions
+outgoingAnswers -> pendingQuestions 
+buffer -> incomingMsgs
+
+# reset
+
+IdConnectionWhenSendActive -> getIdsForReset
+upDateReceivedAnswers -> resetState
