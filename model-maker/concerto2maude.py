@@ -34,7 +34,7 @@ def get_all_ids(instances, program):
 def get_instance_names(instances):
     if len(instances) == 0:
         return "empty" 
-    names = set(map(lambda instance: f"inst{instance.id().capitalize()}", instances))
+    names = set(map(lambda instance: f"{instance.id()} |-> inst{instance.id().capitalize()}", instances))
     return ', '.join(names)
 
 def make_connections_name(node_name):
@@ -71,25 +71,26 @@ def make_maude_instruction(instruction: Instruction):
     
 def make_port(typename, port, sep_port_bounded="!"):
     bounded = list(map(lambda place: f"{typename}{place.name().capitalize()}", port.bound_places()))
-    return f"{typename}{port.name().capitalize()} {sep_port_bounded} ({', '.join(bounded)})"     
+    return f"g({typename}{port.name().capitalize()} {sep_port_bounded} ({', '.join(bounded)}))"     
     
 def make_conf_program(program):    
-    plan = ' '.join(map(lambda instr: make_maude_ins    
+    if len(program.instructions()) == 0:
+        return "nil"
+    plan = ' '.join(map(lambda instr: make_maude_instruction(instr), program.instructions()))    
     # ops msgsNode1 msgsNode2 msgsNode3 : -> MsgToUses .
     # eq msgsNode1 = empty .  --- attenstion empty pour set et non pas []
     # eq msgsNode2 = extern(exprIsConnected(mydb0,(mysys0,systemDbservice,mydb0,databaseService)) ; true), extern(exprRefusing(mydb0,databaseService) ; false) .
     # eq msgsNode3 = extern(exprIsConnected(listener1,(sensor1,sensorRcvservice,listener1,listenerRcv)) ; true), extern(exprRefusing(listener1,listenerRcv) ; false), extern(exprIsConnected(listener1,(sensor1,sensorConfigservice,listener1,listenerConfig )) ; true), extern(exprRefusing(listener1,listenerConfig) ; false) .
-truction(instr), program.instructions()))
     return plan
 
 def gen_maude_type(type: ComponentType):
     ops, eqs = set(), set()
-    ops.add(f"op {type.name()} : -> ComponentType ."    
+    ops.add(f"op {type.name()} : -> ComponentType .")    
     # ops msgsNode1 msgsNode2 msgsNode3 : -> MsgToUses .
     # eq msgsNode1 = empty .  --- attenstion empty pour set et non pas []
     # eq msgsNode2 = extern(exprIsConnected(mydb0,(mysys0,systemDbservice,mydb0,databaseService)) ; true), extern(exprRefusing(mydb0,databaseService) ; false) .
     # eq msgsNode3 = extern(exprIsConnected(listener1,(sensor1,sensorRcvservice,listener1,listenerRcv)) ; true), extern(exprRefusing(listener1,listenerRcv) ; false), extern(exprIsConnected(listener1,(sensor1,sensorConfigservice,listener1,listenerConfig )) ; true), extern(exprRefusing(listener1,listenerConfig) ; false) .
-)
+
     use_ports = "empty"
     provide_ports = "empty"
     
@@ -97,7 +98,7 @@ def gen_maude_type(type: ComponentType):
         dict_place_station = {f"{type.name()}{place.name().capitalize()}": f"st{type.name()}{place.name().capitalize()}" for place in type.places()}
         places = list(map(lambda place: f"{type.name()}{place.name().capitalize()}", type.places()))
         stations = list(map(lambda place: f"st{type.name()}{place.name().capitalize()}", type.places()))
-        st_places = list(map(lambda stp: f"{stp[1]} ; {stp[0]}" , zip(places, stations)))
+        st_places = list(map(lambda stp: f"[{stp[1]}]({stp[0]})" , zip(places, stations)))
         init = f"{type.name()}{type.initial_place().name().capitalize()}"
         ops.add("ops " + ' '.join(places) + " : -> Place .")
         ops.add("ops " + ' '.join(stations) + " : -> Station .")
@@ -105,16 +106,16 @@ def gen_maude_type(type: ComponentType):
     
     if type.provide_ports():
         ops.add("ops " + ' '.join(map(lambda port: f"{type.name()}{port.name().capitalize()}", type.provide_ports())) + " : -> ProvidePort .")
-        provide_ports = ', '.join(map(lambda port: make_port(type.name(), port, "?"), type.provide_ports()))
+        provide_ports = ', '.join(map(lambda port: make_port(type.name(), port, "!"), type.provide_ports()))
         
     if type.use_ports():
         ops.add("ops " + ' '.join(map(lambda port: f"{type.name()}{port.name().capitalize()}", type.use_ports())) + " : -> UsePort .")
-        use_ports = ', '.join(map(lambda port: make_    
+        use_ports = ', '.join(map(lambda port: make_port(type.name(), port, "?"), type.use_ports()))
     # ops msgsNode1 msgsNode2 msgsNode3 : -> MsgToUses .
     # eq msgsNode1 = empty .  --- attenstion empty pour set et non pas []
     # eq msgsNode2 = extern(exprIsConnected(mydb0,(mysys0,systemDbservice,mydb0,databaseService)) ; true), extern(exprRefusing(mydb0,databaseService) ; false) .
     # eq msgsNode3 = extern(exprIsConnected(listener1,(sensor1,sensorRcvservice,listener1,listenerRcv)) ; true), extern(exprRefusing(listener1,listenerRcv) ; false), extern(exprIsConnected(listener1,(sensor1,sensorConfigservice,listener1,listenerConfig )) ; true), extern(exprRefusing(listener1,listenerConfig) ; false) .
-port(type.name(), port, "!"), type.use_ports()))
+
 
     behavior_transitions = {}
     transitions = {}
@@ -123,12 +124,12 @@ port(type.name(), port, "!"), type.use_ports()))
         behavior_transitions[behavior_name] = []
         for transition in behavior.transitions_as_dict().keys():
             act_transition = behavior.transitions_as_dict()[transition]
-            source = f"{type.name()}{act_transition.    
+            source = f"{type.name()}{act_transition.source().name().capitalize()}" 
     # ops msgsNode1 msgsNode2 msgsNode3 : -> MsgToUses .
     # eq msgsNode1 = empty .  --- attenstion empty pour set et non pas []
     # eq msgsNode2 = extern(exprIsConnected(mydb0,(mysys0,systemDbservice,mydb0,databaseService)) ; true), extern(exprRefusing(mydb0,databaseService) ; false) .
     # eq msgsNode3 = extern(exprIsConnected(listener1,(sensor1,sensorRcvservice,listener1,listenerRcv)) ; true), extern(exprRefusing(listener1,listenerRcv) ; false), extern(exprIsConnected(listener1,(sensor1,sensorConfigservice,listener1,listenerConfig )) ; true), extern(exprRefusing(listener1,listenerConfig) ; false) .
-source().name().capitalize()}"
+
             dest = dict_place_station[f"{type.name()}{act_transition.destination()[0].name().capitalize()}"]
             transition_name = f"{type.name()}{transition.capitalize()}"
             transitions[transition_name] = f"t({source}, {dest})"
@@ -153,7 +154,8 @@ def gen_maude_instance(instance: ComponentInstance, active: str):
     instance_id = instance.id()
     instance_type = instance.type().name()
     ops.add(f"op {instance_name} : -> Instance .")
-    eqs.add(f"eq {instance_name} = < id: {instance_id}, type: {instance_type}, queueBehavior: nil, marking: m({instance_type}{active.capitalize()}, empty, empty) > .")
+    # eqs.add(f"eq {instance_name} = < id: {instance_id}, type: {instance_type}, queue: nil, marking: m({instance_type}{active.capitalize()}, empty, empty) > .")
+    eqs.add(f"eq {instance_name} = {{ type: {instance_type}, queue: nil, marking: m({instance_type}{active.capitalize()}, empty, empty) }} .")
     return ops, eqs
 
 def gen_maude_connections(name_of_connections_set, connections):
@@ -162,7 +164,7 @@ def gen_maude_connections(name_of_connections_set, connections):
     if len(connections) == 0:
         str_connections = ["empty"]
     else:
-        str_connections = list(map(lambda tuple: f"({tuple[0]}, {tuple[1]}, {tuple[2]}, {tuple[3]})", connections)) # TODO remove ' for connections ; weird that it appears, use debug
+        str_connections = list(map(lambda tuple: f"({tuple[0]}, {tuple[1]})--({tuple[2]}, {tuple[3]})", connections)) # TODO remove ' for connections ; weird that it appears, use debug
     eqs.add(f"eq {name_of_connections_set} = " + ', '.join(str_connections) +" ." )
     return ops, eqs
 
@@ -184,8 +186,10 @@ def find_current_state(component: ComponentInstance, inventory: dict[str, (dict[
 def gen_maude_messages(node_name: str, components: dict[ComponentInstance, str], inventory: dict[str, (dict[ComponentInstance, str], Program)]):
     ops, eqs = set(), set()
     msgs_name = make_messages_name(node_name) 
-    ops.add(f"op {msgs_name} : -> MsgToUses .")
+    ops.add(f"op {msgs_name} : ->  Map{{Question, Bool}} .")
     externs = set()
+    
+    #   eq msgsNode2 = [ dst: mydb0 , query: isConnected((mysys0,systemDbservice)--(mydb0,databaseService)) ] |-> true , [ dst: mydb0 , query: isRefusing(databaseService) ] |-> false .
     for component in components.keys():
         for use_port in component.type().use_ports():
             for (provider, provide_port) in component.connections(use_port):
@@ -193,11 +197,12 @@ def gen_maude_messages(node_name: str, components: dict[ComponentInstance, str],
                 ext_user_id = component.id()
                 ext_provide_port = provider.type().name() + provide_port.name().capitalize()
                 ext_use_port = use_port.type().name() + use_port.name().capitalize()
-                externs.add(f"extern(exprIsConnected({ext_provider_id},({ext_user_id},{ext_use_port},{ext_provider_id},{ext_provide_port})))")
+                externs.add(f"[ dst: {ext_provider_id}, query: isConnected(({ext_user_id},{ext_use_port})--({ext_provider_id},{ext_provide_port})) ] |-> true")
                 if is_in_group(provide_port, find_current_state(provider, inventory)):
-                    externs.add(f"extern(exprRefusing({ext_provider_id},{ext_provide_port}) ; false)")
+                    ext_refusing = "false"
                 else:
-                    externs.add(f"extern(exprRefusing({ext_provider_id},{ext_provide_port}) ; true)")
+                    ext_refusing = "true"
+                externs.add(f"[ dst: {ext_provider_id} , query: isRefusing({ext_provide_port}) ] |-> {ext_refusing}")
     joined_externs = "empty"
     if len(externs) != 0:
         joined_externs = ', '.join(externs)
@@ -248,12 +253,12 @@ def gen_maude(example_name, inventory):
         conf_name = f"conf{node.capitalize()}"
         conf_ids = get_all_ids(instances, program)
         for id in conf_ids:
-            ops.add(f"op {id} : -> IdInstance .")
+            ops.add(f"op {id} : -> Id .")
         conf_instances = get_instance_names(instances)
         conf_connections = make_connections_name(node)
         conf_messages = make_messages_name(node)
         conf_program = make_conf_program(program)
-        eq_confs[conf_name] = f"eq {conf_name} = < ids: {', '.join(conf_ids)}, instances: {conf_instances}, connections: {conf_connections}, program: {conf_program}, msgs: {conf_messages}, receive: nil, send: nil, history: empty > ."
+        eq_confs[conf_name] = f"eq {conf_name} = < nodeInventory: {', '.join(conf_ids)}, instances: {conf_instances}, connections: {conf_connections}, program: {conf_program}, externState: {conf_messages}, pendingQuestions: nil, outgoingQuestions: nil, history: empty, incomingMsgs: nil > ."
         _ops, _eqs = gen_maude_messages(node, instances, inventory)
         ops = ops.union(_ops)
         eqs = eqs.union(_eqs)
@@ -270,7 +275,7 @@ def gen_maude(example_name, inventory):
         ops = ops.union(_ops)
         eqs = eqs.union(_eqs)
     all_lines = list(ops) + list(eqs)
-    ops_ident_bhv = f"ops {' '.join(ids_of_bhv)} : -> IdentBehavior . "
+    ops_ident_bhv = f"ops {' '.join(ids_of_bhv)} : -> Id . "
     all_lines = all_lines + [ops_ident_bhv]
     eq_confs_lines = []
     net_confs = []
@@ -279,13 +284,13 @@ def gen_maude(example_name, inventory):
         eq_confs_lines.append(f"op {eq_conf_name} : ->  LocalConfiguration .")
         eq_confs_lines.append(eq_conf_line)
         net_confs.append(eq_conf_name)
-    net_op = "op globalSystem : -> Net ."
+    net_op = "op globalSystem : -> System ."
     net_eq = f"eq globalSystem = {', '.join(net_confs)} . "
     all_lines = all_lines + eq_confs_lines + [net_op, net_eq]
     indented_lines = ['\t' + line for line in all_lines]
     indented_maude = '\n'.join(indented_lines)
     maude = f"""fmod {example_name.upper()} is 
-\tinc NET-D-CONFIGURATION .
+\tinc CONCERTO-D-SYSTEM .
 \tinc CONSISTENCY-PORTS-FIRING-TRANSITION .
 \tinc CONSISTENCY-PORTS-ENTERING-PLACE .
 \tinc COLLECT-EXTERNAL-MESSAGES-FIRING .
