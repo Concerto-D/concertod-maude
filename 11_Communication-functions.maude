@@ -1,6 +1,4 @@
 
---- Helene voir si on peut simplifier au moins IdConnectionWhenSendActive
-
 fmod UPDATE-COMMUNICATION-MESSAGES is
 
     inc CONCERTO-D-CONFIGURATION .
@@ -14,7 +12,7 @@ fmod UPDATE-COMMUNICATION-MESSAGES is
     var R : Question .
     vars Id1 Id2 : Id .
 
-    op IdConnectionWhenSendActive(_,_,_) : Connections Question Bool -> Ids .
+    op getIdsForReset(_,_,_) : Connections Question Bool -> Ids .
 
     --- to maintain the consistency of exchanged information between nodes, an update is necessary for the old information received. 
     --- the update is applied when a local configuration communicates by message the information on one of the use ports of its instances which is not active, 
@@ -23,17 +21,15 @@ fmod UPDATE-COMMUNICATION-MESSAGES is
     --- which claims the active function which has a false evaluation. 
     --- Note that the expected result of this op is Id2 if it exists, otherwise empty, 
     --- so the result is a set that can contain either an empty element or a single identifier.
-    eq IdConnectionWhenSendActive((((Id1,Use)--(Id2,Pro)),Cs),[ dst: Id1 , query: isActive(Use) ],false) = Id2 . 
-    eq IdConnectionWhenSendActive(Cs,R,Val) = empty [owise] . 
+    eq getIdsForReset((((Id1,Use)--(Id2,Pro)),Cs),[ dst: Id1 , query: isActive(Use) ],false) = Id2 . 
+    eq getIdsForReset(Cs,R,Val) = empty [owise] . 
     
-    --- HELENE only one case is handled (provide ask a use port its activity)?
-    --- HELENE not enough time to change this in the current version but future work
-    op  upDateReceivedAnswers(_,_) : Map{Question,Bool} Ids -> Map{Question,Bool} .  
+    op  resetState(_,_) : Map{Question,Bool} Ids -> Map{Question,Bool} .  
     --- The update is related only to message related to the refusing function who we know its identifier if exist.
-    eq  upDateReceivedAnswers(eState,empty) = eState .
-    eq  upDateReceivedAnswers(empty,Ids) = empty .
-    ceq upDateReceivedAnswers(([ dst: Id1 , query: isRefusing(Pro) ] |-> Val, eState), Ids) = eState if (Id1 in Ids) .
-    eq  upDateReceivedAnswers((R |-> Val, eState), Ids) = R |-> Val, eState [owise] .
+    eq  resetState(eState,empty) = eState .
+    eq  resetState(empty,Ids) = empty .
+    ceq resetState(([ dst: Id1 , query: isRefusing(Pro) ] |-> Val, eState), Ids) = eState if (Id1 in Ids) .
+    eq  resetState((R |-> Val, eState), Ids) = R |-> Val, eState [owise] .
     
 endfm
 

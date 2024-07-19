@@ -479,7 +479,7 @@ rl [SendRequest] :
       instances: Isx, 
       connections: Csx, 
       program: RPx, 
-      externState: upDateReceivedAnswers(eStatex,IdConnectionWhenSendActive(Csx,R,localQuestion(R,Isx,Csx,RPx))) ,
+      externState: resetState(eStatex,getIdsForReset(Csx,R,localQuestion(R,Isx,Csx,RPx))) ,
       outgoingAnswers: OutAnsx, 
       outgoingQuestions: OutReqx, 
       history: Hx,

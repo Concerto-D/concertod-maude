@@ -17,16 +17,16 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
 
   op isSafeToFire(_,_,_,_,_) : Ids Marking Instances Map{Question, Bool} Connections ->  Bool .
   ***( is used to ensure consistency when firing transitions.
-    It takes as parameters when used in the firing transition rule: the set of
-    identifiers for all instances of the concerned configuration (concerned by
-    the firing of one of its instances), the new marking after firing, the 
-    instances of the concerned configuration, Map{Question, Bool} of messages 
-    to use for remote evaluation, finally, a subset of Connections related to
-    the configuration, where the instance concerned by firing is a provider.
-    Thus, for each connection it checks that the firing of the concerned
-    instance (provider) does not affect the corresponding user i.e., if the
-    provider for each connection after a firing goes from active to inactive,
-    this implies that the user must be inactive. )
+    --- It takes as parameters when used in the firing transition rule: the set of
+    --- identifiers for all instances of the concerned configuration (concerned by
+    --- the firing of one of its instances), the new marking after firing, the 
+    --- instances of the concerned configuration, Map{Question, Bool} of messages 
+    --- to use for remote evaluation, finally, a subset of Connections related to
+    --- the configuration, where the instance concerned by firing is a provider.
+    --- Thus, for each connection it checks that the firing of the concerned
+    --- instance (provider) does not affect the corresponding user i.e., if the
+    --- provider for each connection after a firing goes from active to inactive,
+    --- this implies that the user must be inactive. )
   eq isSafeToFire(Ids, NewM, Is, eState, (Id1, Use)--(Id2, Pro), Cs) = isSafeToFire(Ids, NewM, Is, eState, Cs) and 
   (
     ( (question([ dst: Id2 , query: isActive(Pro) ], 
