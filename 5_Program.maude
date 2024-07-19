@@ -5,28 +5,28 @@ fmod PROGRAM is
   inc CONNECTION .
 
   sorts Program . 
-  pr LIST{Instruction} .
-  subsort List{Instruction} < Program . 
+  pr LIST{Action} .
+  subsort List{Action} < Program . 
 
-  var Rx : Program .
-  var L : Connection .
-  var Inst : Instruction .
+  var RP : Program .
+  var C : Connection .
+  var A : Action .
   var Id1 : Id .
   var IdBeh : Id .
   var Beh : Behavior .
 
-  op add(_,_) : Id ComponentType -> Instruction [ctor] .
-  op del(_) : Id -> Instruction [ctor] .
-  op pushB(_,_,_) : Id Behavior Id -> Instruction [ctor] .
-  op con(_) : Connection -> Instruction [ctor] .
-  op dcon(_) : Connection -> Instruction [ctor] .
-  op wait(_,_) : Id Id -> Instruction [ctor] .
+  op add(_,_) : Id ComponentType -> Action [ctor] .
+  op del(_) : Id -> Action [ctor] .
+  op pushB(_,_,_) : Id Behavior Id -> Action [ctor] .
+  op con(_) : Connection -> Action [ctor] .
+  op dcon(_) : Connection -> Action [ctor] .
+  op wait(_,_) : Id Id -> Action [ctor] .
 
   --- some operations related to program used later
   op noDcon(_,_) :  Connection Program -> Bool .  
   ---check for a given connection if there is a dcon instruction in a given program
-  eq noDcon(L,nil) = true .
-  eq noDcon(L,Inst  Rx) = (Inst =/= dcon(L) and noDcon(L,Rx)) .
+  eq noDcon(C,nil) = true .
+  eq noDcon(C,A  RP) = (A =/= dcon(C) and noDcon(C,RP)) .
 
   op onDisconnectLocal(_,_) : Connection Program -> Bool .
   op onDisconnectLocal(_,_) : Connection Program -> Bool .  
@@ -35,20 +35,20 @@ fmod PROGRAM is
   --- program does not contain dcon after the current instruction
   --- this reasoning is correct if we assume that Concerto programs are well 
   --- formed.
-  eq onDisconnectLocal(L,nil) = true .
-  eq onDisconnectLocal(L,Inst Rx) = noDcon(L,Rx) .
+  eq onDisconnectLocal(C,nil) = true .
+  eq onDisconnectLocal(C,A RP) = noDcon(C,RP) .
   
-  op onPushB(_,_,_) : Instruction Id Id -> Bool .  
+  op onPushB(_,_,_) : Action Id Id -> Bool .  
   --- checks whether the current instruction is a push instruction 
   --- for a given Id and Id
   eq onPushB(pushB(Id1,Beh,IdBeh), Id1,IdBeh ) = true .
-  eq onPushB(Inst, Id1,IdBeh ) = false [owise] .
+  eq onPushB(A, Id1,IdBeh ) = false [owise] .
 
   op isCompletedLocal(_,_,_) : Id Id Program -> Bool .  
   ---checks for a given program if there is a pushB instruction
   eq isCompletedLocal(Id1,IdBeh, nil) = true .
-  ceq isCompletedLocal(Id1,IdBeh,Inst Rx) = 
-    isCompletedLocal(Id1,IdBeh,Rx) if (not onPushB(Inst,Id1,IdBeh)) .
-  eq isCompletedLocal(Id1,IdBeh,Inst Rx) = false [owise] .
+  ceq isCompletedLocal(Id1,IdBeh,A RP) = 
+    isCompletedLocal(Id1,IdBeh,RP) if (not onPushB(A,Id1,IdBeh)) .
+  eq isCompletedLocal(Id1,IdBeh,A RP) = false [owise] .
   
 endfm

@@ -18,6 +18,10 @@
     - Je ne l’ai fait que pour les types de composants car c’est la seule sorte où on accède aux champs par des appels d’opérations
 - Il y avait un truc bizarre: la sémantique opérationnelle générique dépendait… de l’exemple ! J’ai cassé cette dépendance et ai donc renommé les fichiers pour changer l’ordre entre la sémantique et l’exemple. 
 
+# types
+
+Instruction -> Action to not confuse with component instances (Inst)
+
 # Notations un peu partout
 - Ct/Cts component types
 - Ci/Cis component instances

@@ -23,9 +23,9 @@ fmod CONCERTO-D-CONFIGURATION is
   var C : Connection .
   var Qb : List{PushedBehavior} .
   var M : Marking .
-  var Q : Query .
+  var Query : Query .
+  var Q1 : Question .
   var Id : Id .
-  vars R1 R2 : Question .
   var eState : Map{Question, Bool} .
   var Val : Bool .
  
@@ -48,12 +48,12 @@ fmod CONCERTO-D-CONFIGURATION is
 
   op isLocal(_,_) : Question Ids -> Bool .  
   --- determine whether a Question is related to a local treatement.
-  eq isLocal([ dst: Id , query: Q ], Ids) = Id in Ids .
+  eq isLocal([ dst: Id , query: Query ], Ids) = Id in Ids .
 
   op externQuestion(_,_) : Question Map{Question, Bool}  -> Bool .  
   --- get the evalaution of an external function related to a Question from Map{Question, Bool}
-  eq externQuestion(R1, R1 |-> Val, eState ) = Val .
-  --- eq externFunCall(R1, eState ) =  noValueYet [owise] .
+  eq externQuestion(Q1, Q1 |-> Val, eState ) = Val .
+  --- eq externFunCall(Q1, eState ) =  noValueYet [owise] .
 
   op localQuestion(_,_,_,_) : Question Instances Connections Program -> Bool .  
   ---- gives the evaluation of a local function related to Question according to certain parameters of a given configuration
@@ -78,6 +78,6 @@ fmod CONCERTO-D-CONFIGURATION is
 
   op question(_,_,_,_,_,_) :  Question Ids Map{Question, Bool} Instances Connections Program -> Bool . 
   --- gives the evaluation of a function related to Question according to the two cases, the function is local or external
-  eq question(R1,Ids,eState, Is,Cs,RP ) = if (isLocal(R1,Ids)) then localQuestion(R1,Is,Cs,RP) else externQuestion(R1,eState) fi .
+  eq question(Q1,Ids,eState, Is,Cs,RP ) = if (isLocal(Q1,Ids)) then localQuestion(Q1,Is,Cs,RP) else externQuestion(Q1,eState) fi .
 
 endfm

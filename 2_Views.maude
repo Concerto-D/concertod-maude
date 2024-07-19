@@ -64,8 +64,8 @@ view LocalConfiguration from TRIV to DECLARATION-SORTS is
  sort Elt to LocalConfiguration .
 endv
 
-view Instruction from TRIV to DECLARATION-SORTS is
- sort Elt to Instruction .
+view Action from TRIV to DECLARATION-SORTS is
+ sort Elt to Action .
 endv
 
 view Question from TRIV to DECLARATION-SORTS is 

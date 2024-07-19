@@ -27,8 +27,7 @@ fmod STATION-PLACE is
   pr SET{StationPlace} . 
   subsort Set{StationPlace} <  StationPlaces . 
 
-  vars S1 S2 : Station .
-  var S : Stations .
+  vars S1 : Station .
   var SPs : StationPlaces .
   var P : Place .
   var Ps : Places .
@@ -81,7 +80,7 @@ fmod CONNECTION is
   subsort Set{Connection} < Connections . 
 
   var Cs : Connections .   
-  vars Use Use1 : UsePort .  
+  vars Use : UsePort .  
   var Pr : ProvidePort .   
   vars Id Id1 Id2 : Id .  
 

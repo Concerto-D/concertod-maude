@@ -6,7 +6,7 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
 
   inc CONCERTO-D-CONFIGURATION .
 
-  var NewM : Marking .
+  var M : Marking .
   var Is : Instances .
   vars Id1 Id2 : Id .
   var Use : UsePort .
@@ -27,15 +27,15 @@ fmod CONSISTENCY-PORTS-FIRING-TRANSITION is
     --- instance (provider) does not affect the corresponding user i.e., if the
     --- provider for each connection after a firing goes from active to inactive,
     --- this implies that the user must be inactive. )
-  eq isSafeToFire(Ids, NewM, Is, eState, (Id1, Use)--(Id2, Pro), Cs) = isSafeToFire(Ids, NewM, Is, eState, Cs) and 
+  eq isSafeToFire(Ids, M, Is, eState, (Id1, Use)--(Id2, Pro), Cs) = isSafeToFire(Ids, M, Is, eState, Cs) and 
   (
     ( (question([ dst: Id2 , query: isActive(Pro) ], 
                Ids, eState, Is, empty, nil) == true) and 
-    (activeMarking(Is[Id2], Pro, NewM) == false)) 
+    (activeMarking(Is[Id2], Pro, M) == false)) 
     implies  (question([ dst: Id1 , query: isActive(Use) ], 
                       Ids, eState, Is, empty, nil ) == false) 
   ) .
-  eq isSafeToFire(Ids, NewM, Is, eState, empty) = true .
+  eq isSafeToFire(Ids, M, Is, eState, empty) = true .
 
 endfm
 
@@ -52,9 +52,9 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   var Is : Instances .
   var Cs : Connections .
   var eState : Map{Question, Bool} .
-  vars Use1 Use : UsePort .
+  vars Use : UsePort .
   var Pro : ProvidePort .
-  vars Id Id1 Id2 : Id .
+  vars Id1 Id2 : Id .
   var Ids  : Ids .
 
   op isConnectedAndAllowed(_,_,_,_,_,_,_,_,_) : Ids Id Place GroupUses Instance Instance Instances Connections Map{Question, Bool} -> Bool . 
@@ -88,9 +88,6 @@ fmod CONSISTENCY-PORTS-ENTERING-PLACE is
   --- in the previous condition we use active directly since it's a local 
   --- treatment for the concerned configuration
   eq isConnectedAndAllowed(Ids,Id1,P,g(Use ? Ps),GU,I,I',Is,Cs,eState) = isConnectedAndAllowed(Ids,Id1,P,GU,I,I',Is,Cs,eState) [owise] .
-
-  --- Helene I think here it cannot be changed to isConnectedLocal as using question
-  --- same for allowed
 
   op connected(_,_,_,_,_) : Ids UsePort Id Connections Map{Question, Bool} -> Bool . 
   ---  connection must be verified on noValueYet user and provider instances

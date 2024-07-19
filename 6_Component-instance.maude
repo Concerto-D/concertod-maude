@@ -9,9 +9,8 @@ fmod INSTANCE is
   pr MAP{Id,Instance} .
   subsort Map{Id,Instance} < Instances .
 
-  vars P Q : Place . 
+  vars P1 P2 : Place . 
   var Ps : Places .
-  vars  Id1 Id2 : Id .
   var IdBeh : Id .
   vars Ss1 Ss2 : Stations .
   var Qb : List{PushedBehavior} .
@@ -20,10 +19,7 @@ fmod INSTANCE is
   vars Ts : Transitions .
   var Tes : TransitionEndings .
   var Ct : ComponentType .
-  var Is : Instances .
 
-  --- Helene ??? TODO check PushedBehavior with file 3
-  --- PushId / QueuedBeh
   op { type: _, queue: _, marking: _ } : 
   ComponentType List{PushedBehavior} Marking -> Instance 
   [ctor format(n++i s s d n++i s d ni s s s----i) ] .
@@ -31,22 +27,22 @@ fmod INSTANCE is
 
   op existsTransFromPlace(_,_) : Place Transitions -> Bool .  
   --- check whether there is a transition whose source place is the given place
-  eq  existsTransFromPlace(P,t(P,Ss1),Ts) = true .
-  eq  existsTransFromPlace(P,Ts) = false  [owise].
+  eq  existsTransFromPlace(P1,t(P1,Ss1),Ts) = true .
+  eq  existsTransFromPlace(P1,Ts) = false  [owise].
 
   op areTransOfPlaceExitGroup(_,_,_) : Place Transitions Stations -> Bool .  
   --- check that for a given place and for all its transitions, the stations of its transitions are different from the stations given as parameters
   --- used later to express that places in a group necessarily leave the group according to current behavior
-  eq  areTransOfPlaceExitGroup(P,empty,Ss1) = true .
-  ceq areTransOfPlaceExitGroup(P,(t(Q,Ss1),Ts),Ss2) = areTransOfPlaceExitGroup(P,Ts,Ss2) if ((P =/= Q)  or   intersection(Ss1,Ss2) == empty ) .  
-  eq  areTransOfPlaceExitGroup(P,Ts,Ss2) = false [owise] .
+  eq  areTransOfPlaceExitGroup(P1,empty,Ss1) = true .
+  ceq areTransOfPlaceExitGroup(P1,(t(P2,Ss1),Ts),Ss2) = areTransOfPlaceExitGroup(P1,Ts,Ss2) if ((P1 =/= P2)  or   intersection(Ss1,Ss2) == empty ) .  
+  eq  areTransOfPlaceExitGroup(P1,Ts,Ss2) = false [owise] .
 
   op isPlaceExitGroup(_,_,_) : Place List{PushedBehavior} Stations -> Bool .  
   --- check if a place leaves a group of places according to the current behavior and with respect to the stations associated with the places of the group.
-  eq isPlaceExitGroup(P,nil,Ss1) = false . 
+  eq isPlaceExitGroup(P1,nil,Ss1) = false . 
   ---because the behavior is nil, a place does not leave the group 
-  eq isPlaceExitGroup(P,(IdBeh ; b(Ts)) Qb,Ss1) = existsTransFromPlace(P,Ts) and areTransOfPlaceExitGroup(P,Ts,Ss1) . 
-  --- there is transitions started from P  and all these transitions leave the group
+  eq isPlaceExitGroup(P1,(IdBeh ; b(Ts)) Qb,Ss1) = existsTransFromPlace(P1,Ts) and areTransOfPlaceExitGroup(P1,Ts,Ss1) . 
+  --- there is transitions started from P1  and all these transitions leave the group
 
   op arePlacesExitGroup(_,_,_) : Places List{PushedBehavior} Stations -> Bool .  
   --- check whether for certain places and according to the current 
@@ -55,7 +51,7 @@ fmod INSTANCE is
   --- this last condition is determined on the stations associated with the places (3rd parameter).
   eq arePlacesExitGroup(empty,Qb,Ss1) = true .  
   --- empty places satisfay all transitions of empty exit group
-  eq arePlacesExitGroup((P,Ps),Qb,Ss1)  = isPlaceExitGroup(P,Qb,Ss1) and arePlacesExitGroup(Ps,Qb,Ss1) .  
+  eq arePlacesExitGroup((P1,Ps),Qb,Ss1)  = isPlaceExitGroup(P1,Qb,Ss1) and arePlacesExitGroup(Ps,Qb,Ss1) .  
 
   op isActiveLocal(_,_) : Instance Port -> Bool .   
   --- checks locally if a port is active (isActive in file 3_ can be a remote call)

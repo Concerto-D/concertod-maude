@@ -14,7 +14,7 @@ fmod COMPONENT-TYPE is
   subsort Set{GroupProvide} < GroupProvides . 
 
   vars Ps Ps1 : Places .
-  var Q : InitialPlace .
+  var InitPl : InitialPlace .
   var SPs : StationPlaces .
   var Ts : Transitions . 
   var Bs : Behaviors .
@@ -45,31 +45,31 @@ fmod COMPONENT-TYPE is
   --- some operations related to ComponentType used later
   op _ .initial : ComponentType -> Place .
   --- get the initial place of component type
-  eq { places: Ps, initial: Q, stationPlaces: SPs, 
+  eq { places: Ps, initial: InitPl, stationPlaces: SPs, 
        transitions: Ts, behaviors: Bs, groupUses: GU,
-       groupProvides: GP }.initial = Q .
+       groupProvides: GP }.initial = InitPl .
 
   op _ .stationPlaces : ComponentType -> StationPlaces . 
   --- get the set of tuples (station; place)
-  eq { places: Ps, initial: Q, stationPlaces: SPs,
+  eq { places: Ps, initial: InitPl, stationPlaces: SPs,
        transitions: Ts, behaviors: Bs, groupUses: GU,
        groupProvides: GP }.stationPlaces = SPs .
 
   op _ .groupUses : ComponentType -> GroupUses . 
   --- get the set of the use ports of the component
-  eq { places: Ps, initial: Q, stationPlaces: SPs,
+  eq { places: Ps, initial: InitPl, stationPlaces: SPs,
        transitions: Ts, behaviors: Bs, groupUses: GU,
        groupProvides: GP }.groupUses = GU .
 
   op _ .groupProvides : ComponentType -> GroupProvides . 
   --- get the set of the provide ports of the component
-  eq { places: Ps, initial: Q, stationPlaces: SPs,
+  eq { places: Ps, initial: InitPl, stationPlaces: SPs,
        transitions: Ts, behaviors: Bs, groupUses: GU,
        groupProvides: GP }.groupProvides = GP .
 
   op _ .behaviors : ComponentType -> Behaviors . 
   --- get the set of the provide ports of the component
-  eq { places: Ps, initial: Q, stationPlaces: SPs,
+  eq { places: Ps, initial: InitPl, stationPlaces: SPs,
        transitions: Ts, behaviors: Bs, groupUses: GU,
        groupProvides: GP }.behaviors = Bs .
 
@@ -91,7 +91,7 @@ fmod COMPONENT-TYPE is
   op _ .getMarkingOfGroup(_) : ComponentType Places -> Marking .   
   --- give marked elements (places, transitions, TransitionEndings) 
   --- of a group of places
-  eq { places: Ps, initial: Q, stationPlaces: SPs, transitions: Ts, 
+  eq { places: Ps, initial: InitPl, stationPlaces: SPs, transitions: Ts, 
        behaviors: Bs, groupUses: GU, groupProvides: GP }
        .getMarkingOfGroup(Ps1) = 
   m(Ps1, 

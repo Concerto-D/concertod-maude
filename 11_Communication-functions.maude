@@ -9,7 +9,7 @@ fmod UPDATE-COMMUNICATION-MESSAGES is
     var Val : Bool .
     var Use : UsePort .
     var Pro : ProvidePort .
-    var R : Question .
+    var Q1 : Question .
     vars Id1 Id2 : Id .
 
     op getIdsForReset(_,_,_) : Connections Question Bool -> Ids .
@@ -22,14 +22,14 @@ fmod UPDATE-COMMUNICATION-MESSAGES is
     --- Note that the expected result of this op is Id2 if it exists, otherwise empty, 
     --- so the result is a set that can contain either an empty element or a single identifier.
     eq getIdsForReset((((Id1,Use)--(Id2,Pro)),Cs),[ dst: Id1 , query: isActive(Use) ],false) = Id2 . 
-    eq getIdsForReset(Cs,R,Val) = empty [owise] . 
+    eq getIdsForReset(Cs,Q1,Val) = empty [owise] . 
     
     op  resetState(_,_) : Map{Question,Bool} Ids -> Map{Question,Bool} .  
     --- The update is related only to message related to the refusing function who we know its identifier if exist.
     eq  resetState(eState,empty) = eState .
     eq  resetState(empty,Ids) = empty .
     ceq resetState(([ dst: Id1 , query: isRefusing(Pro) ] |-> Val, eState), Ids) = eState if (Id1 in Ids) .
-    eq  resetState((R |-> Val, eState), Ids) = R |-> Val, eState [owise] .
+    eq  resetState((Q1 |-> Val, eState), Ids) = Q1 |-> Val, eState [owise] .
     
 endfm
 
