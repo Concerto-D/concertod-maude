@@ -280,10 +280,10 @@ fmod BEHAVIOR is
   var BehL : List{PushedBehavior} .
   var Beh : Behavior .
 
-  op b(_) : Transitions -> Behavior .   
+  op b(_) : Transitions -> Behavior [ctor] .   
   ---a behavior is a set of transitions
 
-  op (_;_) : Id Behavior -> PushedBehavior . 
+  op (_;_) : Id Behavior -> PushedBehavior [ctor] . 
   ---PushedBehavior is an identified behavior
 
   op isBehaviorinList(_,_) : Id List{PushedBehavior} -> Bool .
