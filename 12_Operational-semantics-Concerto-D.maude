@@ -305,7 +305,7 @@ crl [FiringTransitions] :
   -----------------------------------------------Rules for collecting messages related to external used functions------------------------------------------
   ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-  crl [RequestsForFiringTransitions] : 
+  crl [AskQuestionForFiringTransitions] : 
     < nodeInventory: Idsx,
       instances: (Id1 |-> { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m((P, Ps),Ts,Tes) }) , Isx,
       connections: Csx,
@@ -331,7 +331,7 @@ crl [FiringTransitions] :
     if (getTransitionsofPlace(TsB,P) =/= empty and collectMsgFiring(Idsx,m(Ps,union(Ts, getTransitionsofPlace(TsB,P) ),Tes),
     (Id1 |-> { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m((P, Ps),Ts,Tes) }) , Isx,getPConnectionsofCInst(Id1,Csx ),eStatex,Hx,OutReqx) =/= nil) . 
 
-  crl [RequestsForEnteringPlace] : 
+  crl [AskQuestionForEnteringPlace] : 
     < nodeInventory: Idsx,
       instances: (Id1 |-> { type: Ct, queue: (IdB ; b(TsB)) Qb, marking: m(Ps, Ts, te(t(P,S,Ss),S), Tes) })  , Isx,
       connections: Csx,
@@ -364,7 +364,7 @@ crl [FiringTransitions] :
       Isx, Csx,eStatex,Hx,OutReqx) =/= nil )
     ) .
 
-  crl [RequestsForDisconnectPorts] : 
+  crl [AskQuestionForDisconnectPorts] : 
     < nodeInventory: Idsx,
       instances: Isx,
       connections: ((Id1,Use)--(Id2,Pro)), Csx,
@@ -388,7 +388,7 @@ crl [FiringTransitions] :
       >    
     if ( (collectMsgDisconnect(Idsx,(Id1,Use)--(Id2,Pro),eStatex,Hx,OutReqx) =/= nil) ) .
 
-  crl [RequestsForWait] :
+  crl [AskQuestionForWait] :
     < nodeInventory: Idsx,
       instances: Isx,
       connections: Csx,
@@ -415,7 +415,7 @@ crl [FiringTransitions] :
   --------------------------------------------------------------Rules for communication---------------------------------------------------------------------
   ----------------------------------------------------------------------------------------------------------------------------------------------------------
  
-rl [SendRequest] : 
+rl [SendQuestion] : 
     < nodeInventory: Idsx, 
       instances: Isx, 
       connections: Csx, 
@@ -495,7 +495,7 @@ rl [SendRequest] :
       incomingMsgs: append(iMsgsy, mkMsg([ question: Q, value: localQuestion(Q,Isx,Csx,RPx) ])) > 
     if (not occurs(mkMsg(Q), iMsgsy)) .
 
-    rl [ReceiveRequest] : 
+    rl [ReceiveQuestion] : 
     < nodeInventory: (Dst, Idsx),
       instances: Isx,
       connections: Csx,

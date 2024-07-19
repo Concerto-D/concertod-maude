@@ -23,7 +23,7 @@ fmod COLLECT-EXTERNAL-MESSAGES-FIRING is
   --- in other words, the evaluation of these messages is true or unknown 
   --- knowing that the provide port linked to thier use port wants to change the status of its provide port from active to inactive.
   --- in this case, we add the message [ dst: Id1 , query: isActive(Use) ]  of each use port to the queue of external information, 
-  --- on condition that the request for this message is not currently being processed.
+  --- on condition that the question for this message is not currently being processed.
   --- this last condition is verified if [ dst: Id1 , query: isActive(Use) ]  doesn't belong to either Set{Question} or List{Question}.
   eq collectMsgFiring(Ids, M, Is, empty, eState, H, OutQs) = nil .
   ceq collectMsgFiring(Ids, M, Is, (Id1, Use)--(Id2, Pro), Cs, eState, H, OutQs) = 
